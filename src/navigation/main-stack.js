@@ -8,11 +8,9 @@ import { Text, useTheme } from 'react-native-paper'
 import { useGlobals } from '../contexts/global'
 import { useIsDark } from '../hooks/use-theme'
 
-import ProfileScreen from '../screens/main/profile.screen'
 import ChallengeStackNavigation from './challenge-stack'
-// import DataDetailScreen from '../screens/main/data.detail'
-// import AstrologerDetailScreen from '../screens/main/astrologer-detail.screen'
-// import DonateScreen from '../screens/main/donate.screen'
+import ChallengeListMapScreen from '../screens/challenge/map'
+import RewardStackNavigation from './reward-stack'
 
 const BarIcon = ({ color, size, name }) => {
   return (
@@ -64,48 +62,25 @@ function BottomBarNavigation() {
       // inactiveBackgroundColor="green"
       // style={{ backgroundColor: 'green' }}
 
-      tabBarOptions={{
-        style: {
-          // backgroundColor: '#00000010',
-          height: 56,
-          paddingTop: 3,
-          paddingBottom: 3,
-        }
-      }}
-
-      // screenOptions={({ route }) => ({
-      //   headerShown: false,
-      //   tabBarStyle: {
-      //     height: 90,
-      //     paddingHorizontal: 5,
-      //     paddingTop: 0,
-      //     // backgroundColor: 'rgba(34,36,40,1)',
-      //     position: 'absolute',
-      //     borderTopWidth: 0,
-      //   },
-      // })}
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        // tabBarStyle: {
+        //   height: 90,
+        //   paddingHorizontal: 5,
+        //   paddingTop: 0,
+        //   // backgroundColor: 'rgba(34,36,40,1)',
+        //   position: 'absolute',
+        //   borderTopWidth: 0,
+        // },
+      })}
       >
-        {/* <Tab.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{
-            tabBarIcon: (props) => (
-              <BarIcon {...props} name="telescope" />
-              // <BarIcon {...props} name="theme-light-dark" />
-            ),
-            tabBarLabel: (props) => (
-              <BarLabel {...props}>Home</BarLabel>
-            ),
-            title: 'Home',
-          }}
-        /> */}
         <Tab.Screen
           name="Challenges"
           component={ChallengeStackNavigation}
           options={{
             tabBarIcon: (props) => (
-              // <BarIcon {...props} name="book-open-page-variant" />
-              <BarIcon {...props} name="theme-light-dark" />
+              <BarIcon {...props} name="book-open-page-variant" />
+              // <BarIcon {...props} name="theme-light-dark" />
             ),
             tabBarLabel: (props) => (
               <BarLabel {...props}>Challenges</BarLabel>
@@ -113,19 +88,21 @@ function BottomBarNavigation() {
             title: 'Challenges',
           }}
         />
-        {/* <Tab.Screen
-          name="Astrologists"
-          component={ChatStackNavigation}
+        
+        <Tab.Screen
+          name="Rewards"
+          component={RewardStackNavigation}
           options={{
             tabBarIcon: (props) => (
-              <BarIcon {...props} name="chat" />
+              // <BarIcon {...props} name="book-open-page-variant" />
+              <BarIcon {...props} name="theme-light-dark" />
             ),
             tabBarLabel: (props) => (
-              <BarLabel {...props}>Chat</BarLabel>
+              <BarLabel {...props}>Reward</BarLabel>
             ),
-            title: 'Chat',
+            title: 'Rewards',
           }}
-        /> */}
+        />
       </Tab.Navigator>
     </>
   )
@@ -150,55 +127,17 @@ function MainStackNavigation() {
           }}
         />
 
-        <Sta.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{
-            cardStyle: {
-              backgroundColor: '#000',
-              // marginTop: 50,
-              // borderTopLeftRadius: 30,
-              // borderTopRightRadius: 30,
-            },
-          }}
-        />
-        <Sta.Screen
-          name="ChallengeDetail"
-          component={ChallengeDetailScreen}
-          options={{
-            cardStyle: {
-              backgroundColor: '#000',
-              // marginTop: 50,
-              // borderTopLeftRadius: 30,
-              // borderTopRightRadius: 30,
-            },
-          }}
-        />
-
         {/* <Sta.Screen
-          name="SponsorDetail"
-          component={SponsorDetailScreen}
-          options={{
-            cardStyle: {
-              backgroundColor: '#000',
-              // marginTop: 50,
-              // borderTopLeftRadius: 30,
-              // borderTopRightRadius: 30,
-            },
-          }}
-        />
-
-        <Sta.Screen
-          name="CharityDetail"
-          component={CharityDetailScreen}
-          options={{
-            cardStyle: {
-              backgroundColor: '#000',
-              // marginTop: 50,
-              // borderTopLeftRadius: 30,
-              // borderTopRightRadius: 30,
-            },
-          }}
+          name="DiscoveryDestSelection"
+          component={ChallengeListMapScreen}
+          // options={{
+          //   cardStyle: {
+          //     backgroundColor: '#000',
+          //     // marginTop: 50,
+          //     // borderTopLeftRadius: 30,
+          //     // borderTopRightRadius: 30,
+          //   },
+          // }}
         /> */}
 
       </Sta.Navigator>

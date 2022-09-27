@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { AppState } from 'react-native'
 import { Provider as PaperProvider } from 'react-native-paper'
 import { NavigationContainer } from '@react-navigation/native'
@@ -15,6 +15,8 @@ import Storer from './utils/storer'
 
 import AuthStackNavigation from './navigation/auth-stack'
 import InitialStackNavigation from './navigation/initial-stack'
+import ChallengeStackNavigation from './navigation/challenge-stack'
+import MainStackNavigation from './navigation/main-stack'
 
 
 /**
@@ -24,21 +26,32 @@ import InitialStackNavigation from './navigation/initial-stack'
 const Main: () => Node = () => {
   const [{ loggedUser, theme }, dispatch] = useGlobals()
   const [isReady, setIsReady] = useState(false)
-  const [appState, setAppState] = useState(AppState.currentState)
   const _theme = themes[theme]
+
+  const appState = useRef(AppState.currentState)
+  const [appStateVisible, setAppStateVisible] = useState(appState.current)
+
 
   // Deal with background/active app
   useEffect(() => {
-    // Handles screen focus and case when user reopens app one day later (Date has to be updated)
-    const handleAppStateChange = (nextAppState) => {
-      setAppState(nextAppState)
-    }
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (
+        appState.current.match(/inactive|background/) &&
+        nextAppState === 'active'
+      ) {
+        console.log('App has come to the foreground')
+      }
 
-    AppState.addEventListener('change', handleAppStateChange)
+      appState.current = nextAppState
+      setAppStateVisible(appState.current)
+      // console.log('AppState', appState.current)
+    })
+
     return () => {
-      AppState.removeEventListener('change', handleAppStateChange)
+      subscription.remove()
     }
-  }, [appState, dispatch])
+  }, [])
+
 
   // Backbones
   useEffect(() => {
@@ -63,7 +76,8 @@ const Main: () => Node = () => {
   return (
     <PaperProvider theme={_theme}>
       <NavigationContainer theme={_theme}>
-        {!isReady ? (
+        <MainStackNavigation />
+        {/* {!isReady ? (
           <View style={{ position: 'absolute', backgroundColor: '#00000007', zIndex: 999, top: 0, left: 0, bottom: 0, right: 0 }}>
             <Rotation style={{ position: 'absolute', top: '40%', flex: 1, alignSelf: 'center', opacity: 0.7 }} rotate>
               <SolarSystem />
@@ -75,7 +89,7 @@ const Main: () => Node = () => {
           <InitialStackNavigation />
         ) : (
           <MainStackNavigation />
-        )}
+        )} */}
       </NavigationContainer>
     </PaperProvider>
   )
