@@ -257,11 +257,7 @@ function MainStackNavigation() {
           component={BottomBarNavigation}
           options={{
             cardStyle: {
-<<<<<<< HEAD
               // backgroundColor: '#000',
-=======
-              backgroundColor: '#000',
->>>>>>> 0451ae88464b168ba0cafb0e32a9c90b5a5c85cc
             },
           }}
         />
