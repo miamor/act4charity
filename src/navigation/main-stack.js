@@ -1,8 +1,9 @@
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createStackNavigator } from '@react-navigation/stack'
+import { NavigationContainer } from '@react-navigation/native'
 import React from 'react'
-import { StatusBar, StyleSheet, View, TouchableOpacity } from 'react-native'
+import { StatusBar, StyleSheet, View, TouchableOpacity, Image } from 'react-native'
 import { Text, useTheme } from 'react-native-paper'
 
 import { useGlobals } from '../contexts/global'
@@ -12,6 +13,8 @@ import ChallengeStackNavigation from './challenge-stack'
 import ChallengeListMapScreen from '../screens/challenge/map'
 import RewardStackNavigation from './reward-stack'
 import ChallengeBottomSheet from '../components/challenge.bottom'
+import DashboardStackNavigation from './dashboard-stack'
+import ProfileStackNavigation from './profile-stack'
 
 const BarIcon = ({ color, size, name }) => {
   return (<MaterialCommunityIcons
@@ -151,16 +154,92 @@ function BottomBarNavigation() {
           name="Challenges"
           component={ChallengeStackNavigation}
           options={{
-            tabBarIcon: <BarIcon size={26} name="book-open-page-variant" />,
-            // tabBarLabel: (props) => (
-            //   <BarLabel {...props}>Challenges</BarLabel>
-            // ),
+            tabBarIcon: (props) => (
+              <Image source={require('../assets/icons/challenges.png')} style={{width: 20, height: 20, marginTop: 4}} />
+              // <BarIcon {...props} name="theme-light-dark" />
+            ),
+            tabBarLabel: (props) => (
+              <BarLabel {...props}>Challenges</BarLabel>
+            ),
             title: 'Challenges',
+          }}
+        />
+        
+        <Tab.Screen
+          name="Profile"
+          component={ProfileStackNavigation}
+          options={{
+            tabBarIcon: (props) => (
+              // <BarIcon {...props} name="book-open-page-variant" />
+              <Image source={require('../assets/icons/profile.png')} style={{width: 20, height: 20, marginTop: 4}}/>
+            ),
+            tabBarLabel: (props) => (
+              <BarLabel {...props}>Profile</BarLabel>
+            ),
+            title: 'Rewards',
           }}
         />
       </Tab.Navigator>
     </>
   )
+  // const [index, setIndex] = React.useState(0)
+  // const [routes] = React.useState([
+  //   {
+  //     key: 'homeDash',
+  //     title: 'Home',
+  //     focusedIcon: () => (
+  //       <Image
+  //         source={require('../assets/icons/home.png')}
+  //         style={{width: 24, height: 24}}
+  //       />
+  //     ),
+  //   },
+  //   {
+  //     key: 'challenges',
+  //     title: 'Challenges',
+  //     focusedIcon: () => (
+  //       <Image
+  //         source={require('../assets/icons/challenges.png')}
+  //         style={{width: 24, height: 24}}
+  //       />
+  //     ),
+  //   },
+  //   {
+  //     key: 'rewards',
+  //     title: 'Rewards',
+  //     focusedIcon: () => (
+  //       <Image
+  //         source={require('../assets/icons/rewards.png')}
+  //         style={{width: 24, height: 24}}
+  //       />
+  //     ),
+  //   },
+  //   {
+  //     key: 'profile',
+  //     title: 'Profile',
+  //     focusedIcon: () => (
+  //       <Image
+  //         source={require('../assets/icons/profile.png')}
+  //         style={{width: 24, height: 24}}
+  //       />
+  //     ),
+  //   },
+  // ])
+
+  // const renderScene = BottomNavigation.SceneMap({
+  //   homeDash: DashboardStackNavigation,
+  //   challenges: ChallengesScreen,
+  //   rewards: RewardScreen,
+  //   profile: ProfileStackNavigation,
+  // })
+
+  // return (
+  //     <BottomNavigation
+  //       navigationState={{index, routes}}
+  //       onIndexChange={setIndex}
+  //       renderScene={renderScene}
+  //     />
+  // )
 }
 
 function MainStackNavigation() {
@@ -178,7 +257,11 @@ function MainStackNavigation() {
           component={BottomBarNavigation}
           options={{
             cardStyle: {
+<<<<<<< HEAD
               // backgroundColor: '#000',
+=======
+              backgroundColor: '#000',
+>>>>>>> 0451ae88464b168ba0cafb0e32a9c90b5a5c85cc
             },
           }}
         />

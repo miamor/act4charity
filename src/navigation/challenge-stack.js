@@ -69,6 +69,33 @@ function ChallengeStackNavigation() {
         options={{
           headerShown: false
         }}
+      /> */}
+      <Stack.Screen
+        name="ChallengeListMap"
+        component={ChallengeListMapScreen}
+        options={{
+          // headerTitle: 'All the challenges',
+          // headerStyle: { backgroundColor: 'transparent' },
+          headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="ChallengeDiscoveryDetailMap"
+        component={ChallengeDiscoveryDetailMapScreen}
+        options={{
+          // headerTitle: 'All the challenges',
+          // headerStyle: { backgroundColor: 'transparent' },
+          headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="ChallengeDiscoveryDetailInfo"
+        component={ChallengeDiscoveryDetailInfoScreen}
+        options={{
+          // headerTitle: 'All the challenges',
+          // headerStyle: { backgroundColor: 'transparent' },
+          headerShown: false
+        }}
       />
     </Stack.Navigator>
   )
