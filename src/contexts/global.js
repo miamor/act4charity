@@ -40,10 +40,10 @@ export const reducer = (state, action) => {
         ...state,
         token: action.token,
       }
-    case 'setDay':
+    case 'setCurrentChallenge':
       return {
         ...state,
-        day: action.day,
+        currentChallenge: action.currentChallenge,
       }
     default:
       return {
@@ -60,6 +60,7 @@ export const initialState = {
   theme: 'light',
   token: null,
   loggedUser: default_loggedUser,
+  currentChallenge: null,
   showLoader: false,
   coin: 0
 }

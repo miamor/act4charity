@@ -44,7 +44,7 @@ function Title({ style, ...props }) {
 }
 
 function H2({ style, ...props }) {
-  return <RNText {...props} style={[styles.h2, style]} />
+  return <RNText {...props} style={[styles.h2, {color: colors.primary}, style]} />
 }
 
 function H3({ style, ...props }) {
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   },
   textbold: {
     fontSize: 17,
-    fontWeight: 'normal',
+    fontWeight: 'bold',
     lineHeight: 27,
     fontFamily: "GMV_DIN_Pro-Bold",
     // color: colors.text,
