@@ -4,7 +4,9 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { NavigationContainer } from '@react-navigation/native'
 import React from 'react'
 import { StatusBar, StyleSheet, View, TouchableOpacity, Image } from 'react-native'
-import { Text, useTheme } from 'react-native-paper'
+import { useTheme } from 'react-native-paper'
+
+import { Text } from '../components/paper/typos'
 
 import { useGlobals } from '../contexts/global'
 import { useIsDark } from '../hooks/use-theme'
@@ -41,7 +43,7 @@ const BarLabel = ({ color, children }) => {
 }
 
 
-function MyTabBarEle({ props }) {
+const MyTabBarEle = ({ props }) => {
   const { state, route, index, descriptors, navigation } = props
 
   const { options } = descriptors[route.key]
@@ -83,19 +85,19 @@ function MyTabBarEle({ props }) {
     onLongPress={onLongPress}
     style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 65 }}
   >
-    <Text style={{ color: isFocused ? '#673ab7' : '#222' }}>
+    {/* <Text style={{ color: isFocused ? '#673ab7' : '#222', backgroundColor: '#0f0' }}> */}
       {label}
-    </Text>
+    {/* </Text> */}
   </TouchableOpacity>)
 }
 
-function MyTabBar({ state, descriptors, navigation }) {
+const MyTabBar = ({ state, descriptors, navigation }) => {
   const [{ currentChallenge }] = useGlobals()
 
   return (<View style={{ justifyContent: 'center', alignItems: 'center' }}>
     {currentChallenge && (<ChallengeBottomSheet />)}
     <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-      {state.routes.map((route, index) => (<MyTabBarEle key={`tabbarele-`+index} props={{ state, route, index, descriptors, navigation }} />))}
+      {state.routes.map((route, index) => (<MyTabBarEle key={`tabbarele-` + index} props={{ state, route, index, descriptors, navigation }} />))}
     </View>
   </View>)
 }
@@ -111,135 +113,92 @@ function BottomBarNavigation() {
   const { colors } = useTheme()
   const _barStyle = useIsDark() ? 'light-content' : 'dark-content'
 
-  return (
-    <>
-      <StatusBar
-        barStyle={_barStyle}
-        backgroundColor={colors.background}
-        animated
+  return (<>
+    <StatusBar
+      barStyle={_barStyle}
+      backgroundColor={colors.background}
+      animated
+    />
+
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+
+        // tabBarStyle: {
+        //   height: 90,
+        //   paddingHorizontal: 5,
+        //   paddingTop: 0,
+        //   // backgroundColor: 'rgba(34,36,40,1)',
+        //   position: 'absolute',
+        //   borderTopWidth: 0,
+        // },
+      })}
+      tabBar={props => <MyTabBar {...props} />}
+    >
+      <Tab.Screen
+        name="Dashboard"
+        component={DashboardStackNavigation}
+        options={{
+          tabBarIcon: <Image source={require('../assets/icons/home.png')} style={{ width: 28, height: 28 }} />,
+          // tabBarIcon: (props) => (
+          //   <Image source={require('../assets/icons/home.png')} style={{ width: 28, height: 28 }} />
+          //   // <BarIcon {...props} name="theme-light-dark" />
+          // ),
+          // tabBarLabel: (props) => (
+          //   <BarLabel {...props}>Dashboard</BarLabel>
+          // ),
+          title: 'Challenges',
+        }}
       />
 
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
+      <Tab.Screen
+        name="ChallengesStack"
+        component={ChallengeStackNavigation}
+        options={{
+          tabBarIcon: <Image source={require('../assets/icons/challenges.png')} style={{ width: 28, height: 28 }} />,
+          // tabBarIcon: (props) => (
+          //   <Image source={require('../assets/icons/challenges.png')} style={{width: 28, height: 28}} />
+          //   // <BarIcon {...props} name="theme-light-dark" />
+          // ),
+          // tabBarLabel: (props) => (
+          //   <BarLabel {...props}>Challenges</BarLabel>
+          // ),
+          title: 'Challenges',
+        }}
+      />
 
-          // tabBarStyle: {
-          //   height: 90,
-          //   paddingHorizontal: 5,
-          //   paddingTop: 0,
-          //   // backgroundColor: 'rgba(34,36,40,1)',
-          //   position: 'absolute',
-          //   borderTopWidth: 0,
-          // },
-        })}
-        tabBar={props => <MyTabBar {...props} />}
-      >
+      <Tab.Screen
+        name="RewardsStack"
+        component={RewardStackNavigation}
+        options={{
+          tabBarIcon: <BarIcon size={26} name="theme-light-dark" />,
+          // tabBarIcon: (props) => (
+          //   <BarIcon {...props} name="theme-light-dark" />
+          // ),
+          // tabBarLabel: (props) => (
+          //   <BarLabel {...props}>Reward</BarLabel>
+          // ),
+          title: 'Rewards',
+        }}
+      />
 
-        <Tab.Screen
-          name="Rewards"
-          component={RewardStackNavigation}
-          options={{
-            tabBarIcon: <BarIcon size={26} name="theme-light-dark" />,
-            // tabBarIcon: (props) => (
-            //   <BarIcon {...props} name="theme-light-dark" />
-            // ),
-            tabBarLabel: (props) => (
-              <BarLabel {...props}>Reward</BarLabel>
-            ),
-            title: 'Rewards',
-          }}
-        />
-
-        <Tab.Screen
-          name="Challenges"
-          component={ChallengeStackNavigation}
-          options={{
-            tabBarIcon: (props) => (
-              <Image source={require('../assets/icons/challenges.png')} style={{width: 20, height: 20, marginTop: 4}} />
-              // <BarIcon {...props} name="theme-light-dark" />
-            ),
-            tabBarLabel: (props) => (
-              <BarLabel {...props}>Challenges</BarLabel>
-            ),
-            title: 'Challenges',
-          }}
-        />
-        
-        <Tab.Screen
-          name="Profile"
-          component={ProfileStackNavigation}
-          options={{
-            tabBarIcon: (props) => (
-              // <BarIcon {...props} name="book-open-page-variant" />
-              <Image source={require('../assets/icons/profile.png')} style={{width: 20, height: 20, marginTop: 4}}/>
-            ),
-            tabBarLabel: (props) => (
-              <BarLabel {...props}>Profile</BarLabel>
-            ),
-            title: 'Rewards',
-          }}
-        />
-      </Tab.Navigator>
-    </>
-  )
-  // const [index, setIndex] = React.useState(0)
-  // const [routes] = React.useState([
-  //   {
-  //     key: 'homeDash',
-  //     title: 'Home',
-  //     focusedIcon: () => (
-  //       <Image
-  //         source={require('../assets/icons/home.png')}
-  //         style={{width: 24, height: 24}}
-  //       />
-  //     ),
-  //   },
-  //   {
-  //     key: 'challenges',
-  //     title: 'Challenges',
-  //     focusedIcon: () => (
-  //       <Image
-  //         source={require('../assets/icons/challenges.png')}
-  //         style={{width: 24, height: 24}}
-  //       />
-  //     ),
-  //   },
-  //   {
-  //     key: 'rewards',
-  //     title: 'Rewards',
-  //     focusedIcon: () => (
-  //       <Image
-  //         source={require('../assets/icons/rewards.png')}
-  //         style={{width: 24, height: 24}}
-  //       />
-  //     ),
-  //   },
-  //   {
-  //     key: 'profile',
-  //     title: 'Profile',
-  //     focusedIcon: () => (
-  //       <Image
-  //         source={require('../assets/icons/profile.png')}
-  //         style={{width: 24, height: 24}}
-  //       />
-  //     ),
-  //   },
-  // ])
-
-  // const renderScene = BottomNavigation.SceneMap({
-  //   homeDash: DashboardStackNavigation,
-  //   challenges: ChallengesScreen,
-  //   rewards: RewardScreen,
-  //   profile: ProfileStackNavigation,
-  // })
-
-  // return (
-  //     <BottomNavigation
-  //       navigationState={{index, routes}}
-  //       onIndexChange={setIndex}
-  //       renderScene={renderScene}
-  //     />
-  // )
+      <Tab.Screen
+        name="ProfileStack"
+        component={ProfileStackNavigation}
+        options={{
+          tabBarIcon: <Image source={require('../assets/icons/profile.png')} style={{ width: 28, height: 28 }} />,
+          // tabBarIcon: (props) => (
+          //   // <BarIcon {...props} name="book-open-page-variant" />
+          //   <Image source={require('../assets/icons/profile.png')} style={{width: 28, height: 28}}/>
+          // ),
+          // tabBarLabel: (props) => (
+          //   <BarLabel {...props}>Profile</BarLabel>
+          // ),
+          title: 'Rewards',
+        }}
+      />
+    </Tab.Navigator>
+  </>)
 }
 
 function MainStackNavigation() {
@@ -261,19 +220,6 @@ function MainStackNavigation() {
             },
           }}
         />
-
-        {/* <Sta.Screen
-          name="DiscoveryDestSelection"
-          component={ChallengeListMapScreen}
-          // options={{
-          //   cardStyle: {
-          //     backgroundColor: '#000',
-          //     // marginTop: 50,
-          //     // borderTopLeftRadius: 30,
-          //     // borderTopRightRadius: 30,
-          //   },
-          // }}
-        /> */}
 
       </Sta.Navigator>
 

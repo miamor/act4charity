@@ -16,8 +16,6 @@ function ProfileStackNavigation() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          // headerTitle: 'All the challenges',
-          // headerStyle: { backgroundColor: 'transparent' },
           headerShown: false
         }}
       />
@@ -25,8 +23,6 @@ function ProfileStackNavigation() {
         name="ProfilePersonalInfo"
         component={PersonalInformationModal}
         options={{
-          // headerTitle: 'All the challenges',
-          // headerStyle: { backgroundColor: 'transparent' },
           headerShown: false
         }}
       />
