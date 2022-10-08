@@ -1,6 +1,6 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
-import ChallengeListMapScreen from '../screens/challenge/map'
+import RewardScreen from '../screens/reward/reward.screen'
 
 const Stack = createStackNavigator()
 
@@ -10,14 +10,14 @@ const Stack = createStackNavigator()
  */
 function RewardStackNavigation() {
   return (
-    <Stack.Navigator initialRouteName="DiscoveryDestSelection" headerMode="screen">
+    <Stack.Navigator initialRouteName="Reward" screenOptions={{
+      headerMode: 'screen'
+    }}>
       <Stack.Screen
-        name="DiscoveryDestSelection"
-        component={ChallengeListMapScreen}
+        name="Reward"
+        component={RewardScreen}
         options={{
-          // headerTitle: 'All the challenges',
-          // headerStyle: { backgroundColor: 'transparent' },
-          // headerShown: false
+          headerShown: false
         }}
       />
     </Stack.Navigator>

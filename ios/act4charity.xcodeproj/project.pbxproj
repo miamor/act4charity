@@ -14,12 +14,26 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		7699B88040F8A987B510C191 /* libPods-act4charity-act4charityTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 19F6CBCC0A4E27FBF8BF4A61 /* libPods-act4charity-act4charityTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		5DE1F473BB1D4F54A09CBB07 /* GMV_DIN_Pro-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8BD343FB05864570AE7A72C8 /* GMV_DIN_Pro-Black.ttf */; };
+		28390BD1511C42F4A30D476B /* GMV_DIN_Pro-Black_Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A6B613DC2A364000BC322C5B /* GMV_DIN_Pro-Black_Italic.ttf */; };
+		5E691FA3E88C4D2E93D111F6 /* GMV_DIN_Pro-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 085E760875B64FC89EF4F021 /* GMV_DIN_Pro-Bold.ttf */; };
+		1586FE69F97A4D9992D8CD8E /* GMV_DIN_Pro-Bold_Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 70D293B11199440DA9281AC3 /* GMV_DIN_Pro-Bold_Italic.ttf */; };
+		64819D48F12C43669BF41E15 /* GMV_DIN_Pro-Extlight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6C6567411E9C4128AC6701D3 /* GMV_DIN_Pro-Extlight.ttf */; };
+		CCCE6CE408AC4AFFBC04E0E7 /* GMV_DIN_Pro-Extlight_Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F3FF1A09BF5E4B21BBF50734 /* GMV_DIN_Pro-Extlight_Italic.ttf */; };
+		6013619D02304F8384D1D03E /* GMV_DIN_Pro-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EF96B040047B430781354F50 /* GMV_DIN_Pro-Italic.ttf */; };
+		7605672A5D7A485C80F5973F /* GMV_DIN_Pro-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 15F3FFA446DE426D861ACAEF /* GMV_DIN_Pro-Light.ttf */; };
+		46BD3B0A18B740C88256507A /* GMV_DIN_Pro-Light_Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 00C46AB20F4A486CA24BA9FA /* GMV_DIN_Pro-Light_Italic.ttf */; };
+		CAD8BB3564734110895AFEF8 /* GMV_DIN_Pro-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 873BFF8D0F0948939A05424D /* GMV_DIN_Pro-Medium.ttf */; };
+		AA33B77A0A704964B0880672 /* GMV_DIN_Pro-Medium_Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 27BD0C4B6D5740B7B3A35B3F /* GMV_DIN_Pro-Medium_Italic.ttf */; };
+		9B8DDB37B07B49468864B863 /* GMV_DIN_Pro-Thin.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DDFF1D8197634C87B02BA67F /* GMV_DIN_Pro-Thin.ttf */; };
+		10CCAD15B2D04C908A6AE060 /* GMV_DIN_Pro-Thin_Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 63FDD94B597A4FF886AA27B3 /* GMV_DIN_Pro-Thin_Italic.ttf */; };
+		2DA068EB090647B8BDB7F77E /* GMV_DIN_Pro.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 21DDF78FB06E44C3A90E9738 /* GMV_DIN_Pro.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		00E356F41AD99517003FC87E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			containerPortal = 83CBB9F71A601CBA00E9B192;
 			proxyType = 1;
 			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
 			remoteInfo = act4charity;
@@ -44,6 +58,20 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = act4charity/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		89C6BE57DB24E9ADA2F236DE /* Pods-act4charity-act4charityTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-act4charity-act4charityTests.release.xcconfig"; path = "Target Support Files/Pods-act4charity-act4charityTests/Pods-act4charity-act4charityTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		8BD343FB05864570AE7A72C8 /* GMV_DIN_Pro-Black.ttf */ = {isa = PBXFileReference; name = "GMV_DIN_Pro-Black.ttf"; path = "../assets/fonts/GMV_DIN_Pro-Black.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		A6B613DC2A364000BC322C5B /* GMV_DIN_Pro-Black_Italic.ttf */ = {isa = PBXFileReference; name = "GMV_DIN_Pro-Black_Italic.ttf"; path = "../assets/fonts/GMV_DIN_Pro-Black_Italic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		085E760875B64FC89EF4F021 /* GMV_DIN_Pro-Bold.ttf */ = {isa = PBXFileReference; name = "GMV_DIN_Pro-Bold.ttf"; path = "../assets/fonts/GMV_DIN_Pro-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		70D293B11199440DA9281AC3 /* GMV_DIN_Pro-Bold_Italic.ttf */ = {isa = PBXFileReference; name = "GMV_DIN_Pro-Bold_Italic.ttf"; path = "../assets/fonts/GMV_DIN_Pro-Bold_Italic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		6C6567411E9C4128AC6701D3 /* GMV_DIN_Pro-Extlight.ttf */ = {isa = PBXFileReference; name = "GMV_DIN_Pro-Extlight.ttf"; path = "../assets/fonts/GMV_DIN_Pro-Extlight.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		F3FF1A09BF5E4B21BBF50734 /* GMV_DIN_Pro-Extlight_Italic.ttf */ = {isa = PBXFileReference; name = "GMV_DIN_Pro-Extlight_Italic.ttf"; path = "../assets/fonts/GMV_DIN_Pro-Extlight_Italic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		EF96B040047B430781354F50 /* GMV_DIN_Pro-Italic.ttf */ = {isa = PBXFileReference; name = "GMV_DIN_Pro-Italic.ttf"; path = "../assets/fonts/GMV_DIN_Pro-Italic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		15F3FFA446DE426D861ACAEF /* GMV_DIN_Pro-Light.ttf */ = {isa = PBXFileReference; name = "GMV_DIN_Pro-Light.ttf"; path = "../assets/fonts/GMV_DIN_Pro-Light.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		00C46AB20F4A486CA24BA9FA /* GMV_DIN_Pro-Light_Italic.ttf */ = {isa = PBXFileReference; name = "GMV_DIN_Pro-Light_Italic.ttf"; path = "../assets/fonts/GMV_DIN_Pro-Light_Italic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		873BFF8D0F0948939A05424D /* GMV_DIN_Pro-Medium.ttf */ = {isa = PBXFileReference; name = "GMV_DIN_Pro-Medium.ttf"; path = "../assets/fonts/GMV_DIN_Pro-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		27BD0C4B6D5740B7B3A35B3F /* GMV_DIN_Pro-Medium_Italic.ttf */ = {isa = PBXFileReference; name = "GMV_DIN_Pro-Medium_Italic.ttf"; path = "../assets/fonts/GMV_DIN_Pro-Medium_Italic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		DDFF1D8197634C87B02BA67F /* GMV_DIN_Pro-Thin.ttf */ = {isa = PBXFileReference; name = "GMV_DIN_Pro-Thin.ttf"; path = "../assets/fonts/GMV_DIN_Pro-Thin.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		63FDD94B597A4FF886AA27B3 /* GMV_DIN_Pro-Thin_Italic.ttf */ = {isa = PBXFileReference; name = "GMV_DIN_Pro-Thin_Italic.ttf"; path = "../assets/fonts/GMV_DIN_Pro-Thin_Italic.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		21DDF78FB06E44C3A90E9738 /* GMV_DIN_Pro.ttf */ = {isa = PBXFileReference; name = GMV_DIN_Pro.ttf; path = ../assets/fonts/GMV_DIN_Pro.ttf; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,7 +141,7 @@
 			name = Libraries;
 			sourceTree = "<group>";
 		};
-		83CBB9F61A601CBA00E9B192 = {
+		83CBB9F61A601CBA00E9B192 /* PBXGroup */ = {
 			isa = PBXGroup;
 			children = (
 				13B07FAE1A68108700A75B9A /* act4charity */,
@@ -122,6 +150,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				6610519BA2C3465C95095B3B /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -147,6 +176,28 @@
 			);
 			path = Pods;
 			sourceTree = "<group>";
+		};
+		6610519BA2C3465C95095B3B /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8BD343FB05864570AE7A72C8 /* GMV_DIN_Pro-Black.ttf */,
+				A6B613DC2A364000BC322C5B /* GMV_DIN_Pro-Black_Italic.ttf */,
+				085E760875B64FC89EF4F021 /* GMV_DIN_Pro-Bold.ttf */,
+				70D293B11199440DA9281AC3 /* GMV_DIN_Pro-Bold_Italic.ttf */,
+				6C6567411E9C4128AC6701D3 /* GMV_DIN_Pro-Extlight.ttf */,
+				F3FF1A09BF5E4B21BBF50734 /* GMV_DIN_Pro-Extlight_Italic.ttf */,
+				EF96B040047B430781354F50 /* GMV_DIN_Pro-Italic.ttf */,
+				15F3FFA446DE426D861ACAEF /* GMV_DIN_Pro-Light.ttf */,
+				00C46AB20F4A486CA24BA9FA /* GMV_DIN_Pro-Light_Italic.ttf */,
+				873BFF8D0F0948939A05424D /* GMV_DIN_Pro-Medium.ttf */,
+				27BD0C4B6D5740B7B3A35B3F /* GMV_DIN_Pro-Medium_Italic.ttf */,
+				DDFF1D8197634C87B02BA67F /* GMV_DIN_Pro-Thin.ttf */,
+				63FDD94B597A4FF886AA27B3 /* GMV_DIN_Pro-Thin_Italic.ttf */,
+				21DDF78FB06E44C3A90E9738 /* GMV_DIN_Pro.ttf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+			path = "";
 		};
 /* End PBXGroup section */
 
@@ -197,14 +248,14 @@
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		83CBB9F71A601CBA00E9B192 /* Project object */ = {
+		83CBB9F71A601CBA00E9B192 = {
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 1210;
 				TargetAttributes = {
 					00E356ED1AD99517003FC87E = {
 						CreatedOnToolsVersion = 6.2;
-						TestTargetID = 13B07F861A680F5B00A75B9A;
+						TestTargetID = 13B07F861A680F5B00A75B9A /* act4charity */;
 					};
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1120;
@@ -219,7 +270,7 @@
 				en,
 				Base,
 			);
-			mainGroup = 83CBB9F61A601CBA00E9B192;
+			mainGroup = 83CBB9F61A601CBA00E9B192 /* PBXGroup */;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -244,6 +295,20 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				5DE1F473BB1D4F54A09CBB07 /* GMV_DIN_Pro-Black.ttf in Resources */,
+				28390BD1511C42F4A30D476B /* GMV_DIN_Pro-Black_Italic.ttf in Resources */,
+				5E691FA3E88C4D2E93D111F6 /* GMV_DIN_Pro-Bold.ttf in Resources */,
+				1586FE69F97A4D9992D8CD8E /* GMV_DIN_Pro-Bold_Italic.ttf in Resources */,
+				64819D48F12C43669BF41E15 /* GMV_DIN_Pro-Extlight.ttf in Resources */,
+				CCCE6CE408AC4AFFBC04E0E7 /* GMV_DIN_Pro-Extlight_Italic.ttf in Resources */,
+				6013619D02304F8384D1D03E /* GMV_DIN_Pro-Italic.ttf in Resources */,
+				7605672A5D7A485C80F5973F /* GMV_DIN_Pro-Light.ttf in Resources */,
+				46BD3B0A18B740C88256507A /* GMV_DIN_Pro-Light_Italic.ttf in Resources */,
+				CAD8BB3564734110895AFEF8 /* GMV_DIN_Pro-Medium.ttf in Resources */,
+				AA33B77A0A704964B0880672 /* GMV_DIN_Pro-Medium_Italic.ttf in Resources */,
+				9B8DDB37B07B49468864B863 /* GMV_DIN_Pro-Thin.ttf in Resources */,
+				10CCAD15B2D04C908A6AE060 /* GMV_DIN_Pro-Thin_Italic.ttf in Resources */,
+				2DA068EB090647B8BDB7F77E /* GMV_DIN_Pro.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -696,5 +761,5 @@
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
+	rootObject = 83CBB9F71A601CBA00E9B192;
 }

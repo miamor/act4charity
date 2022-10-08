@@ -17,7 +17,9 @@ const Stack = createStackNavigator()
  */
 function InitialStackNavigation() {
   return (
-    <Stack.Navigator initialRouteName="Name" headerMode="screen">
+    <Stack.Navigator initialRouteName="Name" screenOptions={{
+      headerMode: 'screen'
+    }}>
       <Stack.Screen
         name="Name"
         component={NameScreen}

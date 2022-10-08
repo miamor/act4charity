@@ -2,8 +2,11 @@ import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
 import ChallengeDiscoveryDetailInfoScreen from '../screens/challenge/d.detail.info'
 import ChallengeDiscoveryDetailMapScreen from '../screens/challenge/d.detail.map'
+import ChallengeListScreen from '../screens/challenge/list'
 import ChallengeListMapScreen from '../screens/challenge/map'
-// import ChallengeListScreen from '../screens/challenge/list.screen'
+import ChallengeSelectScreen from '../screens/challenge/select'
+import ChallengeWalkDetailInfoScreen from '../screens/challenge/w.detail.info'
+import ChallengeWalkDetailStartScreen from '../screens/challenge/w.detail.start'
 
 const Stack = createStackNavigator()
 
@@ -13,22 +16,43 @@ const Stack = createStackNavigator()
  */
 function ChallengeStackNavigation() {
   return (
-    <Stack.Navigator initialRouteName="ChallengeListMap" headerMode="screen">
-      {/* <Stack.Screen
-        name="Challenge"
-        component={ChallengeListScreen}
+    <Stack.Navigator initialRouteName="ChallengeSelect" screenOptions={{
+      headerMode: 'screen'
+    }}>
+      <Stack.Screen
+        name="ChallengeSelect"
+        component={ChallengeSelectScreen}
         options={{
-          // headerTitle: 'All the challenges',
-          // headerStyle: { backgroundColor: 'transparent' },
           headerShown: false
         }}
-      /> */}
+      />
+
+      <Stack.Screen
+        name="ChallengeList"
+        component={ChallengeListScreen}
+        options={{
+          headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="ChallengeWalkDetailStart"
+        component={ChallengeWalkDetailStartScreen}
+        options={{
+          headerShown: false
+        }}
+      />
+      <Stack.Screen
+        name="ChallengeWalkDetailInfo"
+        component={ChallengeWalkDetailInfoScreen}
+        options={{
+          headerShown: false
+        }}
+      />
+
       <Stack.Screen
         name="ChallengeListMap"
         component={ChallengeListMapScreen}
         options={{
-          // headerTitle: 'All the challenges',
-          // headerStyle: { backgroundColor: 'transparent' },
           headerShown: false
         }}
       />
@@ -36,8 +60,6 @@ function ChallengeStackNavigation() {
         name="ChallengeDiscoveryDetailMap"
         component={ChallengeDiscoveryDetailMapScreen}
         options={{
-          // headerTitle: 'All the challenges',
-          // headerStyle: { backgroundColor: 'transparent' },
           headerShown: false
         }}
       />
@@ -45,8 +67,6 @@ function ChallengeStackNavigation() {
         name="ChallengeDiscoveryDetailInfo"
         component={ChallengeDiscoveryDetailInfoScreen}
         options={{
-          // headerTitle: 'All the challenges',
-          // headerStyle: { backgroundColor: 'transparent' },
           headerShown: false
         }}
       />

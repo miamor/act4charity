@@ -9,3 +9,4 @@ export const default_loggedUser = {
   basicsDone: false
 }
 
+export const GOOGLE_API_KEY = "AIzaSyDiQNXmop4e0rL4-QebM8CIya-fo5808jA"
