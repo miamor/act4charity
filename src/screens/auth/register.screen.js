@@ -145,7 +145,7 @@ function RegisterScreen({ navigation }) {
                 Register
               </Button>
 
-              <TouchableOpacity onPress={() => navigation.navigate('Login')}
+              <TouchableOpacity onPress={() => navigation.navigate('Signin')}
                 style={{
                   marginTop: 15,
                   flexDirection: 'row',

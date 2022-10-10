@@ -42,7 +42,7 @@ function DashboardHomeScreen({ navigation }) {
               <Text
                 variant="titleLarge"
                 style={{ alignSelf: 'flex-start', marginTop: 5 }}>
-                Hermione Granger
+                {loggedUser.first_name}
               </Text>
               <Text style={{ alignSelf: 'flex-start', marginBottom: 5 }}>
                 {date}

@@ -27,7 +27,7 @@ function AuthScreen({ route, navigation }) {
 
   const res = route.params
 
-  const doAuth = () => {
+  const doAuth = () => {    
     console.log('[doAuth] res.user_info', res.user_info)
     console.log('[doAuth] res.token', res.token)
 

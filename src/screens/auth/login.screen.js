@@ -39,7 +39,13 @@ function LoginScreen({ navigation }) {
 
   const _onSubmit = (values) => {
     authAPI.onAuthenticate(values).then((res) => {
-      navigation.navigate('Auth', res)
+      // console.log(res)
+      // navigation.navigate('Auth', res)
+      if (res.status == 'error') {
+        ToastAndroid.show(res.message, ToastAndroid.SHORT)
+      } else {
+        navigation.navigate('Auth', res.data)
+      }
     }).catch(error => {
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
@@ -113,7 +119,7 @@ function LoginScreen({ navigation }) {
                 Login
               </Button>
 
-              <TouchableOpacity onPress={() => navigation.navigate('Register')}
+              <TouchableOpacity onPress={() => navigation.navigate('Signup')}
                 style={{
                   marginTop: 15,
                   flexDirection: 'row',
