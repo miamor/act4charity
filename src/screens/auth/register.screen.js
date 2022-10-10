@@ -82,7 +82,7 @@ function RegisterScreen({navigation}) {
       />
       <View style={{flex: 0.5}} />
       <H2 style={{textAlign: 'center', color: colors.primary, fontSize: 30}}>
-        AstroGeek
+        Act4Charity
       </H2>
       <Formik
         validationSchema={RegisterSchema}
@@ -182,7 +182,7 @@ function RegisterScreen({navigation}) {
               </Button>
 
               <TouchableOpacity
-                onPress={() => navigation.navigate('Login')}
+                onPress={() => navigation.navigate('Signin')}
                 style={{
                   marginTop: 15,
                   flexDirection: 'row',

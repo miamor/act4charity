@@ -9,7 +9,7 @@ import {
   Animated,
   StyleSheet,
 } from 'react-native'
-import { Text as RNText, useTheme } from 'react-native-paper';
+import { Text as RNText, useTheme } from 'react-native-paper'
 
 import { colors } from '../../utils/themes'
 
@@ -30,7 +30,7 @@ function Heading({ style, ...props }) {
 }
 
 function TextBold({ children, style }) {
-  return <Text style={[styles.textbold, style]}>{children}</Text>;
+  return <Text style={[styles.textbold, style]}>{children}</Text>
 }
 
 function AnimatedText({ style, ...props }) {
@@ -44,11 +44,11 @@ function Title({ style, ...props }) {
 }
 
 function H2({ style, ...props }) {
-  return <RNText {...props} style={[styles.h2, style]} />
+  return <RNText {...props} style={[styles.h2, {color: colors.primary}, style]} />
 }
 
 function H3({ style, ...props }) {
-  const { colors } = useTheme();
+  const { colors } = useTheme()
   return <RNText {...props} style={[styles.h3, {color: colors.primary}, style]} />
 }
 
@@ -166,7 +166,11 @@ const styles = StyleSheet.create({
   },
   textbold: {
     fontSize: 17,
+<<<<<<< HEAD
     fontWeight: 'normal',
+=======
+    fontWeight: 'bold',
+>>>>>>> cd9822afb3f36ed79b10861ed6da3e0d88cc4256
     lineHeight: 27,
     fontFamily: "GMV_DIN_Pro-Bold",
     // color: colors.text,

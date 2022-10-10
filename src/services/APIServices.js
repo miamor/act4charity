@@ -1,69 +1,68 @@
-import Axios from 'axios'
-import { TOKEN_KEY } from '../constants/keys'
-import Storer from '../utils/storer'
+import Axios from 'axios';
+import {TOKEN_KEY} from '../constants/keys';
+import Storer from '../utils/storer';
 
 const _makeRequest = createRequest => async args => {
-  const _headers = args.headers != null ? args.headers : {}
+  const _headers = args.headers != null ? args.headers : {};
 
   const defaultHeaders = {
     'X-App-Version': '1.1.0',
     'cache-control': 'no-cache',
-    'pragma': 'no-cache',
-    'X-Language': 'en'
-  }
+    pragma: 'no-cache',
+    'X-Language': 'en',
+  };
 
   args = {
     ...args,
     headers: {
       ...defaultHeaders,
-      ..._headers
+      ..._headers,
     },
-  }
+  };
 
-  const { data } = await createRequest(args)
+  const {data} = await createRequest(args);
 
-  return data
-}
+  return data;
+};
 
-const _makeAuthRequest = createRequest => async (args) => {
-  const requestHeaders = args.headers ? args.headers : {}
+const _makeAuthRequest = createRequest => async args => {
+  const requestHeaders = args.headers ? args.headers : {};
 
   // const accessToken = localStorage.getItem(TOKEN_KEY)
-  const accessToken = await Storer.get(TOKEN_KEY)
+  const accessToken = await Storer.get(TOKEN_KEY);
   // console.log('>>> accessToken', accessToken)
 
   let headers = {
-    'Authorization': `${accessToken}`,
-  }
+    Authorization: `${accessToken}`,
+  };
 
   args = {
     ...args,
     headers: {
       ...headers,
-      ...requestHeaders
-    }
-  }
+      ...requestHeaders,
+    },
+  };
 
   try {
-    return await _makeRequest(createRequest)(args)
+    return await _makeRequest(createRequest)(args);
   } catch (e) {
-    const { response } = e
+    const {response} = e;
 
     if (!response || !response.data) {
-      throw e
+      throw e;
     }
 
     // if (response.status >= 400 && response.status <= 403) {
 
     // }
   }
+};
 
-}
-
-const REACT_APP_API_URL = 'http://207.148.66.72:4001'
+const REACT_APP_API_URL = 'http://149.28.157.194:5005';
 
 export const APIServices = () => {
-  const baseUrlValidated = REACT_APP_API_URL
+  const baseUrlValidated = REACT_APP_API_URL;
 
   const instance = Axios.create({
     baseURL: baseUrlValidated,
@@ -71,10 +70,10 @@ export const APIServices = () => {
       'content-type': 'application/json', // whatever you want
     },
     // timeout: 30000,
-  })
+  });
 
   return {
     makeRequest: _makeRequest(instance),
     makeAuthRequest: _makeAuthRequest(instance),
-  }
-}
+  };
+};
