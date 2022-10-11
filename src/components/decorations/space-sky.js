@@ -14,7 +14,7 @@ function SpaceSky({ style, level }) {
   const { height, width } = Dimensions.get('window')
   return (
     <View style={[styles.container, { opacity: isDark ? 0.8 : 0.3 }, style]}>
-      <Image
+      {/* <Image
         style={{
           position: 'absolute',
           top: 60, left: 0, right: 0, bottom: 0,
@@ -46,7 +46,7 @@ function SpaceSky({ style, level }) {
           width
         }}
         source={require('./images/bg4.jpg')}
-      />
+      /> */}
     </View>
   )
 }
