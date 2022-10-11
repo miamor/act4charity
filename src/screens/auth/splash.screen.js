@@ -1,18 +1,14 @@
 import React from 'react';
-import {View, Image, StyleSheet, useWindowDimensions, Text} from 'react-native';
+import {View, Image, StyleSheet, useWindowDimensions} from 'react-native';
 
-function SplashScreen({navigation}) {
-  setTimeout(() => {
-    navigation.navigate('Onboarding');
-  }, 1500);
+const width = useWindowDimensions().width;
+
+function SplashScreen() {
   return (
     <View style={styles.background}>
       <View style={styles.imageConatiner}>
         <Image
-          style={{
-            resizeMode: 'contain',
-            width: '90%',
-          }}
+          style={styles.image}
           source={require('../../components/decorations/images/splash.png')}></Image>
       </View>
     </View>
@@ -20,16 +16,13 @@ function SplashScreen({navigation}) {
 }
 
 const styles = StyleSheet.create({
-  background: {
-    backgroundColor: '#6750A4',
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-  },
+  background: {backgroundColor: '#6750A4'},
   imageConatiner: {
     position: 'relative',
-    justifyContent: 'flex-start',
+    top: '14.5%',
+    justifyContent: 'center',
     alignItems: 'center',
-    bottom: '35%',
   },
+  image: {resizeMode: 'contain', width: 0.91 * width, height: 0.91 * width},
 });
 export default SplashScreen;

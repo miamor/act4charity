@@ -166,7 +166,11 @@ const styles = StyleSheet.create({
   },
   textbold: {
     fontSize: 17,
+<<<<<<< HEAD
+    fontWeight: 'normal',
+=======
     fontWeight: 'bold',
+>>>>>>> cd9822afb3f36ed79b10861ed6da3e0d88cc4256
     lineHeight: 27,
     fontFamily: "GMV_DIN_Pro-Bold",
     // color: colors.text,

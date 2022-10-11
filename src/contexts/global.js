@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useReducer } from 'react'
+import React, {createContext, useContext, useReducer} from 'react';
 
-import default_loggedUser from '../constants/keys'
+import default_loggedUser from '../constants/keys';
 
 /**
  * @param state
@@ -13,44 +13,44 @@ export const reducer = (state, action) => {
       return {
         ...state,
         theme: action.theme,
-      }
+      };
     case 'setLogOut':
       return {
         ...state,
         loggedUser: default_loggedUser,
         token: null,
-      }
+      };
     case 'toggleLoader':
       return {
         ...state,
         showLoader: !state.showLoader,
-      }
+      };
     case 'setCoin':
       return {
         ...state,
         coin: action.coin,
-      }
+      };
     case 'setLoggedUser':
       return {
         ...state,
         loggedUser: action.loggedUser,
-      }
+      };
     case 'setToken':
       return {
         ...state,
         token: action.token,
-      }
+      };
     case 'setCurrentChallenge':
       return {
         ...state,
         currentChallenge: action.currentChallenge,
-      }
+      };
     default:
       return {
         ...state,
-      }
+      };
   }
-}
+};
 
 /**
  *
@@ -62,13 +62,13 @@ export const initialState = {
   loggedUser: default_loggedUser,
   currentChallenge: null,
   showLoader: false,
-  coin: 0
-}
+  coin: 0,
+};
 
 /**
  * @type {React.Context<{loggedUser: {}, theme: string, showLoader: boolean}>}
  */
-export const StateContext = createContext(initialState)
+export const StateContext = createContext(initialState);
 
 /**
  * Provider
@@ -78,13 +78,13 @@ export const StateContext = createContext(initialState)
  * @returns {*}
  * @constructor
  */
-export const StateProvider = ({ reducer, initialState, children }) => (
+export const StateProvider = ({reducer, initialState, children}) => (
   <StateContext.Provider value={useReducer(reducer, initialState)}>
     {children}
   </StateContext.Provider>
-)
+);
 
 /**
  * @returns {{theme: string}}
  */
-export const useGlobals = () => useContext(StateContext)
+export const useGlobals = () => useContext(StateContext);

@@ -2,7 +2,6 @@
 //   DarkTheme as NavigationDarkTheme,
 //   DefaultTheme as NavigationDefaultTheme,
 // } from '@react-navigation/native'
-
 // import {
 //   DarkTheme as PaperDarkTheme,
 //   DefaultTheme as PaperDefaultTheme,
@@ -27,6 +26,6 @@ const themes = {
   //     accent: '#bc4598',
   //   },
   // },
-}
+};
 
-export default themes
+export default themes;

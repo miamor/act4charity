@@ -6,7 +6,7 @@ import {
   Animated,
   Image,
   Text,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import {Button} from 'react-native-paper';
 
@@ -41,20 +41,26 @@ function OnboardingScreen({navigation}) {
     setCurrentIndex(viewableItems[0].index);
   }).current;
   const viewConfig = useRef({viewAreaCoveragePercentThreshold: 50}).current;
-  const {width, height} = Dimensions.get('window');
-
-  //TODO: ask for gif, resize, text baseline
+  const {width} = useWindowDimensions();
+  const {height} = useWindowDimensions();
   return (
     <View style={styles.container}>
-      <View style={[styles.flatListContainer, {flex: 3}]}>
+      <View style={{flex: 3}}>
         <FlatList
           data={onboardings}
           renderItem={({item}) => (
-            <View style={[styles.singleItemContainer, {width: width}]}>
-              <View style={styles.imageContainer}>
-                <Image source={item.image} style={styles.image} />
-              </View>
-              <View style={styles.textContainer}>
+            <View style={[styles.container, {width}]}>
+              <Image
+                source={item.image}
+                style={[
+                  styles.image,
+                  {
+                    width: width,
+                    resizeMode: 'contain',
+                  },
+                ]}
+              />
+              <View>
                 <Text style={[styles.title, {width}]}>{item.title}</Text>
                 <Text style={[styles.description, {width}]}>
                   {item.description}
@@ -76,7 +82,15 @@ function OnboardingScreen({navigation}) {
           ref={itemRef}
         />
       </View>
-      <View style={styles.dotContainer}>
+      <View
+        style={{
+          flexDirection: 'row',
+          height: 32,
+          justifyContent: 'center',
+          alignContent: 'center',
+          position: 'relative',
+          bottom: height > 700 ? '30%' : '20%',
+        }}>
         {onboardings.map((_, i) => {
           const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
           const dotWidth = scorllX.interpolate({
@@ -86,12 +100,11 @@ function OnboardingScreen({navigation}) {
           });
           const opacity = scorllX.interpolate({
             inputRange,
-            outputRange: [0.1, 1, 0.1],
+            outputRange: [0.3, 1, 0.3],
             extrapolate: 'clamp',
           });
           return (
             <Animated.View
-              //TO DO: fix the dots color (opacity)
               style={[styles.dot, {width: 10, opacity}]}
               key={i.toString()}
               scorllX={scorllX}
@@ -99,58 +112,32 @@ function OnboardingScreen({navigation}) {
           );
         })}
       </View>
-      <Button
-        style={styles.buttonContainer}
-        mode="contained"
-        onPress={() => {
-          navigation.navigate('Signup');
-        }}
-        buttonColor="#E89C51"
-        labelStyle={styles.buttonText}>
-        Get started
-      </Button>
+      <View
+        style={{
+          paddingBottom: 32,
+          paddingHorizontal: 24,
+          borderRadius: 12,
+          position: 'relative',
+        }}>
+        <Button mode="contained" onPress={() => console.log('Pressed')}>
+          Get started
+        </Button>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: width,
-    height: height,
-    justifyContent: 'flex-start',
+    flex: 1,
+    justifyContent: 'center',
     alignContent: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  flatListContainer: {
-    width: width,
-    height: 0.795 * height,
-  },
-  singleItemContainer: {
-    width: '100%',
-    height: '100%',
-    paddingTop: 0.05 * height,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    alignContent: 'center',
-  },
-  imageContainer: {
-    width: 0.885 * width,
-    height: 0.6 * height,
-    alignSelf: 'center',
   },
   image: {
-    width: 0.885 * width,
-    height: 0.6 * height,
-    resizeMode: 'contain',
-    alignSelf: 'center',
-  },
-  textContainer: {
-    height: 0.08 * height,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 0.9,
   },
   title: {
-    width: '100%',
     fontFamily: 'Roboto',
     fontWeight: '500',
     fontSize: 16,

@@ -23,7 +23,11 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected ReactActivityDelegate createReactActivityDelegate() {
+<<<<<<< HEAD
+    return new MainActivityDelegate(this, getMainComponentName());
+=======
     return new ReactActivityDelegateWrapper(this, BuildConfig.IS_NEW_ARCHITECTURE_ENABLED, new MainActivityDelegate(this, getMainComponentName()));
+>>>>>>> cd9822afb3f36ed79b10861ed6da3e0d88cc4256
   }
 
   public static class MainActivityDelegate extends ReactActivityDelegate {
