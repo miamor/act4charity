@@ -1,6 +1,10 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
+<<<<<<< Updated upstream
 import ChallengeListMapScreen from '../screens/challenge/map'
+=======
+import RewardScreen from '../screens/RewardScreen.js'
+>>>>>>> Stashed changes
 
 const Stack = createStackNavigator()
 

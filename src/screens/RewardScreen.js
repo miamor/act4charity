@@ -1,21 +1,55 @@
-import React, { PropTypes, Component } from 'react';
+import React, {PropTypes, Component} from 'react';
 import {useEffect, useState} from 'react';
-import {StyleSheet, View, Button, Text} from 'react-native';
+import {StyleSheet, ScrollView, View, Image} from 'react-native';
+import {ProgressBar, Appbar, useTheme, Text, Button} from 'react-native-paper';
+import {DefaultView} from '../components/containers';
 
 function RewardScreen() {
+  const {colors} = useTheme();
+  const donatedAmount = 246;
   return (
-    <View style={styles.mainViewContainer}>
-      <Text>now in challenges screen</Text>
-    </View>
+    <DefaultView>
+      <Appbar.Header statusBarHeight={0}>
+        <Appbar.Content title="Rewards" color={colors.primary} />
+      </Appbar.Header>
+
+      <ScrollView style={{backgroundColor: '#ffffff'}}>
+        <View style={styles.mainViewContainer}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: 24,
+            }}>
+            <Image
+              source={require('../../assets/images/Coins.png')}
+              style={{width: 66, height: 48}}
+            />
+            <Text style={{marginLeft: 16}} variant="displayMedium">
+              ${donatedAmount}
+            </Text>
+          </View>
+          <Text
+            variant="labelSmall"
+            style={{color: colors.secondary, alignSelf: 'center', marginTop: 12}}>
+            Donated so far
+          </Text>
+          <Text variant="titleLarge" style={{marginTop: 24}}>Donation Details</Text>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: 8}}>
+            <Text variant='titleSmall'>Challenge</Text>
+            <Text variant='titleSmall'>Donation</Text>
+          </View>
+        </View>
+      </ScrollView>
+    </DefaultView>
   );
 }
 
 const styles = StyleSheet.create({
   mainViewContainer: {
     marginLeft: 24,
-    marginTop: 48,
     marginRight: 24,
-    marginBottom: 48,
   },
 });
 
