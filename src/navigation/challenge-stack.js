@@ -7,6 +7,7 @@ import ChallengeListMapScreen from '../screens/challenge/map'
 import ChallengeSelectScreen from '../screens/challenge/select'
 import ChallengeWalkDetailInfoScreen from '../screens/challenge/w.detail.info'
 import ChallengeWalkDetailStartScreen from '../screens/challenge/w.detail.start'
+import ChallengeModeScreen from '../screens/challenge/ChallengeMode'
 
 const Stack = createStackNavigator()
 
@@ -16,12 +17,20 @@ const Stack = createStackNavigator()
  */
 function ChallengeStackNavigation() {
   return (
-    <Stack.Navigator initialRouteName="ChallengeSelect" screenOptions={{
+    <Stack.Navigator initialRouteName="ChallengeMode" screenOptions={{
       headerMode: 'screen'
     }}>
       <Stack.Screen
         name="ChallengeSelect"
         component={ChallengeSelectScreen}
+        options={{
+          headerShown: false
+        }}
+      />
+
+      <Stack.Screen
+        name="ChallengeMode"
+        component={ChallengeModeScreen}
         options={{
           headerShown: false
         }}

@@ -26,13 +26,14 @@ function DashboardHomeScreen({ navigation }) {
   }, []);
 
   return (
-    <DefaultView>
+    <DefaultView> 
       <Appbar.Header statusBarHeight={0}>
         <Appbar.Content title="Welcome" color={colors.primary} />
       </Appbar.Header>
 
       <ScrollView style={{ backgroundColor: '#ffffff' }}>
         <View style={styles.mainViewContainer}>
+          {/*
           <View style={styles.profileDetailsViewContainer}>
             <Image
               source={require('../assets/icons/placeholder.png')}
@@ -49,7 +50,10 @@ function DashboardHomeScreen({ navigation }) {
               </Text>
             </View>
           </View>
+          */}
+          {/*
           <View style={styles.progressBarContainer}>
+          
             <ProgressBar
               style={{ marginLeft: 10, height: 12, width: 310, marginTop: 14 }}
               progress={0.5}
@@ -74,6 +78,8 @@ function DashboardHomeScreen({ navigation }) {
               }}
             />
           </View>
+          */}
+          {/*
           <View style={styles.targetButtonContainer}>
             <Button
               onPress={() => {
@@ -93,7 +99,10 @@ function DashboardHomeScreen({ navigation }) {
               }
             </Button>
           </View>
+          */}
+
           <Text variant="headlineSmall">Current challenge</Text>
+          {/*
           <View
             style={{
               flexDirection: 'row',
@@ -105,6 +114,8 @@ function DashboardHomeScreen({ navigation }) {
               style={{ height: 175, width: 175 }}
             />
           </View>
+          */}
+          {/*
           <View style={styles.challengeButtonContainer}>
             <Button
               onPress={() => {
@@ -122,6 +133,7 @@ function DashboardHomeScreen({ navigation }) {
               }
             </Button>
           </View>
+          */}
         </View>
       </ScrollView>
 
