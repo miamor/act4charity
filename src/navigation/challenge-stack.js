@@ -9,6 +9,10 @@ import WTeamCreation1 from '../screens/challenge/WTeamCreation1'
 import WTeamCreation2 from '../screens/challenge/WTeamCreation2'
 import WTeamCreation3 from '../screens/challenge/WTeamCreation3'
 
+import DTeamCreation1 from '../screens/challenge/DTeamCreation1'
+import DTeamCreation2 from '../screens/challenge/DTeamCreation2'
+import DTeamCreation3 from '../screens/challenge/DTeamCreation3'
+
 const Stack = createStackNavigator()
 
 /**
@@ -17,21 +21,16 @@ const Stack = createStackNavigator()
  */
 function ChallengeStackNavigation() {
   return (
-<<<<<<< Updated upstream
-    <Stack.Navigator initialRouteName="ChallengeListMap" headerMode="screen">
-      {/* <Stack.Screen
-        name="Challenge"
-=======
     <Stack.Navigator initialRouteName="WTeamCreation1" screenOptions={{
       headerMode: 'screen'
     }}>
-      <Stack.Screen
+      {/* <Stack.Screen
         name="ChallengeSelect"
         component={ChallengeSelectScreen}
         options={{
           headerShown: false
         }}
-      />
+      /> */}
 
       <Stack.Screen
         name="WTeamCreation1"
@@ -57,9 +56,32 @@ function ChallengeStackNavigation() {
         }}
       />
 
+<Stack.Screen
+        name="DTeamCreation1"
+        component={DTeamCreation1}
+        options={{
+          headerShown: false
+        }}
+      />
+
       <Stack.Screen
+        name="DTeamCreation2"
+        component={DTeamCreation2}
+        options={{
+          headerShown: false
+        }}
+      />
+
+      <Stack.Screen
+        name="DTeamCreation3"
+        component={DTeamCreation3}
+        options={{
+          headerShown: false
+        }}
+      />
+
+      {/* <Stack.Screen
         name="ChallengeList"
->>>>>>> Stashed changes
         component={ChallengeListScreen}
         options={{
           // headerTitle: 'All the challenges',
@@ -67,7 +89,7 @@ function ChallengeStackNavigation() {
           headerShown: false
         }}
       /> */}
-      <Stack.Screen
+      {/* <Stack.Screen
         name="ChallengeListMap"
         component={ChallengeListMapScreen}
         options={{
@@ -75,8 +97,8 @@ function ChallengeStackNavigation() {
           // headerStyle: { backgroundColor: 'transparent' },
           headerShown: false
         }}
-      />
-      <Stack.Screen
+      /> */}
+      {/* <Stack.Screen
         name="ChallengeDiscoveryDetailMap"
         component={ChallengeDiscoveryDetailMapScreen}
         options={{
@@ -84,8 +106,8 @@ function ChallengeStackNavigation() {
           // headerStyle: { backgroundColor: 'transparent' },
           headerShown: false
         }}
-      />
-      <Stack.Screen
+      /> */}
+      {/* <Stack.Screen
         name="ChallengeDiscoveryDetailInfo"
         component={ChallengeDiscoveryDetailInfoScreen}
         options={{
@@ -93,7 +115,7 @@ function ChallengeStackNavigation() {
           // headerStyle: { backgroundColor: 'transparent' },
           headerShown: false
         }}
-      />
+      /> */}
     </Stack.Navigator>
   )
 }
