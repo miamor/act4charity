@@ -96,7 +96,7 @@ function DiscoverSelectionScreen({navigation}) {
       <View style={styles.screenTitleContainer}>
         <Text style={styles.titleStyle}>Discover</Text>
         <Image
-          source={require('../../assets/icons/dscovery_icon.png')}
+          source={require('../../assets/icons/discovery_icon.png')}
           style={styles.image}
         />
       </View>
