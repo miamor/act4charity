@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useGlobals, useState} from 'react';
 import {
   Text,
   View,
@@ -8,31 +8,68 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
-import {TextInput, Button} from 'react-native-paper';
-import {
-  GoogleSignin,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
+import {TextInput, Button, useTheme} from 'react-native-paper';
+import * as Yup from 'yup';
+import {Formik} from 'formik';
+import * as authAPI from '../../services/authAPI';
+// import {
+//   GoogleSignin,
+//   statusCodes,
+// } from '@react-native-google-signin/google-signin';
 
 function SigninScreen({navigation}) {
-  GoogleSignin.configure();
+  // GoogleSignin.configure();
 
-  signIn = async () => {
-    try {
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      this.setState({userInfo});
-    } catch (error) {
-      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-        // user cancelled the login flow
-      } else if (error.code === statusCodes.IN_PROGRESS) {
-        // operation (e.g. sign in) is in progress already
-      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        // play services not available or outdated
-      } else {
-        // some other error happened
-      }
-    }
+  // signIn = async () => {
+  //   try {
+  //     await GoogleSignin.hasPlayServices();
+  //     const userInfo = await GoogleSignin.signIn();
+  //     this.setState({userInfo});
+  //   } catch (error) {
+  //     if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+  //       // user cancelled the login flow
+  //     } else if (error.code === statusCodes.IN_PROGRESS) {
+  //       // operation (e.g. sign in) is in progress already
+  //     } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+  //       // play services not available or outdated
+  //     } else {
+  //       // some other error happened
+  //     }
+  //   }
+  // };
+
+  const {colors} = useTheme();
+  // const [{session, loggedUser}, dispatch] = useGlobals();
+  const [isSecureEntry, setIsSecureEntry] = useState(true);
+
+  const SignInSchema = Yup.object().shape({
+    username: Yup.string().required('Username is required'),
+    password: Yup.string().required('Password is required'),
+  });
+
+  const _onSubmit = values => {
+    authAPI
+      .onAuthenticate(values)
+      .then(res => {
+        if (res.status === 'error') {
+          ToastAndroid.show(res.message, ToastAndroid.SHORT);
+          setErrors({api: res.message});
+          return;
+        }
+
+        authAPI
+          .onAuthenticate(values)
+          .then(res => {
+            navigation.navigate('Auth', res);
+          })
+          .catch(error => {
+            console.error(error);
+            ToastAndroid.show('Oops', ToastAndroid.SHORT);
+          });
+      })
+      .catch(error => {
+        ToastAndroid.show('Oops', ToastAndroid.SHORT);
+      });
   };
 
   return (
@@ -49,36 +86,96 @@ function SigninScreen({navigation}) {
       <View style={styles.bottomView}>
         <View style={styles.innerBottomView}>
           <Text style={styles.heading}>Login</Text>
-          <View style={styles.formView}>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Username"
-              placeholderTextColor="#49454F"
-              backgroundColor="#FFFFFF"
-              outlineColor="rgba(121, 116, 126, 1)"
-            />
-            <TextInput
-              style={styles.textInput}
-              placeholder="Password"
-              placeholderTextColor="#49454F"
-              backgroundColor="#FFFFFF"
-              secureTextEntry={true}></TextInput>
-            <Button
-              style={[styles.buttonView, styles.buttonStyle]}
-              mode="contained"
-              labelStyle={styles.buttonTitle}
-              onPress={() => {
-                navigation.navigate('Interest');
-              }}>
-              Login
-            </Button>
-          </View>
+          <Formik
+            validationSchema={SignInSchema}
+            initialValues={{
+              username: '',
+              password: '',
+            }}
+            onSubmit={values => _onSubmit(values)}>
+            {({
+              handleChange,
+              handleBlur,
+              handleSubmit,
+              values,
+              errors,
+              isValid,
+            }) => (
+              <View style={styles.formView}>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    name="username"
+                    style={styles.textInput}
+                    placeholder="Username"
+                    placeholderTextColor="#49454F"
+                    backgroundColor="#FFFFFF"
+                    outlineColor="rgba(121, 116, 126, 1)"
+                    underlineColor="transparent"
+                    onChangeText={handleChange('username')}
+                    onBlur={handleBlur('username')}
+                    value={values.username}
+                  />
+                  <View style={styles.errorMessageContainer}>
+                    {errors.username && (
+                      <Text style={styles.errorMessageText}>
+                        {errors.username}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    name="password"
+                    style={styles.textInput}
+                    placeholder="Password"
+                    placeholderTextColor="#49454F"
+                    backgroundColor="#FFFFFF"
+                    secureTextEntry={isSecureEntry}
+                    underlineColor="transparent"
+                    onChangeText={handleChange('password')}
+                    onBlur={handleBlur('password')}
+                    value={values.password}
+                    right={
+                      <TextInput.Icon
+                        icon={
+                          isSecureEntry
+                            ? require('../../assets/icons/visibility.png')
+                            : require('../../assets/icons/visibility_off.png')
+                        }
+                        onPress={() => setIsSecureEntry(!isSecureEntry)}
+                      />
+                    }
+                  />
+                  <View style={styles.errorMessageContainer}>
+                    {errors.password && (
+                      <Text style={styles.errorMessageText}>
+                        {errors.password}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                <Button
+                  style={[styles.buttonView, styles.buttonStyle]}
+                  mode="contained"
+                  disabled={!isValid}
+                  buttonColor={
+                    isValid
+                      ? 'rgba(255, 255, 255, 1)'
+                      : 'rgba(31, 31, 31, 0.12)'
+                  }
+                  labelStyle={styles.buttonTitle}
+                  onPress={handleSubmit}>
+                  Login
+                </Button>
+              </View>
+            )}
+          </Formik>
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              height: 0.025 * Dimensions.get('window').height,
-              marginTop: 0.025 * Dimensions.get('window').height,
+              height: 0.025 * Dimensions.get('screen').height,
+              marginBottom: 0.025 * Dimensions.get('screen').height,
             }}>
             <View
               style={{
@@ -87,7 +184,12 @@ function SigninScreen({navigation}) {
                 backgroundColor: 'rgba(98, 91, 113, 1)',
               }}
             />
-            <Text style={{textAlign: 'center', color: 'rgba(103, 80, 164, 1)'}}>
+            <Text
+              style={{
+                textAlign: 'center',
+                color: 'rgba(103, 80, 164, 1)',
+                width: 100,
+              }}>
               or login with
             </Text>
             <View
@@ -99,11 +201,7 @@ function SigninScreen({navigation}) {
             />
           </View>
           <View style={styles.buttonView}>
-            <TouchableOpacity
-              style={styles.registerButton}
-              onPress={() => {
-                signIn();
-              }}>
+            <TouchableOpacity style={styles.registerButton} onPress={() => {}}>
               <Image
                 style={styles.registerIcon}
                 source={require('../../components/decorations/images/googleicon.png')}
@@ -112,18 +210,18 @@ function SigninScreen({navigation}) {
             </TouchableOpacity>
           </View>
           <View style={styles.buttonView}>
-            <Pressable style={styles.registerButton}>
+            <TouchableOpacity style={styles.registerButton} onPress={() => {}}>
               <Image
                 style={styles.registerIcon}
                 source={require('../../components/decorations/images/facebookicon.png')}
               />
               <Text style={styles.registerTitle}>Facebook</Text>
-            </Pressable>
+            </TouchableOpacity>
           </View>
         </View>
         <View style={styles.bottomLineContainer}>
           <Text style={styles.bottomLineText}>Don't have an account? </Text>
-          <Pressable
+          <TouchableOpacity
             mode="text"
             onPress={() => {
               navigation.navigate('Signup');
@@ -131,7 +229,7 @@ function SigninScreen({navigation}) {
             <Text style={[styles.bottomLineText, {color: '#6750A4'}]}>
               Register
             </Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -174,16 +272,29 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'flex-start',
+    marginTop: 0.025 * Dimensions.get('window').height,
+  },
+  inputContainer: {
+    height: 0.0875 * Dimensions.get('window').height,
+    justifyContent: 'flex-start',
   },
   textInput: {
-    marginTop: 0.025 * Dimensions.get('screen').height,
-    height: 0.0625 ** Dimensions.get('screen').height,
+    height: 0.0625 * Dimensions.get('window').height,
     borderWidth: 1,
     borderRadius: 4,
     backgroundColor: '#FFFFFF',
   },
+  errorMessageContainer: {
+    height: 0.025 * Dimensions.get('window').height,
+    justifyContent: 'center',
+  },
+  errorMessageText: {
+    color: 'red',
+    fontSize: 12,
+    textAlignVertical: 'center',
+  },
   buttonView: {
-    marginTop: 0.025 * Dimensions.get('window').height,
+    marginBottom: 0.025 * Dimensions.get('window').height,
     width: '100%',
   },
   buttonTitle: {
@@ -197,7 +308,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textAlignVertical: 'center',
     letterSpacing: 0.1,
-    color: 'rgba(255, 255, 255, 1)',
   },
   buttonStyle: {
     alignItems: 'center',
@@ -210,9 +320,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: 0.0625 * Dimensions.get('screen').height,
+    height: 0.0625 * Dimensions.get('window').height,
     borderRadius: 12,
-    borderColor: '#79747E',
+    borderColor: 'rgba(121, 116, 126, 1)',
     borderWidth: 1,
     backgroundColor: 'rgba(255, 255, 255, 1)',
   },
@@ -223,6 +333,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   registerTitle: {
+    height: '100%',
+    textAlign: 'center',
+    textAlignVertical: 'center',
     color: '#6750A4',
     fontFamily: 'Roboto',
     fontWeight: '500',
@@ -231,11 +344,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
   },
   bottomLineContainer: {
-    height: 0.025 * Dimensions.get('screen').height,
+    height: 0.025 * Dimensions.get('window').height,
     justifyContent: 'center',
     flexDirection: 'row',
     alignContent: 'center',
-    bottom: -0.02 * Dimensions.get('window').height,
   },
   bottomLineText: {
     fontFamily: 'Roboto',
