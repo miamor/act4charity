@@ -1,6 +1,6 @@
 import React, { PropTypes, Component } from 'react';
 import {useEffect, useState} from 'react';
-import {StyleSheet, View, ScrollView, Image} from 'react-native';
+import {StyleSheet, View, ScrollView, Image, TouchableOpacity} from 'react-native';
 import { Text, ProgressBar, Button, Appbar, useTheme } from 'react-native-paper';
 import { DefaultView } from '../../components/containers';
 
@@ -16,10 +16,10 @@ function ChallengeModeScreen({ navigation }) {
       <Appbar.Header statusBarHeight={0}>
         <Appbar.Content title="Walk" color={colors.primary} />
       </Appbar.Header>
-
+      
       <ScrollView style={{ backgroundColor: '#ffffff' }}>
         <View style={styles.mainViewContainer}>
-          <Text variant="headlineSmall">Choose your mode</Text>
+          <Text variant="titleLarge">Choose your mode</Text>
           
           <View style={styles.challengeModeContainer}>
               <View
@@ -72,8 +72,11 @@ function ChallengeModeScreen({ navigation }) {
                   }}
                   >
 
-                  
-                  <Image source={require('../../assets/icons/individual.png')}/>
+                  <TouchableOpacity onPress={()=>console.log("individual image pressed")}>
+                    <Image 
+                      source={require('../../assets/icons/individual.png')}
+                    />
+                  </TouchableOpacity>
                   
                   </View>
                 </View>
@@ -130,9 +133,12 @@ function ChallengeModeScreen({ navigation }) {
                   }}
                   >
 
-                  
-                  <Image source={require('../../assets/icons/team.png')}/>
-                  
+                  <TouchableOpacity onPress={()=>console.log("team image pressed")}>
+                    <Image 
+                      source={require('../../assets/icons/team.png')}
+                    />
+                  </TouchableOpacity>
+                                  
                   </View>
                 </View>
 
