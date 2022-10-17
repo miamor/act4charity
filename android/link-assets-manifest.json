@@ -1,0 +1,61 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/GMV_DIN_Pro-Black.ttf",
+      "sha1": "ff5214dfffb18abede283dd62740f74b595a0684"
+    },
+    {
+      "path": "assets/fonts/GMV_DIN_Pro-Black_Italic.ttf",
+      "sha1": "9e481633c7afe60534da18f305406f2a8aec7f06"
+    },
+    {
+      "path": "assets/fonts/GMV_DIN_Pro-Bold.ttf",
+      "sha1": "2867eeeafdd5db3de9c4e7ef09156657a1a4110b"
+    },
+    {
+      "path": "assets/fonts/GMV_DIN_Pro-Bold_Italic.ttf",
+      "sha1": "92b239c47e0e8995bef1bb42f709df4fd72b92e5"
+    },
+    {
+      "path": "assets/fonts/GMV_DIN_Pro-Extlight.ttf",
+      "sha1": "87ffb1db3d96ac8b2289d465680e8d5734944247"
+    },
+    {
+      "path": "assets/fonts/GMV_DIN_Pro-Extlight_Italic.ttf",
+      "sha1": "ce9b99ecb006cf4a01c1b054ccd9e713eb6f7d16"
+    },
+    {
+      "path": "assets/fonts/GMV_DIN_Pro-Italic.ttf",
+      "sha1": "068b198549fe2b5679479ab3d6223b23ddd6e7bf"
+    },
+    {
+      "path": "assets/fonts/GMV_DIN_Pro-Light.ttf",
+      "sha1": "a6e695814cebeb0a3ba6fc69521afbd995b83223"
+    },
+    {
+      "path": "assets/fonts/GMV_DIN_Pro-Light_Italic.ttf",
+      "sha1": "7cf1b4684f183a54e593ad0de6e16c48fee9ec17"
+    },
+    {
+      "path": "assets/fonts/GMV_DIN_Pro-Medium.ttf",
+      "sha1": "609a2bec437cff734b2ce2155f357c4e731dbd9d"
+    },
+    {
+      "path": "assets/fonts/GMV_DIN_Pro-Medium_Italic.ttf",
+      "sha1": "cb4d15762bc0499bace466ba8fa9e1fcade5a909"
+    },
+    {
+      "path": "assets/fonts/GMV_DIN_Pro-Thin.ttf",
+      "sha1": "c9f69e207d91d2da5e9cd7b0a75752ae15d52ef3"
+    },
+    {
+      "path": "assets/fonts/GMV_DIN_Pro-Thin_Italic.ttf",
+      "sha1": "4b552450983388bd41419bd06dd3e3d535816625"
+    },
+    {
+      "path": "assets/fonts/GMV_DIN_Pro.ttf",
+      "sha1": "1a62363c3e09b11f97812afb25e0bc3df449c730"
+    }
+  ]
+}
