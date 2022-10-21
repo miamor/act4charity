@@ -15,19 +15,19 @@ const onboardings = [
     id: '1',
     title: 'Select challenges',
     description: 'according to your interests',
-    image: require('../../components/decorations/images/onboarding1.png'),
+    image: require('../../../assets/images/onboarding1.png'),
   },
   {
     id: '2',
     title: 'Raise money',
     description: 'bigger the challenge bigger the collection',
-    image: require('../../components/decorations/images/onboarding2.png'),
+    image: require('../../../assets/images/onboarding2.png'),
   },
   {
     id: '3',
     title: 'Help others',
     description: 'your rewards are donations to charitable organizations',
-    image: require('../../components/decorations/images/onboarding3.png'),
+    image: require('../../../assets/images/onboarding3.png'),
   },
 ];
 

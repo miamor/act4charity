@@ -1,6 +1,5 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
-// import RewardScreen from '../screens/RewardScreen'
 import RewardScreen from '../screens/reward/reward.screen'
 
 const Stack = createStackNavigator()

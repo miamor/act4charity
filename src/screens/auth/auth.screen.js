@@ -2,10 +2,8 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Subheading, useTheme } from 'react-native-paper'
 
-import Rotation from '../../components/animations/rotation'
 import { DefaultView } from '../../components/containers'
-// import SpaceSky from '../../components/decorations/space-sky'
-import SolarSystem from '../../svgs/SolarSystem'
+import Loading from '../../components/animations/loading'
 
 import { useGlobals } from '../../contexts/global'
 import { LOGGED_USER_KEY, TOKEN_KEY } from '../../constants/keys'
@@ -34,7 +32,7 @@ function AuthScreen({ route, navigation }) {
     Storer.set(TOKEN_KEY, res.token)
     dispatch({
       type: 'setToken',
-      fields: res.token,
+      token: res.token,
     })
 
     Storer.set(LOGGED_USER_KEY, res.user_info)
@@ -46,7 +44,7 @@ function AuthScreen({ route, navigation }) {
 
   React.useEffect(() => {
     console.log('loggedUser', loggedUser)
-    if (loggedUser == null) {
+    if (loggedUser == null || loggedUser._id == null) {
       doAuth()
     }
     // const intervalNumber = setInterval(() => {
@@ -63,11 +61,7 @@ function AuthScreen({ route, navigation }) {
     <DefaultView>
       {/* <SpaceSky /> */}
       <View style={{ flex: 1 }} />
-      <View style={styles.loadingContainer}>
-        <Rotation style={{ opacity: 0.7 }} rotate>
-          <SolarSystem />
-        </Rotation>
-      </View>
+      <Loading />
       <View style={{ flex: 3 }}>
         <Subheading style={[styles.textSubheading, { color: colors.primary }]}>
           {phrases[phrase]}

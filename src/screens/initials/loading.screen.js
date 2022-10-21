@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, ToastAndroid, View } from 'react-native'
 import { Subheading, useTheme } from 'react-native-paper'
 
 import Rotation from '../../components/animations/rotation'
 import { DefaultView } from '../../components/containers'
-import SpaceSky from '../../components/decorations/space-sky'
 import { useGlobals } from '../../contexts/global'
 import SolarSystem from '../../svgs/SolarSystem'
 import Storer from '../../utils/storer'
@@ -34,17 +33,23 @@ function LoadingScreen({ navigation }) {
 
       if (!success) {
         setSuccess(true)
-        
+
         const finished_user_info = {
           ...loggedUser,
-          ...{ basicsDone: true },
+          basicsDone: true,
         }
 
-        Storer.set(LOGGED_USER_KEY, finished_user_info).then(() => {
-          dispatch({
-            type: 'setLoggedUser',
-            fields: finished_user_info,
+        userAPI.updateProfile(finished_user_info).then((res) => {
+          // console.log('res', res)
+          Storer.set(LOGGED_USER_KEY, finished_user_info).then(() => {
+            dispatch({
+              type: 'setLoggedUser',
+              loggedUser: finished_user_info,
+            })
           })
+        }).catch(error => {
+          console.error(error)
+          ToastAndroid.show('Oops', ToastAndroid.SHORT)
         })
 
       }
@@ -55,7 +60,6 @@ function LoadingScreen({ navigation }) {
 
   return (
     <DefaultView>
-      <SpaceSky />
       <View style={{ flex: 1 }} />
       <View style={styles.loadingContainer}>
         <Rotation style={{ opacity: 0.7 }} rotate>

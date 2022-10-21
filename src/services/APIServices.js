@@ -60,9 +60,10 @@ const _makeAuthRequest = createRequest => async (args) => {
 
 }
 
-// const REACT_APP_API_URL = 'http://149.28.157.194:5005'
-const REACT_APP_API_URL = 'http://192.168.58.21:5005'
-export const SOCKET_URL = 'http://192.168.56.1:3000'
+export const REACT_APP_API_URL = 'http://149.28.157.194:5005'
+// export const REACT_APP_API_URL = 'http://192.168.191.21:5005' //'http://192.168.58.21:5005'
+export const SOCKET_URL = 'http://192.168.191.21:3000'//'http://192.168.56.1:3000'
+
 
 export const APIServices = () => {
   const baseUrlValidated = REACT_APP_API_URL

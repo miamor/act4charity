@@ -2,8 +2,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createStackNavigator } from '@react-navigation/stack'
 import { NavigationContainer } from '@react-navigation/native'
-import React from 'react'
-import { StatusBar, StyleSheet, View, TouchableOpacity, Image } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
+import { StatusBar, StyleSheet, View, TouchableOpacity, Image, PermissionsAndroid } from 'react-native'
 import { useTheme } from 'react-native-paper'
 
 import { Text } from '../components/paper/typos'
@@ -12,11 +12,26 @@ import { useGlobals } from '../contexts/global'
 import { useIsDark } from '../hooks/use-theme'
 
 import ChallengeStackNavigation from './challenge-stack'
-// import ChallengeListMapDiscoverScreen from '../screens/challenge/listmap.discover'
 import RewardStackNavigation from './reward-stack'
 import ChallengeBottomSheet from '../components/challenge.bottom'
 import DashboardStackNavigation from './dashboard-stack'
 import ProfileStackNavigation from './profile-stack'
+
+import ChallengeCompletedScreen from '../screens/_modal/challenge.completed'
+// import ChallengeStartWalkScreen from '../screens/_modal/challenge.start.walk'
+// import ChallengeStartDiscoverScreen from '../screens/_modal/challenge.start.discover'
+// import ChallengeStartWalkTeamScreen from '../screens/_modal/challenge.start.walk.team'
+// import ChallengeStartDiscoverTeamScreen from '../screens/_modal/challenge.start.discover.team'
+import TargetScreenModal from '../screens/_modal/target.modal'
+
+
+import * as Location from 'expo-location'
+import { Pedometer } from 'expo-sensors'
+import { SOCKET_URL } from '../services/APIServices'
+import io from 'socket.io-client'
+import ChallengeStartScreen from '../screens/_modal/challenge.start'
+
+
 
 const BarIcon = ({ color, size, name }) => {
   return (<MaterialCommunityIcons
@@ -83,19 +98,20 @@ const MyTabBarEle = ({ props }) => {
     testID={options.tabBarTestID}
     onPress={onPress}
     onLongPress={onLongPress}
-    style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: 65 }}
+    style={{ flex: 1, paddingBottom: 3, justifyContent: 'center', alignItems: 'center', height: 65 }}
   >
-    {/* <Text style={{ color: isFocused ? '#673ab7' : '#222', backgroundColor: '#0f0' }}> */}
-      {label}
-    {/* </Text> */}
+    {options.tabBarIcon !== undefined ? (<BarIcon size={26} name={options.tabBarIcon} color={isFocused ? '#673ab7' : '#a2a2a2'} />)
+      : (<Text style={{ color: isFocused ? '#673ab7' : '#222', backgroundColor: '#0f0' }}>
+        {label}
+      </Text>)}
   </TouchableOpacity>)
 }
 
 const MyTabBar = ({ state, descriptors, navigation }) => {
-  const [{ currentChallenge }] = useGlobals()
+  const [{ currentChallenge, showBottomBar }] = useGlobals()
 
   return (<View style={{ justifyContent: 'center', alignItems: 'center' }}>
-    {currentChallenge && (<ChallengeBottomSheet />)}
+    {currentChallenge != null && showBottomBar === true && (<ChallengeBottomSheet />)}
     <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
       {state.routes.map((route, index) => (<MyTabBarEle key={`tabbarele-` + index} props={{ state, route, index, descriptors, navigation }} />))}
     </View>
@@ -123,15 +139,6 @@ function BottomBarNavigation() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-
-        // tabBarStyle: {
-        //   height: 90,
-        //   paddingHorizontal: 5,
-        //   paddingTop: 0,
-        //   // backgroundColor: 'rgba(34,36,40,1)',
-        //   position: 'absolute',
-        //   borderTopWidth: 0,
-        // },
       })}
       tabBar={props => <MyTabBar {...props} />}
     >
@@ -139,32 +146,16 @@ function BottomBarNavigation() {
         name="Dashboard"
         component={DashboardStackNavigation}
         options={{
-          // tabBarIcon: <Image source={require('../../assets/icons/home.png')} style={{ width: 28, height: 28 }} />,
-          tabBarIcon: <BarIcon size={26} name="home" />,
-          // tabBarIcon: (props) => (
-          //   <Image source={require('../../assets/icons/home.png')} style={{ width: 28, height: 28 }} />
-          //   // <BarIcon {...props} name="theme-light-dark" />
-          // ),
-          // tabBarLabel: (props) => (
-          //   <BarLabel {...props}>Dashboard</BarLabel>
-          // ),
+          tabBarIcon: 'home',
           title: 'Challenges',
         }}
       />
 
       <Tab.Screen
-        name="ChallengesStack"
+        name="ChallengeStack"
         component={ChallengeStackNavigation}
         options={{
-          // tabBarIcon: <Image source={require('../../assets/icons/challenges.png')} style={{ width: 28, height: 28 }} />,
-          tabBarIcon: <BarIcon size={26} name="theme-light-dark" />,
-          // tabBarIcon: (props) => (
-          //   <Image source={require('../../assets/icons/challenges.png')} style={{width: 28, height: 28}} />
-          //   // <BarIcon {...props} name="theme-light-dark" />
-          // ),
-          // tabBarLabel: (props) => (
-          //   <BarLabel {...props}>Challenges</BarLabel>
-          // ),
+          tabBarIcon: 'theme-light-dark',
           title: 'Challenges',
         }}
       />
@@ -173,13 +164,7 @@ function BottomBarNavigation() {
         name="RewardsStack"
         component={RewardStackNavigation}
         options={{
-          tabBarIcon: <BarIcon size={26} name="theme-light-dark" />,
-          // tabBarIcon: (props) => (
-          //   <BarIcon {...props} name="theme-light-dark" />
-          // ),
-          // tabBarLabel: (props) => (
-          //   <BarLabel {...props}>Reward</BarLabel>
-          // ),
+          tabBarIcon: 'theme-light-dark',
           title: 'Rewards',
         }}
       />
@@ -188,22 +173,228 @@ function BottomBarNavigation() {
         name="ProfileStack"
         component={ProfileStackNavigation}
         options={{
-          tabBarIcon: <Image source={require('../../assets/icons/profile.png')} style={{ width: 28, height: 28 }} />,
-          // tabBarIcon: (props) => (
-          //   // <BarIcon {...props} name="book-open-page-variant" />
-          //   <Image source={require('../../assets/icons/profile.png')} style={{width: 28, height: 28}}/>
-          // ),
-          // tabBarLabel: (props) => (
-          //   <BarLabel {...props}>Profile</BarLabel>
-          // ),
-          title: 'Rewards',
+          tabBarIcon: 'account',
+          title: 'Profile',
         }}
       />
     </Tab.Navigator>
   </>)
 }
 
+
+
 function MainStackNavigation() {
+  const [{ loggedUser, currentChallenge, currentLocation, trackStep, trackLoc, privateSockMsg, privateSockMsgs, socket, init }, dispatch] = useGlobals()
+
+
+
+  useEffect(() => {
+    if (init === false) {
+      if (socket == null) {
+        const socket_ = io.connect(SOCKET_URL, {
+          transports: ['websocket'],
+          autoConnect: true,
+          withCredentials: false,
+        })
+        dispatch({
+          type: 'setSocket',
+          socket: socket_
+        })
+      }
+
+      dispatch({
+        type: 'setInit',
+        socket: true
+      })
+
+      requestLocationPermission()
+      requestPedometerPermission()
+      return () => {
+        unsubscribeLocation()
+        unsubscribePedometer()
+      }
+    }
+  }, [init])
+
+
+  /* **********************************************
+   *
+   * If there is a team challenge running (currentChallenge != null && currentChallenge.mode === 'team'),
+   * listen for socket updates 
+   *
+   * **********************************************/
+  const [listened, setListened] = useState(false)
+  useEffect(() => {
+    if (socket != null && currentChallenge != null && currentChallenge.mode === 'team') {
+      // setListened(true)
+
+      socket.on('cast_private_' + currentChallenge._id, obj => {
+        rcvSocket(obj)
+      })
+
+    }
+  }, [socket, currentChallenge, listened])
+
+  const rcvSocket = useCallback((obj) => {
+    if (socket != null) {
+      dispatch({
+        type: 'setPrivateSockMsg',
+        // privateSockMsg: [...privateSockMsg, obj]
+        privateSockMsg: obj
+      })
+    }
+  }, [privateSockMsg, socket, currentChallenge])
+
+
+  useEffect(() => {
+    if (privateSockMsg != null) {
+      console.log('*************  privateSockMsg', privateSockMsg)
+      dispatch({
+        type: 'setPrivateSockMsgs',
+        privateSockMsgs: [...privateSockMsgs, privateSockMsg]
+      })
+    }
+  }, [privateSockMsg])
+
+
+
+  /* **********************************************
+   *
+   * Location
+   * 
+   * -------------------
+   * Request location, retrieve location, dispatch to all screens
+   * Get my current position to find nearby challenges, etc.
+   *
+   * **********************************************/
+  const [locationStatus, setLocationStatus] = useState(0)
+  // const [myLocation, setMyLocation] = useState()
+  /*
+   * Request user's permission to retrieve location
+   */
+  const requestLocationPermission = async () => {
+    console.log('[requestLocationPermission] CALLED')
+    if (Platform.OS === 'ios') {
+      // getOneTimeLocation()
+      subscribeLocation()
+    } else {
+      try {
+        const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, {
+          title: 'Location Access Required',
+          message: 'This App needs to Access your location',
+        })
+
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          //? check if permission is granted
+          // getOneTimeLocation()
+          subscribeLocation()
+        } else {
+          setLocationStatus(-2)
+          // setLoading(false)
+        }
+      } catch (err) {
+        console.warn(err)
+      }
+    }
+  }
+
+  /*
+   * Subscribe so that the app will track the user's location without asking for permission again
+   */
+  let _subscriptionLocation = null
+  const subscribeLocation = () => {
+    _subscriptionLocation = Location.watchPositionAsync({}, (position) => {
+      processPosition(position)
+    })
+  }
+  const unsubscribeLocation = () => {
+    _subscriptionLocation = null
+  }
+
+  /*
+   * Process retrieved lng lat 
+   */
+  const processPosition = (position) => {
+    // console.log('[main-stack][detail processPosition] position', position)
+    setLocationStatus(1)
+    // setLoading(false)
+
+    //? getting the Longitude from the location json
+    const currentLongitude = parseFloat(JSON.stringify(position.coords.longitude))
+    const currentLatitude = parseFloat(JSON.stringify(position.coords.latitude))
+
+    // setMyLocation({
+    //   latitude: currentLatitude,
+    //   longitude: currentLongitude,
+    // })
+
+    console.log('[main-stack] dispatch setCurrentLocation ', JSON.stringify({ latitude: currentLatitude, longitude: currentLongitude }))
+    dispatch({
+      type: 'setCurrentLocation',
+      currentLocation: {
+        latitude: currentLatitude,
+        longitude: currentLongitude,
+      },
+    })
+  }
+
+
+
+  /* **********************************************
+   *
+   * Step counter
+   * 
+   * -------------------
+   * Request pedometer, retrieve data, dispatch to all screens
+   *
+   * **********************************************/
+  const [stepCounterStatus, setStepCounterStatus] = useState(0)
+  /*
+   * Request user's permission to retrieve sensor data
+   */
+  const requestPedometerPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACTIVITY_RECOGNITION, {
+      })
+
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        subscribePedometer()
+      } else {
+        setStepCounterStatus(0)
+      }
+    } catch (err) {
+      console.warn(err)
+    }
+  }
+
+  /*
+   * Subscribe so that the app will track the user's step without asking for permission again
+   */
+  let _subscriptionPedometer = null
+  const subscribePedometer = () => {
+    console.log('[main-stack][subscribePedometer] >>> CALLED')
+
+    _subscriptionPedometer = Pedometer.watchStepCount(result => {
+      setStepCounterStatus(1)
+
+      console.log('[main-stack] dispatch setTrackStep ', result)
+
+      dispatch({
+        type: 'setTrackStep',
+        trackStep: {
+          ...trackStep,
+          currentStepCount: result.steps
+        },
+      })
+    })
+  }
+  const unsubscribePedometer = () => {
+    _subscriptionPedometer = null
+  }
+
+
+
+
   return (
     <>
       <Sta.Navigator screenOptions={{
@@ -211,7 +402,7 @@ function MainStackNavigation() {
         cardStyle: {
           // backgroundColor: '#00f',
         },
-        // mode: 'modal'
+        mode: 'modal'
       }}>
         <Sta.Screen
           name="Home"
@@ -223,6 +414,51 @@ function MainStackNavigation() {
           }}
         />
 
+        <Sta.Screen
+          name="_Target"
+          component={TargetScreenModal}
+          options={{
+          }}
+        />
+
+        <Sta.Screen
+          name="_ChallengeDetailCompleted"
+          component={ChallengeCompletedScreen}
+          options={{
+          }}
+        />
+
+        <Sta.Screen
+          name="_ChallengeDetailStart"
+          component={ChallengeStartScreen}
+          options={{
+          }}
+        />
+
+        {/* <Sta.Screen
+          name="_ChallengeWalkDetailStart"
+          component={ChallengeStartWalkScreen}
+          options={{
+          }}
+        /> */}
+        {/* <Sta.Screen
+          name="_ChallengeWalkDetailStartTeam"
+          component={ChallengeStartWalkTeamScreen}
+          options={{
+          }}
+        />
+        <Sta.Screen
+          name="_ChallengeDiscoverDetailStart"
+          component={ChallengeStartDiscoverScreen}
+          options={{
+          }}
+        /> */}
+        {/* <Sta.Screen
+          name="_ChallengeDiscoverDetailStartTeam"
+          component={ChallengeStartDiscoverTeamScreen}
+          options={{
+          }}
+        /> */}
       </Sta.Navigator>
 
     </>

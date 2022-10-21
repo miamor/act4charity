@@ -3,11 +3,9 @@ import React from 'react'
 
 import NameScreen from '../screens/initials/name.screen'
 import InterestCategoryScreen from '../screens/initials/interest-category.screen'
-import LocationScreen from '../screens/initials/location.screen'
+// import LocationScreen from '../screens/initials/location.screen'
 import SexScreen from '../screens/initials/sex.screen'
 import LoadingScreen from '../screens/initials/loading.screen'
-import LoginScreen from '../screens/auth/login.screen'
-import RegisterScreen from '../screens/auth/register.screen'
 
 const Stack = createStackNavigator()
 
@@ -35,11 +33,11 @@ function InitialStackNavigation() {
         component={InterestCategoryScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen
+      {/* <Stack.Screen
         name="Location"
         component={LocationScreen}
         options={{ headerShown: false }}
-      />
+      /> */}
       <Stack.Screen
         name="Loading"
         component={LoadingScreen}

@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Text } from 'react-native'
 import Rotation from './rotation'
-import SolarSystem from '../..//svgs/SolarSystem'
+import SolarSystem from '../../svgs/SolarSystem'
 
 function Loading({ }) {
   return (

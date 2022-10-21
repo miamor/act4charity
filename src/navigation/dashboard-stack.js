@@ -1,7 +1,6 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
-import DashboardHomeScreen from '../screens/DashboardHomeScreen'
-import TargetScreenModal from '../screens/TargetScreenModal'
+import DashboardHomeScreen from '../screens/dashboard/dashboard.screen'
 
 const Stack = createStackNavigator()
 
@@ -17,13 +16,6 @@ function DashboardStackNavigation() {
       <Stack.Screen
         name="DashboardHome"
         component={DashboardHomeScreen}
-        options={{
-          headerShown: false
-        }}
-      />
-      <Stack.Screen
-        name="DashboardTarget"
-        component={TargetScreenModal}
         options={{
           headerShown: false
         }}

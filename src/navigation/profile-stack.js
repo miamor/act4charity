@@ -1,7 +1,7 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
-import ProfileScreen from '../screens/ProfileScreen'
-import PersonalInformationModal from '../screens/PersonalInformationModal'
+import ProfileScreen from '../screens/profile/profile.screen'
+import PersonalInformationModal from '../screens/profile/personal-information.modal'
 
 const Stack = createStackNavigator()
 

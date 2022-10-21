@@ -3,11 +3,8 @@ import { StyleSheet, View } from 'react-native'
 import { Button, Headline, useTheme } from 'react-native-paper'
 import { H3, Text } from '../../components/paper/typos'
 import { DefaultView } from '../../components/containers'
-import SpaceSky from '../../components/decorations/space-sky'
 import CustomInput from '../../components/paper/custom-input'
 import { useGlobals } from '../../contexts/global'
-import { Backgrounds } from '../../svgs'
-import Aquarius from '../../svgs/Aquarius'
 
 /**
  * @param navigation
@@ -16,8 +13,9 @@ import Aquarius from '../../svgs/Aquarius'
  */
 function NameScreen({ navigation }) {
   const [{ loggedUser }, dispatch] = useGlobals()
-  const [name, setName] = React.useState()
   const { colors } = useTheme()
+
+  const [name, setName] = React.useState()
 
   const buttonDisabled = !name || name.length < 2
   const _handleContinue = () => {
@@ -25,7 +23,7 @@ function NameScreen({ navigation }) {
       type: 'setLoggedUser',
       loggedUser: {
         ...loggedUser,
-        name: name
+        first_name: name
       },
     })
     navigation.push('Sex')

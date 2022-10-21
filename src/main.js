@@ -7,23 +7,21 @@ import { View, Text } from 'react-native'
 import { useGlobals } from './contexts/global'
 import themes from './constants/themes'
 
-import Rotation from './components/animations/rotation'
-import SolarSystem from './svgs/SolarSystem'
-
-import { LOGGED_USER_KEY } from './constants/keys'
+import { CURRENT_CHALLENGE_KEY, LOGGED_USER_KEY, TOKEN_KEY } from './constants/keys'
 import Storer from './utils/storer'
 
 import AuthStackNavigation from './navigation/auth-stack'
 import InitialStackNavigation from './navigation/initial-stack'
 import MainStackNavigation from './navigation/main-stack'
 import Loading from './components/animations/loading'
+import SplashModal from './screens/_modal/splash.modal'
 
 /**
  * @returns {*}
  * @constructor
  */
 const Main: () => Node = () => {
-  const [{ loggedUser, theme }, dispatch] = useGlobals()
+  const [{ loggedUser, currentChallenge, theme }, dispatch] = useGlobals()
   const [isReady, setIsReady] = useState(false)
   const _theme = themes[theme]
 
@@ -58,7 +56,8 @@ const Main: () => Node = () => {
   useEffect(() => {
     (async () => {
       // Storer.set(LOGGED_USER_KEY, null)
-      // Storer.set(SESSION_KEY, null)
+      // Storer.set(TOKEN_KEY, null)
+      // Storer.set(CURRENT_CHALLENGE_KEY, null)
       try {
         const _loggedUser = await Storer.get(LOGGED_USER_KEY)
         if (_loggedUser) {
@@ -67,22 +66,48 @@ const Main: () => Node = () => {
             loggedUser: _loggedUser,
           })
         }
+
+        const _currentChallenge = await Storer.get(CURRENT_CHALLENGE_KEY)
+        if (_currentChallenge) {
+          dispatch({
+            type: 'setCurrentChallenge',
+            currentChallenge: _currentChallenge,
+          })
+          dispatch({
+            type: 'setShowBottomBar',
+            showBottomBar: true,
+          })
+        }
+
       } finally {
         setIsReady(true)
       }
     })()
   }, [dispatch])
 
+
+  const [showSpash, setShowSpash] = useState(true)
+  const onFinishSpash = () => {
+    setShowSpash(false)
+  }
+
+
   return (<PaperProvider theme={_theme}>
     <NavigationContainer theme={_theme}>
       {/* <MainStackNavigation /> */}
-      {!isReady ? (<Loading />)
-        : loggedUser == null ? (<AuthStackNavigation />)
-          : (
-            // ) : loggedUser.basicsDone != true ? (
-            //   <InitialStackNavigation />
-            <MainStackNavigation />
-          )}
+      {showSpash && <SplashModal onFinishSpash={onFinishSpash} />}
+
+      {loggedUser == null || loggedUser._id == null ? (<AuthStackNavigation />)
+        : loggedUser.basicsDone != true ? (<InitialStackNavigation />)
+          // : (<View />)
+          : (<MainStackNavigation />)}
+
+      {/* {!isReady ? (<SplashModal onFinishSpash={() => console.log('onFinishSpash')} />)
+        : loggedUser == null || loggedUser._id == null ? (<AuthStackNavigation />)
+          : loggedUser.basicsDone != true ? (<InitialStackNavigation />)
+            // : (<View />)
+            : (<MainStackNavigation />)
+      } */}
     </NavigationContainer>
   </PaperProvider>)
 }

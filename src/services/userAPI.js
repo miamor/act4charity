@@ -1,6 +1,13 @@
 import { APIServices } from './APIServices'
 
 const constructListParams = (postData) => {
+  if (!postData.hasOwnProperty('filter')) {
+    postData = {
+      ...postData,
+      filter: {},
+    }
+  }
+
   if (!postData.hasOwnProperty('page')) {
     postData = {
       ...postData,
@@ -39,7 +46,7 @@ export const ping = () => {
   })
 }
 
-export const listInterests = () => {
+export const listInterests = (postData) => {
   const postData_ = constructListParams(postData)
   return APIServices().makeAuthRequest({
     url: '/user/interests/list',
@@ -169,6 +176,14 @@ export const getCompletedChallenge = (postData) => {
 export const getPendingInvitations = (postData) => {
   return APIServices().makeAuthRequest({
     url: '/user/me_challenges/invitations_to_me',
+    method: 'POST',
+    data: postData,
+  })
+}
+
+export const listStory = (postData) => {
+  return APIServices().makeAuthRequest({
+    url: '/user/challenges/list_story',
     method: 'POST',
     data: postData,
   })

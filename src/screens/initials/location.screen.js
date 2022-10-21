@@ -3,11 +3,7 @@ import { StyleSheet, View } from 'react-native'
 import { Button, Headline, useTheme } from 'react-native-paper'
 import { H3, Text } from '../../components/paper/typos'
 import { DefaultView } from '../../components/containers'
-import SpaceSky from '../../components/decorations/space-sky'
-// import CustomInput from '../../components/paper/custom-input'
 import { useGlobals } from '../../contexts/global'
-import { Backgrounds } from '../../svgs'
-import Aquarius from '../../svgs/Aquarius'
 import HerePlacesInput from '../../components/paper/autocomplete-place'
 import Axios from 'axios'
 
@@ -40,7 +36,7 @@ function LocationScreen({ navigation }) {
   }
 
   const _handleSelectSuggest = useCallback((item) => {
-    Axios.get(`https://api.timezonedb.com/v2.1/get-time-zone?key=${TIMEZONEDB_API_KEY}&by=position&format=json&lat=${item.DisplayPosition.Latitude}&lng=${item.DisplayPosition.Longitude}`).then(res => {
+    Axios.get(`https://api.timezonedb.com/v2.1/get-time-zone?key=${TIMEZONEDB_API_KEY}&by=position&format=json&lat=${item.DisplayPosition.Latitude}&lng=${item.DisplayPosition.Longitude}`).then((res) => {
       setValues({
         tzName: res.data.zoneName,
         timezone: rawOffsetToOffset(res.data.gmtOffset),
@@ -56,15 +52,6 @@ function LocationScreen({ navigation }) {
 
   return (
     <DefaultView>
-      <SpaceSky />
-      <Aquarius width={60} height={60} style={styles.aquarius} />
-      <Backgrounds.Constellation
-        color={colors.text}
-        dotColor={colors.primary}
-        height={180}
-        width={180}
-        style={styles.constellation}
-      />
       <View style={{ flex: 0.5 }} />
       <View style={styles.textContainer}>
         <H3 style={[styles.textHeadline, { color: colors.primary }]}>

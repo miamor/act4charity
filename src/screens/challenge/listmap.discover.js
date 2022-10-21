@@ -3,18 +3,8 @@ import { StyleSheet, ToastAndroid, PermissionsAndroid, View, Animated, Touchable
 import { Appbar, Button, useTheme } from 'react-native-paper'
 import { Text, H2 } from '../../components/paper/typos'
 import { DefaultView } from '../../components/containers'
-import SpaceSky from '../../components/decorations/space-sky'
-import CustomInput from '../../components/paper/custom-input'
 import { useGlobals } from '../../contexts/global'
-import { Backgrounds } from '../../svgs'
-import Aquarius from '../../svgs/Aquarius'
 
-import * as Yup from 'yup'
-import { Formik } from 'formik'
-import * as authAPI from "../../services/authAPI"
-import axios from 'axios'
-
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { TabView, SceneMap } from 'react-native-tab-view'
 
 import * as Location from 'expo-location'

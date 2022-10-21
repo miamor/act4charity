@@ -5,10 +5,9 @@ import { StyleSheet, ToastAndroid, TouchableOpacity, View } from 'react-native'
 import { DefaultView } from '../../components/containers'
 import { Button, Surface, TouchableRipple, useTheme } from 'react-native-paper'
 import { H3, Text } from '../../components/paper/typos'
-import SpaceSky from '../../components/decorations/space-sky'
-import { Backgrounds } from '../../svgs'
 
 import * as userAPI from '../../services/userAPI'
+
 
 /**
  * @param navigation
@@ -23,9 +22,8 @@ function InterestCategoryScreen({ navigation }) {
   const [selectedCats, setSelectedCats] = useState([])
 
   useEffect(() => {
-    userAPI.listInterests().then((data) => {
-      console.log(data)
-      setCats(data)
+    userAPI.listInterests({ num_per_page: 100 }).then((res) => {
+      setCats(res.data)
     }).catch(error => {
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
@@ -37,36 +35,37 @@ function InterestCategoryScreen({ navigation }) {
       type: 'setLoggedUser',
       loggedUser: {
         ...loggedUser,
-        cats: cats
+        interests: selectedCats,
+        target_donation: 50, // just fix it here
       },
     })
-    navigation.push('Location')
+    navigation.push('Loading')
   }
 
-  const toggleToCats = (cat_code) => {
-    console.log('cat_code', cat_code, ' | selectedCats', selectedCats)
+  const toggleToCats = (cat_id) => {
+    // console.log('cat_id', cat_id, ' | selectedCats', selectedCats)
     let a = selectedCats
-    const idx = a.indexOf(cat_code)
-    console.log('idx', idx)
+    const idx = a.indexOf(cat_id)
+    // console.log('idx', idx)
+
     if (idx < 0) {
-      setSelectedCats([...selectedCats, cat_code])
+      setSelectedCats([...selectedCats, cat_id])
     } else {
       a.splice(idx, 1)
-      console.log('>>> idx', idx)
-      console.log('>>> a', a)
-      console.log('>>> a', a)
-      console.log('>>> a', a)
+      // console.log('>>> idx', idx)
+      // console.log('>>> a', a)
+      // console.log('>>> a', a)
+      // console.log('>>> a', a)
       setSelectedCats(a)
     }
   }
-  useEffect(() => {
-    console.log(' > new selectedCats', selectedCats)
-  }, [selectedCats])
+  // useEffect(() => {
+  //   console.log(' > new selectedCats', selectedCats)
+  // }, [selectedCats])
 
 
   return (
     <DefaultView>
-      <SpaceSky />
       <View style={{ flex: 0.7 }} />
       <View style={styles.textContainer}>
         <H3 style={[styles.textHeadline, { color: colors.primary }]}>
@@ -77,17 +76,22 @@ function InterestCategoryScreen({ navigation }) {
         </Text>
       </View>
 
-      <View style={styles.sexContainer}>
-        {cats != null && cats.map((cat) => (
-          <TouchableOpacity
-            onPress={() => toggleToCats(cat.code)}
+      <View style={{
+        flex: 1,
+        paddingHorizontal: 50,
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+      }}>
+        {cats != null && cats.map((cat, i) => (
+          <TouchableOpacity key={`cat-`+i}
+            onPress={() => toggleToCats(cat._id)}
             style={[
-              selectedCats.indexOf(cat.code) >= 0 && { backgroundColor: colors.primary },
+              selectedCats.indexOf(cat._id) >= 0 && { backgroundColor: colors.primary },
               {
                 height: 45,
                 paddingHorizontal: 20,
                 paddingVertical: 5,
-                // opacity: selectedCats.indexOf(cat.code) >= 0 ? 1 : 0.5,
+                // opacity: selectedCats.indexOf(cat._id) >= 0 ? 1 : 0.5,
 
                 borderColor: colors.primary,
                 borderRadius: 30,
@@ -95,7 +99,12 @@ function InterestCategoryScreen({ navigation }) {
               }
             ]}
           >
-            <Text style={[selectedCats.indexOf(cat.code) >= 0 && {color: '#fff'}, styles.sexText]}>{cat.name}</Text>
+            <Text style={[
+              selectedCats.indexOf(cat._id) >= 0 && { color: '#fff' },
+              {
+              }]}>
+              {cat.title}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -150,17 +159,6 @@ const styles = StyleSheet.create({
     paddingTop: 5,
     paddingBottom: 15,
     zIndex: 1,
-  },
-  sexContainer: {
-    flex: 1,
-    paddingHorizontal: 50,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  sexText: {
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    fontWeight: 'bold',
   },
   buttonContainer: {
     flex: 1,

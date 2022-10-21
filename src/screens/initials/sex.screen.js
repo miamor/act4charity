@@ -4,10 +4,8 @@ import { Button, Headline, TouchableRipple } from 'react-native-paper'
 import { Text } from '../../components/paper/typos'
 
 import { DefaultView } from '../../components/containers'
-import SpaceSky from '../../components/decorations/space-sky'
 import { useGlobals } from '../../contexts/global'
 import Female from '../../svgs/Female'
-import Aquarius from '../../svgs/Aquarius'
 import Male from '../../svgs/Male'
 
 /**
@@ -32,8 +30,6 @@ function SexScreen({ navigation }) {
 
   return (
     <DefaultView>
-      <SpaceSky />
-      <Aquarius width={60} height={60} style={styles.leo} />
       <View style={{ flex: 1 }} />
       <View style={styles.textContainer}>
         <Headline style={styles.textHeadline}>Your gender</Headline>
