@@ -22,14 +22,14 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
 
   const { challengeDetail } = route.params
 
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
 
-  useEffect(() => {
-    // console.log('challengeDetail', challengeDetail)
-    // console.log('route.params', route.params)
-    setLoading(false)
-  }, [])
+  // useEffect(() => {
+  //   // console.log('challengeDetail', challengeDetail)
+  //   // console.log('route.params', route.params)
+  //   setLoading(false)
+  // }, [])
 
 
   /*
@@ -77,13 +77,13 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
   const hideCreateTeamModal = useCallback(() => setShowCreateTeamModal(false))
   const startChallengeTeam = useCallback((participants_id, participants_username) => {
     setShowCreateTeamModal(false)
-    console.log('>>> [startChallengeTeam]', participants_id, participants_username)
+    // console.log('>>> [startChallengeTeam]', participants_id, participants_username)
     startChallengeNow('team', [...participants_id, loggedUser._id])
   })
 
 
   /*
-   * Start challenge as individual
+   * Start challenge now
    */
   const startChallengeNow = (mode, participants_id) => {
     setLoading(true)
@@ -97,25 +97,17 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
       participants: participants_id
     }
     userAPI.startChallenge(params).then((res) => {
-      console.log('>> res', res)
+      // console.log('>> res', res)
       setLoading(false)
-
-      let screen = '_ChallengeDetailStart'
-      if (mode == 'team') screen = '_ChallengeDetailStartTeam'
 
       const challenge_accepted_data = {
         ...res.data,
         challenge_detail: challengeDetail
       }
 
-      navigation.navigate(screen, {
-        key: screen,
-        // challengeDetail: challengeDetail,
-        // mode: mode,
-        // challenge_accepted_id: res.data._id,
+      navigation.navigate('_ChallengeDetailStart', {
+        key: '_ChallengeDetailStart',
         challenge_accepted_data: challenge_accepted_data,
-        // participants_id: participants_id,
-        // participants_username: participants_username,
       })
 
     }).catch(error => {
@@ -141,7 +133,7 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
       {showCreateTeamModal && <CreateTeamModal onClose={hideCreateTeamModal} onSubmit={startChallengeTeam} />}
 
       {showConfirmDialog && (<Portal>
-        <Modal visible={showJoinModeDialog} onDismiss={hideJoinModeDialog} contentContainerStyle={{ zIndex: 1000, backgroundColor: '#fff', padding: 20, marginHorizontal: 20 }}>
+        <Modal visible={showConfirmDialog} onDismiss={hideConfirmDialog} contentContainerStyle={{ zIndex: 1000, backgroundColor: '#fff', padding: 20, marginHorizontal: 20 }}>
           <H3 style={{ marginBottom: 18, paddingBottom: 12, borderBottomColor: '#f0f0f0', borderBottomWidth: 1 }}>Another challenge running</H3>
 
           <Paragraph>

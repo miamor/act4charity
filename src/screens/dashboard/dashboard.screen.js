@@ -1,6 +1,6 @@
 import React, { PropTypes, Component, useEffect, useState, useCallback } from 'react'
 import { StyleSheet, View, Image, ScrollView, ToastAndroid, PermissionsAndroid, Dimensions, TouchableOpacity } from 'react-native'
-import { ProgressBar, Button, Appbar, useTheme, Badge } from 'react-native-paper'
+import { ProgressBar, Button, Appbar, useTheme, Badge, Portal, Modal, Paragraph } from 'react-native-paper'
 import { H2, H3, Text, TextBold } from '../../components/paper/typos'
 import { DefaultView } from '../../components/containers'
 import { levels_ranges, useGlobals } from '../../contexts/global'
@@ -62,7 +62,6 @@ function DashboardHomeScreen({ navigation }) {
       return true
     })
 
-    console.log('>>> reachMaxLevel', reachMaxLevel)
     if (reachMaxLevel) {
       setNextLevel(i)
       setCurrentLevel(i)
@@ -134,16 +133,45 @@ function DashboardHomeScreen({ navigation }) {
     navigation.navigate('ChallengeStack', { screen: 'ChallengeSelect' })
   }
 
-  const onContinueChallenge = (challenge_accepted) => {
-    console.log('[Dashboard] onContinueChallenge CALLED ~ ')
+  // const onContinueChallenge = (challenge_accepted) => {
+  //   console.log('[Dashboard] onContinueChallenge CALLED ~ ')
 
-    const challenge_detail = challenge_accepted.challenge_detail
+  //   const challenge_detail = challenge_accepted.challenge_detail
 
+  //   navigation.navigate('_ChallengeDetailStart', {
+  //     key: '_ChallengeDetailStart',
+  //     challenge_accepted_data: challenge_accepted,
+  //   })
+  // }
+  /*
+   * Start the challenge. Go to the map direction screen.
+   * Make sure to check if there's any other challenge running.
+   */
+  const [selectedChallenge, setSelectedChallenge] = useState()
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const hideConfirmDialog = () => setShowConfirmDialog(false)
+  const onPressChallenge = (challenge_accepted) => {
+    setSelectedChallenge(challenge_accepted)
+    
+    if (currentChallenge != null) {
+      if (currentChallenge.challenge_detail._id !== challenge_accepted.challenge_detail._id) { //? the user is in another challenge
+        setShowConfirmDialog(true)
+      } else { //? is in this challenge
+        navigation.navigate('_ChallengeDetailStart', {
+          key: '_ChallengeDetailStart',
+          challenge_accepted_data: currentChallenge,
+        })
+      }
+    } else {
+      setShowConfirmDialog(false)
+      goToChallengeNow(challenge_accepted)
+    }
+  }
+  const goToChallengeNow = (challenge_accepted) => {
     navigation.navigate('_ChallengeDetailStart', {
       key: '_ChallengeDetailStart',
       challenge_accepted_data: challenge_accepted,
     })
-
   }
 
 
@@ -162,6 +190,25 @@ function DashboardHomeScreen({ navigation }) {
       </Appbar.Header>
 
       {loading && <Loading />}
+
+      {showConfirmDialog && (<Portal>
+        <Modal visible={showConfirmDialog} onDismiss={hideConfirmDialog} contentContainerStyle={{ zIndex: 1000, backgroundColor: '#fff', padding: 20, marginHorizontal: 20 }}>
+          <H3 style={{ marginBottom: 18, paddingBottom: 12, borderBottomColor: '#f0f0f0', borderBottomWidth: 1 }}>Another challenge running</H3>
+
+          <Paragraph>
+            You are in another challenge: <TextBold>{currentChallenge.challenge_detail.name}</TextBold>
+          </Paragraph>
+          <Paragraph>
+            Starting this challenge will kill the other challenge you are doing. Are you sure ?
+          </Paragraph>
+
+          <View style={{ marginTop: 30, marginHorizontal: 20 }}>
+            <Button mode="contained" labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={hideConfirmDialog}>No, continue old challenge</Button>
+            <Button labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={() => goToChallengeNow(selectedChallenge)}>Yes, start this challenge</Button>
+          </View>
+        </Modal>
+      </Portal>)}
+
 
       <ScrollView style={{ backgroundColor: 'transparent', paddingHorizontal: 20 }}>
 
@@ -272,7 +319,7 @@ function DashboardHomeScreen({ navigation }) {
             /> : (<View style={{}}>
 
               {currentChallenges.map((item, i) => (<TouchableOpacity key={`my-challenge-` + i}
-                onPress={() => onContinueChallenge(item)}
+                onPress={() => onPressChallenge(item)}
                 style={{
                   flexDirection: 'row',
                   marginVertical: 10,

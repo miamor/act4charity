@@ -14,7 +14,7 @@ import AuthStackNavigation from './navigation/auth-stack'
 import InitialStackNavigation from './navigation/initial-stack'
 import MainStackNavigation from './navigation/main-stack'
 import Loading from './components/animations/loading'
-import SplashModal from './screens/_modal_components/splash.modal'
+import SplashModal from './screens/splash.modal'
 import Sensors from './components/sensors'
 
 /**
@@ -77,6 +77,14 @@ const Main: () => Node = () => {
           dispatch({
             type: 'setShowBottomBar',
             showBottomBar: true,
+          })
+        }
+
+        const _started = await Storer.get('started')
+        if (_started) {
+          dispatch({
+            type: 'setStarted',
+            started: _started,
           })
         }
 

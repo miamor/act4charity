@@ -37,7 +37,7 @@ function TargetScreenModal({ route, navigation }) {
 
     userAPI.updateProfile({ target_donation: selectedAmount }).then((res) => {
       console.log('[target][updateProfile] res', res)
-      
+
       Storer.set(LOGGED_USER_KEY, {
         ...loggedUser,
         target_donation: selectedAmount
@@ -75,7 +75,7 @@ function TargetScreenModal({ route, navigation }) {
 
 
         <View style={{}}>
-          <Text variant="labelLarge" style={{ color: '#381E72', marginTop: 24, marginBottom: 16, fontSize: 20 }}>
+          <Text variant="labelLarge" style={{ color: colors.primary, marginTop: 24, marginBottom: 16, fontSize: 20 }}>
             Donation Goal
           </Text>
 
@@ -118,11 +118,10 @@ function TargetScreenModal({ route, navigation }) {
           <Button mode="contained"
             onPress={onSubmit}
             style={{ borderRadius: 12 }}
-            contentStyle={styles.saveButtonStyle}
-            mode="contained">
+            contentStyle={styles.saveButtonStyle}>
             Save
           </Button>
-          <Button mode="text" style={{ width: 20, marginTop: 25 }} onPress={() => console.log('back button pressed')}>
+          <Button mode="text" style={{ width: 100, marginTop: 25 }} onPress={() => console.log('back button pressed')}>
             Back
           </Button>
         </View>

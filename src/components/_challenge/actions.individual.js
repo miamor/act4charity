@@ -53,7 +53,7 @@ function ChallengeStartActionsIndividual(props) {
   }, [])
 
   useEffect(() => {
-    console.log('[actions.individual.func] currentLocation', currentLocation, ' | completed =', completed)
+    // console.log('[actions.individual.func] currentLocation', currentLocation, ' | completed =', completed)
 
     if (completed === 1) {
       onComplete()
@@ -176,6 +176,8 @@ function ChallengeStartActionsIndividual(props) {
 
   const [showShareStoryModal, setShowShareStoryModal] = useState(false)
   const onSubmitShareStory = useCallback(async (postData) => {
+    setLoading(true)
+
     const accessToken = await Storer.get(TOKEN_KEY)
 
     postData.append('challenge_accepted_id', challenge_accepted_id)

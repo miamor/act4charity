@@ -178,7 +178,8 @@ function ChallengeStartMap(props) {
     }
     await setTrackLocationState(track_loc_state)
 
-    console.log('[mapview][updateTrackState] dispatch setTrackLoc ', JSON.stringify(track_loc_state))
+    // console.log('[mapview][updateTrackState] dispatch setTrackLoc ', JSON.stringify(track_loc_state))
+    console.log('[mapview][updateTrackState] dispatch setTrackLoc ')
     onSetDispatch('setTrackLoc', 'trackLoc', track_loc_state)
   }
 

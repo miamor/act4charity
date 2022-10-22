@@ -64,7 +64,7 @@ function InterestsModal(props) {
     setLoading(true)
     // const selected_ids = Object.keys(selectedCats).find(key => selectedCats[key] === 1)
     const selected_ids = Object.keys(selectedCats).filter(function (key) { return selectedCats[key] === 1 })
-    console.log('>>> selected_ids', selected_ids)
+    // console.log('>>> selected_ids', selected_ids)
 
     const finished_user_info = {
       ...loggedUser,

@@ -104,20 +104,14 @@ function FeedbackModal(props) {
 
           <View style={{ flex: 0.3, paddingTop: 30 }}>
             <Button mode="contained"
-              onPress={() => {
-                console.log('challenge button pressed')
-                setSentModalVisibility(!sentModal)
-              }}>
+              onPress={() => setSentModalVisibility(!sentModal)}>
               Send Feedback
             </Button>
 
             <Button mode="text"
               style={{ width: 100, marginTop: 35 }}
               labelStyle={{ paddingHorizontal: 10 }}
-              onPress={() => {
-                console.log('back button pressed')
-                props.setFeedbackModalVisibility(!props.feedbackModalVisibility)
-              }}>
+              onPress={() => props.setFeedbackModalVisibility(!props.feedbackModalVisibility)}>
               BACK
             </Button>
           </View>

@@ -85,27 +85,28 @@ function RewardScreen() {
           </H3>
         </View>
 
-        <ScrollView style={{ marginBottom: 229, marginTop: 5 }}>
-          {completedChallenges != null && completedChallenges.map((item, i) => (<View key={`comp-` + i} style={{
-            marginHorizontal: 20,
-            marginTop: 10,
-            marginBottom: 10,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            // alignItems: 'center',
-          }}>
-            <View style={{ flex: 1, flexDirection: 'row' }}>
-              <Image
-                style={{ height: 46, width: 46, marginTop: 1 }}
-                source={item.challenge_detail.type == 'walk' ? require('../../../assets/icons/walking.png') : require('../../../assets/icons/discover.png')}
-              />
-              <View style={{ flexDirection: 'column', justifyContent: 'space-between', marginLeft: 12 }}>
-                <Text style={{ color: colors.primary, lineHeight: 21, marginBottom: 8 }} variant="titleMedium">{item.challenge_detail.name}</Text>
-                <Text style={{ color: '#d2d2d2', fontSize: 14, lineHeight: 15 }} variant="bodyMedium">
-                  {item.challenge_detail.sponsor_detail.name}
-                </Text>
-              </View>
+        <ScrollView style={{ marginBottom: 229, marginTop: 5, paddingHorizontal: 20 }}>
+          {completedChallenges != null && completedChallenges.map((item, i) => (<View key={`comp-` + i}
+            style={{
+              // marginHorizontal: 20,
+              marginTop: 10,
+              marginBottom: 10,
+              flexDirection: 'row',
+              // justifyContent: 'space-between',
+              // alignItems: 'center',
+            }}>
+            <Image
+              style={{ height: 46, width: 46, marginTop: -1 }}
+              source={item.challenge_detail.type == 'walk' ? require('../../../assets/icons/walking.png') : require('../../../assets/icons/discover.png')}
+            />
+
+            <View style={{ flex: 1, flexDirection: 'column', marginLeft: 6 }}>
+              <Text style={{ color: colors.primary, lineHeight: 21, marginBottom: 8 }} variant="titleMedium">{item.challenge_detail.name}</Text>
+              <Text style={{ color: '#d2d2d2', fontSize: 14, lineHeight: 15 }} variant="bodyMedium">
+                {item.challenge_detail.sponsor_detail.name}
+              </Text>
             </View>
+
             <Text>${item.challenge_detail.donation}</Text>
           </View>))}
         </ScrollView>

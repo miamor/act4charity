@@ -35,13 +35,11 @@ function HelpModal(props) {
             style={{ height: 24, width: width, marginTop: 24 }}
             source={require('../../../assets/icons/helpday.png')}
           />
-          <Button
-            mode="text"
-            style={{ width: 20, marginTop: 65 }}
-            onPress={() => {
-              console.log('back button pressed')
-              props.setHelpModalVisibility(!props.helpModalVisibility)
-            }}>
+          
+          <Button mode="text"
+            style={{ width: 100, marginTop: 35 }}
+            labelStyle={{ paddingHorizontal: 10 }}
+            onPress={() => props.setHelpModalVisibility(!props.helpModalVisibility)}>
             BACK
           </Button>
         </View>

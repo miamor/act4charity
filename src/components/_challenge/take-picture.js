@@ -51,14 +51,14 @@ function TakePicture(props) {
   const [showTextForm, setShowTextForm] = useState(false)
   useEffect(() => {
     if (pickerResponse != null && pickerResponse.assets != null) {
-      console.log('[take-picture] >> pickerResponse', pickerResponse, '   |   setShowTextForm true')
+      // console.log('[take-picture] >> pickerResponse', pickerResponse, '   |   setShowTextForm true')
       setShowTextForm(true)
     }
   }, [pickerResponse])
 
   const [statusText, setStatusText] = useState('')
   const submitStory = () => {
-    // setLoading(true)
+    setLoading(true)
 
     let fileToUpload = {
       uri: pickerResponse.assets[0].uri,
@@ -77,8 +77,6 @@ function TakePicture(props) {
 
 
   return (<>
-
-    {/* {loading && <Loading />} */}
 
     {props.showAskImgSource && (<Portal>
       <Modal visible={props.showAskImgSource} onDismiss={props.onCloseShareStory} contentContainerStyle={{ zIndex: 1000, backgroundColor: '#fff', padding: 20, marginHorizontal: 20 }}>
@@ -108,40 +106,46 @@ function TakePicture(props) {
     </Portal>)}
 
 
-    {showTextForm && (<ScrollView style={{ backgroundColor: '#ffffff', flexDirection: 'column', position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}>
+    {loading && <Loading />}
 
-      <View style={{ flex: 0.7, justifyContent: 'center', alignItems: 'center' }}>
-        {/* <H3>Share with others</H3> */}
-        <Image
-          source={{ uri: pickerResponse.assets[0].uri }}
-          style={{ width: width - 60, height: height / 2 }}
-        />
-      </View>
+    {showTextForm && (<View style={{ flexDirection: 'column', position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', }}>
 
-      <View style={{ flex: 0.5, paddingHorizontal: 50, backgroundColor: '#00f' }}>
-        <TextInput
-          style={{ flex: 1, }}
-          mode="outlined"
-          placeholder="Share something..."
-          placeholderTextColor="#C9C5CA"
-          multiline={true}
-          value={statusText}
-          onChangeText={value => setStatusText(value)}
-        />
-      </View>
+      {/* <Text>Loading? {loading}</Text> */}
 
-      <View style={{ flex: 0.1, justifyContent: 'center', alignItems: 'center' }}>
-        <View style={{ flexDirection: 'row' }}>
-          <Button mode="text" onPress={props.onCloseShareStory} style={{ marginHorizontal: 10 }} labelStyle={{ paddingHorizontal: 10 }}>
-            BACK
-          </Button>
-          <Button mode="contained" onPress={submitStory} style={{ marginHorizontal: 10 }} labelStyle={{ paddingHorizontal: 10 }}>
-            POST
-          </Button>
+      {/* <ScrollView> */}
+        <View style={{ flex: 0.6, justifyContent: 'center', alignItems: 'center' }}>
+          <Image
+            source={{ uri: pickerResponse.assets[0].uri }}
+            style={{ width: width - 60, height: height / 2 }}
+          />
         </View>
-      </View>
 
-    </ScrollView>)}
+        <View style={{ flex: 0.2, paddingHorizontal: 30 }}>
+          <TextInput
+            style={{ flex: 1, }}
+            mode="outlined"
+            placeholder="Share something..."
+            placeholderTextColor="#C9C5CA"
+            multiline={true}
+            value={statusText}
+            onChangeText={value => setStatusText(value)}
+          />
+        </View>
+
+        <View style={{ flex: 0.1, marginTop: 20, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row' }}>
+            <Button mode="text" onPress={props.onCloseShareStory} style={{ marginHorizontal: 10 }} labelStyle={{ paddingHorizontal: 10 }}>
+              BACK
+            </Button>
+            <Button mode="contained" onPress={submitStory} style={{ marginHorizontal: 10 }} labelStyle={{ paddingHorizontal: 10 }}>
+              POST
+            </Button>
+          </View>
+        </View>
+
+      {/* </ScrollView> */}
+    </View>)}
+
   </>)
 }
 

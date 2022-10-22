@@ -14,6 +14,8 @@ import { useNavigation } from '@react-navigation/core'
 
 import ChallengeBarDiscoverTeam from './bar.team.discover'
 import ChallengeBarWalkTeam from './bar.team.walk'
+import Storer from '../../utils/storer'
+import { TOKEN_KEY } from '../../constants/keys'
 
 
 function ChallengeStartActionsTeam(props) {
@@ -147,6 +149,7 @@ function ChallengeStartActionsTeam(props) {
    */
   const startNow = () => {
     onSetDispatch('setStarted', 'started', true)
+    Storer.set('started', true)
   }
 
   /*
@@ -186,8 +189,8 @@ function ChallengeStartActionsTeam(props) {
 
     // privateSockMsgs.forEach((res, i) => {
     //   // console.log('> res', res)
-    const res = privateSockMsg
-    if (true) {
+    if (privateSockMsg != null) {
+      const res = privateSockMsg
       onSetDispatch('setProcessedPrivateSockMsgs', 'processedPrivateSockMsgs', processedPrivateSockMsgs + 1)
 
       if (res.action === 'start') {
@@ -730,6 +733,71 @@ function ChallengeStartActionsTeam(props) {
 
   /* **********************************************
    *
+   * Take picture and send via socket channel
+   *
+   * **********************************************/
+  const [showAskImgSource, setShowAskImgSource] = useState(true)
+  const hideAskImgSource = useCallback(() => setShowAskImgSource(false))
+
+  const [showShareStoryModal, setShowShareStoryModal] = useState(false)
+  const onSubmitShareStory = useCallback(async (postData) => {
+    setLoading(true)
+
+    const accessToken = await Storer.get(TOKEN_KEY)
+
+    postData.append('challenge_accepted_id', challenge_accepted_id)
+    postData.append('challenge_id', challengeDetail._id)
+    postData.append('public', false)
+
+    // console.log('>>> accessToken =', accessToken)
+    // console.log('>>> ', REACT_APP_API_URL + '/user/challenges/share_story')
+    // console.log('>>> postData =', JSON.stringify(postData))
+
+    axios({
+      method: 'POST',
+      url: REACT_APP_API_URL + '/user/challenges/share_story',
+      data: postData,
+      headers: {
+        'Authorization': accessToken,
+        'Accept': 'application/json',
+        'Content-Type': 'multipart/form-data'
+      }
+    }).then((response) => {
+      const res = response.data
+      if (res.status === 'success') {
+        console.log('[shareStory] res =', res)
+        setLoading(false)
+        setShowShareStoryModal(false)
+
+        /* cast to other members via socket channel */
+        socket.emit('cast_private', {
+          room_id: room_id,
+          action: 'chat',
+          user_id: loggedUser._id,
+          username: loggedUser.username,
+          data: content,
+          picture: res.picture
+        })
+      }
+    }).catch(error => {
+      console.error(error)
+    })
+  }, [])
+
+  const onOpenShareStory = useCallback((postData) => {
+    setShowAskImgSource(true)
+    setShowShareStoryModal(true)
+  }, [])
+
+  const onCloseShareStory = useCallback((postData) => {
+    setShowShareStoryModal(false)
+  }, [])
+
+
+
+
+  /* **********************************************
+   *
    * Bottom Scroll Sheet
    *
    * **********************************************/
@@ -763,6 +831,11 @@ function ChallengeStartActionsTeam(props) {
   ), [])
 
 
+  const dimensions = Dimensions.get('window')
+  const imageHeight = Math.round(dimensions.width * 9 / 16)
+  const imageWidth = dimensions.width - 100
+
+
 
   return (<>
 
@@ -789,12 +862,13 @@ function ChallengeStartActionsTeam(props) {
         })}
 
         {joinStatus && (<View style={{ flexDirection: 'column' }}>
-          <View style={{ flex: 0.4, backgroundColor: '#0f0' }}>
+          <View style={{ flex: 0.7 }}>
             {messages.map((res, i) => {
               if (res.data.length > 0) {
                 return (<View key={`res-` + i} style={{ flexDirection: 'row' }}>
                   <TextBold>{res.username}</TextBold>
-                  <Text style={{ borderWidth: 2 }}>{res.data}</Text>
+                  <Text>{res.data}</Text>
+                  {res.picture != null && <Image source={{ uri: res.picture }} style={{ marginTop: 5, height: imageHeight, width: imageWidth }} />}
                 </View>)
               }
             })}

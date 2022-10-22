@@ -84,7 +84,6 @@ function ProfileScreen({ navigation }) {
       return true
     })
 
-    console.log('>>> reachMaxLevel', reachMaxLevel)
     if (reachMaxLevel) {
       setNextLevel(i)
       setCurrentLevel(i)
@@ -228,7 +227,8 @@ function ProfileScreen({ navigation }) {
     <ScrollView style={{ backgroundColor: 'transparent' }}>
       <View style={styles.mainViewContainer}>
 
-        <View style={styles.profileDetailsViewContainer}>
+
+        <View style={{ flexDirection: 'row', paddingVertical: 20 }}>
           <TouchableOpacity onPress={onPressAvatar}>
             <Image
               source={{ uri: loggedUser.avatar }}
@@ -245,6 +245,7 @@ function ProfileScreen({ navigation }) {
             </View>
           </View>
         </View>
+
 
         <View
           style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
@@ -446,9 +447,6 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginTop: 8,
     marginBottom: 8,
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
   button: {
     flex: 1,

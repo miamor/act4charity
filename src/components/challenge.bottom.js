@@ -32,13 +32,13 @@ function ChallengeBottomSheet({ }) {
 
 
   useEffect(() => {
-    if (completed === 0 && currentLocation != null) {
+    if (started && completed === 0 && currentLocation != null) {
       checkComplete()
     }
-    else if (completed === 5) {
-      navigation.navigate('ChallengeStack', { screen: 'ChallengeListMap' })
-    }
-  }, [completed, currentLocation, trackLoc])
+    // else if (completed === 5) {
+    //   navigation.navigate('ChallengeStack', { screen: 'ChallengeListMap' })
+    // }
+  }, [started, completed, currentLocation, trackLoc])
 
 
 
@@ -49,13 +49,13 @@ function ChallengeBottomSheet({ }) {
    *
    * **********************************************/
   const checkComplete = () => {
-    console.log('[challenge.bottom][checkComplete] currentLocation', currentLocation, ' | trackLoc.distanceTravelled =', trackLoc.distanceTravelled, ' | challengeDetail.distance =', challengeDetail.distance)
+    // console.log('[challenge.bottom][checkComplete] currentLocation', currentLocation, ' | trackLoc.distanceTravelled =', trackLoc.distanceTravelled, ' | challengeDetail.distance =', challengeDetail.distance)
+    console.log('[challenge.bottom][checkComplete] CALLED')
 
     if (challengeDetail.type === 'walk') {
       // if (trackLoc.distanceTravelled > challengeDetail.distance) { //? identify as completed
-      if (trackLoc.distanceTravelled > 0.01) { //? identify as completed
-        console.log('[checkComplete] completed !')
-        // setCompleted(1)
+      if (trackLoc.distanceTravelled > 0.01) { //! just to test
+        console.log('[challenge.bottom][checkComplete] completed !')
         onSetDispatch('setCompleted', 'completed', 1)
       }
     }
@@ -63,10 +63,9 @@ function ChallengeBottomSheet({ }) {
       if (Object.keys(trackLoc.prevLatLng).length > 0) {
         const dist_to_target = haversine(trackLoc.prevLatLng, challengeDetail.place_detail.coordinates) || 0
 
-        console.log('[challenge.bottom] >>> dist_to_target', dist_to_target)
+        console.log('[challenge.bottom][challenge.bottom] >>> dist_to_target', dist_to_target)
 
         if (dist_to_target < 0.2) { //? identify as arrived
-          // setCompleted(1)
           onSetDispatch('setCompleted', 'completed', 1)
         }
       }
@@ -99,7 +98,7 @@ function ChallengeBottomSheet({ }) {
 
   const [showFull, setShowFull] = useState(false)
   const openChallenge = () => {
-    console.log('[challenge.bottom] challenge_accepted_data', challenge_accepted_data)
+    // console.log('[challenge.bottom] challenge_accepted_data', challenge_accepted_data)
     navigation.navigate('_ChallengeDetailStart', { key: '_ChallengeDetailStart', challenge_accepted_data: currentChallenge })
   }
 

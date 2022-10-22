@@ -66,6 +66,7 @@ export const updateProfile = (postData) => {
 
 export const listChallenges = (postData) => {
   const postData_ = constructListParams(postData)
+  console.log('[listChallenges] postData_', postData_)
   return APIServices().makeAuthRequest({
     url: '/user/challenges/list',
     method: 'POST',

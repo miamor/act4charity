@@ -17,6 +17,7 @@ import * as userAPI from '../../services/userAPI'
 import Storer from '../../utils/storer'
 import ChallengeStartMap from '../../components/_challenge/mapview'
 import ChallengeStartActionsIndividual from '../../components/_challenge/actions.individual'
+import ChallengeStartActionsTeam from '../../components/_challenge/actions.team'
 
 
 /**
@@ -43,6 +44,7 @@ function ChallengeStartScreen({ route, navigation }) {
    */
   const startNow = () => {
     onSetDispatch('setStarted', 'started', true)
+    Storer.set('started', true)
   }
   useEffect(() => {
     if (!started && currentChallenge != null && currentChallenge.mode === 'individual') {
@@ -55,13 +57,15 @@ function ChallengeStartScreen({ route, navigation }) {
    * Only when the challenge is started and not completed.
    */
   useEffect(() => {
+    console.log('[challenge.start] got hereeee', ' | started =', started, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation))
+
     if (started && completed === 0 && currentLocation != null) {
       checkComplete()
     }
     // else if (completed === 5) {
     //   navigation.navigate('ChallengeStack', { screen: 'ChallengeListMap' })
     // }
-  }, [started, completed, currentLocation, trackLoc])
+  }, [])
 
 
 
@@ -72,7 +76,7 @@ function ChallengeStartScreen({ route, navigation }) {
    *
    * **********************************************/
   const checkComplete = () => {
-    console.log('[challenge.start.walk][checkComplete] currentLocation', currentLocation, ' | trackLoc.distanceTravelled =', trackLoc.distanceTravelled, ' | challengeDetail.distance =', challengeDetail.distance)
+    console.log('[challenge.start][checkComplete] currentLocation', currentLocation, ' | trackLoc.distanceTravelled =', trackLoc.distanceTravelled, ' | challengeDetail.distance =', challengeDetail.distance)
 
     if (challengeDetail.type === 'walk') {
       // if (trackLoc.distanceTravelled > challengeDetail.distance) { //? identify as completed
