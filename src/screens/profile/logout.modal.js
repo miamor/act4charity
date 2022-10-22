@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Alert, Modal, StyleSheet, Pressable, View, Image } from 'react-native'
 import { Button } from 'react-native-paper'
-import { Text } from '../paper/typos'
+import { Text } from '../../components/paper/typos'
+
 
 function LogOutModal(props) {
   return (

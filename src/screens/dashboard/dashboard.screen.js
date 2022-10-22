@@ -7,12 +7,12 @@ import { useGlobals } from '../../contexts/global'
 import Loading from '../../components/animations/loading'
 
 import * as userAPI from '../../services/userAPI'
-// import * as Location from 'expo-location'
-// import { Pedometer } from 'expo-sensors'
 import haversine from 'haversine'
 
-// import { SOCKET_URL } from '../../services/APIServices'
-// import io from 'socket.io-client'
+
+const levels_ranges = {
+  0:
+}
 
 
 /**
@@ -36,18 +36,18 @@ function DashboardHomeScreen({ navigation }) {
   const [pendingInvitations, setPendingInvitations] = useState()
 
 
-
   useEffect(() => {
     if (loggedUser.target_donation != null) {
-      setDonationProgress(loggedUser.current_donation / loggedUser.target_donation)
+      setDonationProgress(Math.min(loggedUser.current_donation / loggedUser.target_donation, 100))
     } else {
-      setDonationProgress(40)
+      setDonationProgress(100)
     }
+  }, [loggedUser])
 
+  useEffect(() => {
     loadCurrentChallenge()
     loadPendingInvitations()
   }, [])
-
 
   useEffect(() => {
     if (currentChallenges != null && pendingInvitations != null) {
@@ -134,7 +134,7 @@ function DashboardHomeScreen({ navigation }) {
 
       {loading && <Loading />}
 
-      <ScrollView style={{ backgroundColor: '#fff', paddingHorizontal: 20 }}>
+      <ScrollView style={{ backgroundColor: 'transparent', paddingHorizontal: 20 }}>
 
         <TouchableOpacity onPress={goToProfile} style={{ flexDirection: 'row', paddingVertical: 20 }}>
           <Image
@@ -151,7 +151,7 @@ function DashboardHomeScreen({ navigation }) {
 
         <View style={{ width: width - 40, flexDirection: 'row' }}>
           <Image
-            source={require('../../../assets/icons/startMedal.png')}
+            source={require('../../../assets/icons/medal-bronze.png')}
             style={{
               height: 48,
               width: 48,
@@ -167,7 +167,7 @@ function DashboardHomeScreen({ navigation }) {
             />
           </View>
           <Image
-            source={require('../../../assets/icons/endMedal.png')}
+            source={require('../../../assets/icons/medal-silver.png')}
             style={{
               height: 48,
               width: 48,

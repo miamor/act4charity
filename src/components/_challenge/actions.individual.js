@@ -107,7 +107,12 @@ function ChallengeStartActionsIndividual(props) {
     setShowConfirmComplete(false)
     // props.confirmCompleteCallback()
 
-    userAPI.completeChallenge({ challenge_accepted_id: challenge_accepted_id, challenge_donation: challengeDetail.donation, challenge_reward: challengeDetail.reward }).then((res) => {
+    userAPI.completeChallenge({
+      challenge_accepted_id: challenge_accepted_id,
+      challenge_donation: challengeDetail.donation, 
+      challenge_reward: challengeDetail.reward, 
+      participants: challengeDetail.participants,
+    }).then((res) => {
       console.log('[confirmCompleteCallback] res', res)
 
       /* dispatch global states */

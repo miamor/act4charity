@@ -43,6 +43,7 @@ function SignupScreen({ navigation }) {
   const { colors } = useTheme()
 
   const [loading, setLoading] = useState(false)
+
   const [isSecureEntry, setIsSecureEntry] = useState(true)
 
   const RegisterSchema = Yup.object().shape({
@@ -57,6 +58,7 @@ function SignupScreen({ navigation }) {
 
   const _onSubmit = values => {
     setLoading(true)
+
     authAPI.onRegister(values).then((res) => {
       if (res.status === 'error') {
         ToastAndroid.show(res.message, ToastAndroid.SHORT)
@@ -65,8 +67,8 @@ function SignupScreen({ navigation }) {
       }
 
       authAPI.onAuthenticate(values).then((res) => {
-        navigation.navigate('Auth', res.data)
         setLoading(false)
+        navigation.navigate('Auth', res.data)
       }).catch(error => {
         console.error(error)
         ToastAndroid.show('Oops', ToastAndroid.SHORT)
@@ -78,6 +80,8 @@ function SignupScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {loading && <Loading />}
+
       <View style={styles.topView}>
         <Image
           source={require('../../../assets/images/signup.png')}
@@ -88,8 +92,6 @@ function SignupScreen({ navigation }) {
         />
       </View>
       <View style={styles.bottomView}>
-        {loading && <Loading />}
-
         <View style={styles.innerBottomView}>
           <Text style={styles.heading}>Signup</Text>
           <Formik

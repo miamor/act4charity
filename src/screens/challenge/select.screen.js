@@ -19,7 +19,7 @@ function ChallengeSelectScreen({ navigation }) {
         <Appbar.Content title='Challenge Type' color={colors.primary} />
       </Appbar.Header>
 
-      <View style={{ backgroundColor: '#fff', flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
+      <View style={{ backgroundColor: 'transparent', flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
         {/* <Text variant='titleLarge'>Choose your mode</Text> */}
 
         <View style={{ flex: 0.2 }} />

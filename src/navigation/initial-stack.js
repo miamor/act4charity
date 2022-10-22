@@ -2,7 +2,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
 
 import NameScreen from '../screens/initials/name.screen'
-import InterestCategoryScreen from '../screens/initials/interest-category.screen'
+import InterestsInitialScreen from '../screens/initials/interests.screen'
 // import LocationScreen from '../screens/initials/location.screen'
 import SexScreen from '../screens/initials/sex.screen'
 import LoadingScreen from '../screens/initials/loading.screen'
@@ -30,7 +30,7 @@ function InitialStackNavigation() {
       />
       <Stack.Screen
         name="InterestCategory"
-        component={InterestCategoryScreen}
+        component={InterestsInitialScreen}
         options={{ headerShown: false }}
       />
       {/* <Stack.Screen

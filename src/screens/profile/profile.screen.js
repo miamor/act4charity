@@ -1,24 +1,11 @@
 import React, { PropTypes, Component, useCallback } from 'react'
 import { useEffect, useState } from 'react'
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  Pressable,
-  Platform,
-} from 'react-native'
+import { StyleSheet, View, ScrollView, Image, TouchableOpacity, Pressable } from 'react-native'
 import { ProgressBar, Button, useTheme, Appbar, Modal, Portal, Paragraph } from 'react-native-paper'
-import { H3, Text } from '../../components/paper/typos'
+import { H3, Text, TextBold } from '../../components/paper/typos'
 
-import LogOutModal from '../../components/_profile/logout.modal'
-import NotificationsModal from '../../components/_profile/notifications.modal'
-import HelpModal from '../../components/_profile/help.modal'
-import FeedbackModal from '../../components/_profile/feedback.modal'
 import { useGlobals } from '../../contexts/global'
 import { DefaultView } from '../../components/containers'
-import { TextBold } from '../../components/paper'
 
 import Storer from '../../utils/storer'
 import { CURRENT_CHALLENGE_KEY, default_loggedUser, LOGGED_USER_KEY, TOKEN_KEY } from '../../constants/keys'
@@ -27,6 +14,13 @@ import * as ImagePicker from 'react-native-image-picker'
 import { REACT_APP_API_URL } from '../../services/APIServices'
 import axios from 'axios'
 import Loading from '../../components/animations/loading'
+
+import InterestsModal from './interests.modal'
+import InformationModal from './information.modal'
+import LogOutModal from './logout.modal'
+import NotificationsModal from './notifications.modal'
+import HelpModal from './help.modal'
+import FeedbackModal from './feedback.modal'
 
 
 function ProfileScreen({ navigation }) {
@@ -41,6 +35,8 @@ function ProfileScreen({ navigation }) {
   const [helpModal, setHelpModalVisibility] = useState(false)
   const [feedbackModal, setFeedbackModalVisibility] = useState(false)
   const [personalInformationModal, setPersonalInformationModal] = useState(false)
+  const [interestsModal, setInterestsModalVisibility] = useState(false)
+  const [informationModal, setInformationModalVisibility] = useState(false)
 
   const onConfirmLogOut = () => {
     Storer.delete(TOKEN_KEY)
@@ -196,7 +192,7 @@ function ProfileScreen({ navigation }) {
     </Portal>)}
 
 
-    <ScrollView style={{ backgroundColor: '#fff' }}>
+    <ScrollView style={{ backgroundColor: 'transparent' }}>
       <View style={styles.mainViewContainer}>
 
         {/* <Text variant="headlineMedium" style={{ color: '#6750A4' }}>
@@ -232,10 +228,7 @@ function ProfileScreen({ navigation }) {
         <View style={{ marginLeft: 32, marginTop: 16 }}>
           <TouchableOpacity
             style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-            onPress={() => {
-              console.log('personal information clicked')
-              navigation.navigate('ProfilePersonalInfo')
-            }}>
+            onPress={() => setInformationModalVisibility(!informationModal)}>
             <Text variant="bodyMedium">Personal Information</Text>
             <Image
               source={require('../../../assets/icons/rightArrow.png')}
@@ -248,10 +241,7 @@ function ProfileScreen({ navigation }) {
               justifyContent: 'space-between',
               marginTop: 4,
             }}
-            onPress={() => {
-              console.log('notifications clicked')
-              setNotificationsModalVisibility(!notificationsModal)
-            }}>
+            onPress={() => setNotificationsModalVisibility(!notificationsModal)}>
             <Text variant="bodyMedium">Notifications</Text>
             <Image
               source={require('../../../assets/icons/rightArrow.png')}
@@ -264,9 +254,7 @@ function ProfileScreen({ navigation }) {
               justifyContent: 'space-between',
               marginTop: 4,
             }}
-            onPress={() => {
-              console.log('interests clicked')
-            }}>
+            onPress={() => setInterestsModalVisibility(!interestsModal)}>
             <Text variant="bodyMedium">Interests</Text>
             <Image
               source={require('../../../assets/icons/rightArrow.png')}
@@ -302,10 +290,7 @@ function ProfileScreen({ navigation }) {
         <View style={{ marginLeft: 32, marginTop: 16 }}>
           <TouchableOpacity
             style={{ flexDirection: 'row', justifyContent: 'space-between' }}
-            onPress={() => {
-              console.log('help clicked')
-              setHelpModalVisibility(!helpModal)
-            }}>
+            onPress={() => setHelpModalVisibility(!helpModal)}>
             <Text variant="bodyMedium">Help</Text>
             <Image
               source={require('../../../assets/icons/rightArrow.png')}
@@ -318,10 +303,7 @@ function ProfileScreen({ navigation }) {
               justifyContent: 'space-between',
               marginTop: 4,
             }}
-            onPress={() => {
-              console.log('feedback clicked')
-              setFeedbackModalVisibility(!feedbackModal)
-            }}>
+            onPress={() => setFeedbackModalVisibility(!feedbackModal)}>
             <Text variant="bodyMedium">Feedback</Text>
             <Image
               source={require('../../../assets/icons/rightArrow.png')}
@@ -360,10 +342,7 @@ function ProfileScreen({ navigation }) {
               justifyContent: 'space-between',
               marginTop: 4,
             }}
-            onPress={() => {
-              console.log('privacy policy clicked')
-              setModalVisible(!modalVisible)
-            }}>
+            onPress={() => setModalVisible(!modalVisible)}>
             <Text variant="bodyMedium">Privacy Policy</Text>
             <Image
               source={require('../../../assets/icons/rightArrow.png')}
@@ -377,10 +356,7 @@ function ProfileScreen({ navigation }) {
       <Button
         mode="text"
         style={{ width: 100, marginTop: 12 }}
-        onPress={() => {
-          console.log('logout button pressed')
-          setModalVisible(!modalVisible)
-        }}>
+        onPress={() => setModalVisible(!modalVisible)}>
         {
           <Text style={{
             color: colors.primary, // '#6750A4',
@@ -408,6 +384,14 @@ function ProfileScreen({ navigation }) {
       <FeedbackModal
         feedbackModalVisibility={feedbackModal}
         setFeedbackModalVisibility={setFeedbackModalVisibility}
+      />
+      <InterestsModal
+        interestModalVisibility={interestsModal}
+        setInterestModalVisibility={setInterestsModalVisibility}
+      />
+      <InformationModal
+        informationModalVisibility={informationModal}
+        setInformationModalVisibility={setInformationModalVisibility}
       />
     </ScrollView>
 

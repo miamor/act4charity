@@ -14,7 +14,8 @@ import AuthStackNavigation from './navigation/auth-stack'
 import InitialStackNavigation from './navigation/initial-stack'
 import MainStackNavigation from './navigation/main-stack'
 import Loading from './components/animations/loading'
-import SplashModal from './screens/_modal/splash.modal'
+import SplashModal from './screens/_modal_components/splash.modal'
+import Sensors from './components/sensors'
 
 /**
  * @returns {*}
@@ -42,7 +43,6 @@ const Main: () => Node = () => {
 
       appState.current = nextAppState
       setAppStateVisible(appState.current)
-      // console.log('AppState', appState.current)
     })
 
     return () => {
@@ -58,6 +58,7 @@ const Main: () => Node = () => {
       // Storer.set(LOGGED_USER_KEY, null)
       // Storer.set(TOKEN_KEY, null)
       // Storer.set(CURRENT_CHALLENGE_KEY, null)
+
       try {
         const _loggedUser = await Storer.get(LOGGED_USER_KEY)
         if (_loggedUser) {
@@ -94,13 +95,14 @@ const Main: () => Node = () => {
 
   return (<PaperProvider theme={_theme}>
     <NavigationContainer theme={_theme}>
-      {/* <MainStackNavigation /> */}
       {showSpash && <SplashModal onFinishSpash={onFinishSpash} />}
 
       {loggedUser == null || loggedUser._id == null ? (<AuthStackNavigation />)
         : loggedUser.basicsDone != true ? (<InitialStackNavigation />)
-          // : (<View />)
-          : (<MainStackNavigation />)}
+          : (<>
+            <Sensors />
+            <MainStackNavigation />
+          </>)}
 
       {/* {!isReady ? (<SplashModal onFinishSpash={() => console.log('onFinishSpash')} />)
         : loggedUser == null || loggedUser._id == null ? (<AuthStackNavigation />)

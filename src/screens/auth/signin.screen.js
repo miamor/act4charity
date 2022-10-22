@@ -13,6 +13,7 @@ import { Text } from '../../components/paper/typos'
 import * as Yup from 'yup'
 import { Formik } from 'formik'
 import * as authAPI from '../../services/authAPI'
+import Loading from '../../components/animations/loading'
 // import {
 //   GoogleSignin,
 //   statusCodes,
@@ -42,6 +43,8 @@ function SigninScreen({ navigation }) {
   // const [{ loggedUser }, dispatch] = useGlobals()
   const { colors } = useTheme()
 
+  const [loading, setLoading] = useState(false)
+
   const [isSecureEntry, setIsSecureEntry] = useState(true)
 
   const SignInSchema = Yup.object().shape({
@@ -50,6 +53,8 @@ function SigninScreen({ navigation }) {
   })
 
   const _onSubmit = values => {
+    setLoading(true)
+
     authAPI.onAuthenticate(values).then((res) => {
       if (res.status === 'error') {
         ToastAndroid.show(res.message, ToastAndroid.SHORT)
@@ -58,6 +63,7 @@ function SigninScreen({ navigation }) {
       }
 
       authAPI.onAuthenticate(values).then((res) => {
+        setLoading(false)
         navigation.navigate('Auth', res.data)
       }).catch(error => {
         console.error(error)
@@ -70,6 +76,8 @@ function SigninScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {loading && <Loading />}
+
       <View style={styles.topView}>
         <Image
           source={require('../../../assets/images/signup.png')}

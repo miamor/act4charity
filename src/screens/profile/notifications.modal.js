@@ -1,9 +1,14 @@
 import React, { useState } from 'react'
-import { Alert, Modal, StyleSheet, Pressable, View, Image } from 'react-native'
-import { Button, Switch } from 'react-native-paper'
-import { H2, Text, TextBold } from '../paper/typos'
+import { Alert, Modal, StyleSheet, View, Image } from 'react-native'
+import { Button, Switch, useTheme } from 'react-native-paper'
+import { useGlobals } from '../../contexts/global'
+import { H2, Text, TextBold } from '../../components/paper/typos'
+
 
 function NotificationsModal(props) {
+  const [{ loggedUser }, dispatch] = useGlobals()
+  const { colors } = useTheme()
+
   const [beAwareSwitch1, setbeAwareSwitch1] = useState(false)
   const [beAwareSwitch2, setbeAwareSwitch2] = useState(false)
   const [beAwareSwitch3, setbeAwareSwitch3] = useState(false)
@@ -23,9 +28,8 @@ function NotificationsModal(props) {
           )
         }}>
         <View style={styles.mainViewContainer}>
-          <H2 style={{ color: '#6750A4' }}>
-            Notifications
-          </H2>
+          <H2>Notifications</H2>
+
           <View
             style={{ flexDirection: 'row', alignItems: 'center', marginTop: 24 }}>
             <Image

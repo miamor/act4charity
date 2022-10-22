@@ -15,7 +15,7 @@ import Loading from '../../components/animations/loading'
 
 import * as userAPI from '../../services/userAPI'
 import Storer from '../../utils/storer'
-import ChallengeStartFuncs from '../../components/_challenge/start.func'
+import ChallengeStartMap from '../../components/_challenge/mapview'
 import ChallengeStartActionsIndividual from '../../components/_challenge/actions.individual'
 
 
@@ -134,7 +134,7 @@ function ChallengeStartScreen({ route, navigation }) {
       {completed !== 4 && (<>
 
         <View style={{ flex: 0.9, flexDirection: 'row' }}>
-          {challenge_accepted_data && <ChallengeStartFuncs
+          {challenge_accepted_data && <ChallengeStartMap
             challenge_accepted_data={challenge_accepted_data}
             showFull={true}
             onFinished={onFinished}

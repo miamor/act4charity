@@ -36,6 +36,8 @@ function TargetScreenModal({ route, navigation }) {
     setLoading(true)
 
     userAPI.updateProfile({ target_donation: selectedAmount }).then((res) => {
+      console.log('[target][updateProfile] res', res)
+      
       Storer.set(LOGGED_USER_KEY, {
         ...loggedUser,
         target_donation: selectedAmount

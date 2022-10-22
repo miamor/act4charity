@@ -1,11 +1,11 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
 
-import ChallengeDiscoverDetailInfoScreen from '../screens/challenge/info.discover'
-import ChallengeListWalkScreen from '../screens/challenge/list.walk'
-import ChallengeListMapDiscoverScreen from '../screens/challenge/listmap.discover'
-import ChallengeSelectScreen from '../screens/challenge/select'
-import ChallengeWalkDetailInfoScreen from '../screens/challenge/info.walk'
+import ChallengeDiscoverDetailInfoScreen from '../screens/challenge/info.discover.screen'
+import ChallengeListWalkScreen from '../screens/challenge/list.walk.screen'
+import ChallengeListMapDiscoverScreen from '../screens/challenge/listmap.discover.screen'
+import ChallengeSelectScreen from '../screens/challenge/select.screen'
+import ChallengeWalkDetailInfoScreen from '../screens/challenge/info.walk.screen'
 
 const Stack = createStackNavigator()
 

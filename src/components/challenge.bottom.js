@@ -5,7 +5,7 @@ import { useGlobals } from '../contexts/global'
 import { useTheme } from 'react-native-paper'
 import { useNavigation } from '@react-navigation/core'
 
-import ChallengeStartFuncs from './_challenge/start.func'
+import ChallengeStartMap from './_challenge/mapview'
 import ChallengeStartActionsIndividual from './_challenge/actions.individual'
 import ChallengeStartActionsTeam from './_challenge/actions.team'
 import haversine from 'haversine'
@@ -49,7 +49,7 @@ function ChallengeBottomSheet({ }) {
    *
    * **********************************************/
   const checkComplete = () => {
-    console.log('[challenge.start.walk][checkComplete] currentLocation', currentLocation, ' | trackLoc.distanceTravelled =', trackLoc.distanceTravelled, ' | challengeDetail.distance =', challengeDetail.distance)
+    console.log('[challenge.bottom][checkComplete] currentLocation', currentLocation, ' | trackLoc.distanceTravelled =', trackLoc.distanceTravelled, ' | challengeDetail.distance =', challengeDetail.distance)
 
     if (challengeDetail.type === 'walk') {
       // if (trackLoc.distanceTravelled > challengeDetail.distance) { //? identify as completed
@@ -63,7 +63,7 @@ function ChallengeBottomSheet({ }) {
       if (Object.keys(trackLoc.prevLatLng).length > 0) {
         const dist_to_target = haversine(trackLoc.prevLatLng, challengeDetail.place_detail.coordinates) || 0
 
-        console.log('>>> dist_to_target', dist_to_target)
+        console.log('[challenge.bottom] >>> dist_to_target', dist_to_target)
 
         if (dist_to_target < 0.2) { //? identify as arrived
           // setCompleted(1)
@@ -99,16 +99,6 @@ function ChallengeBottomSheet({ }) {
 
   const [showFull, setShowFull] = useState(false)
   const openChallenge = () => {
-    // let screenName = ''
-    // if (challengeDetail.type === 'walk') {
-    //   screenName = '_ChallengeWalkDetailStart'
-    //   if (challenge_accepted_data.mode === 'team') screenName = '_ChallengeWalkDetailStartTeam'
-    // } else if (challengeDetail.type === 'discover') {
-    //   screenName = '_ChallengeDiscoverDetailStart'
-    //   if (challenge_accepted_data.mode === 'team') screenName = '_ChallengeDiscoverDetailStartTeam'
-    // }
-
-    // console.log('[challenge.bottom] screenName', screenName)
     console.log('[challenge.bottom] challenge_accepted_data', challenge_accepted_data)
     navigation.navigate('_ChallengeDetailStart', { key: '_ChallengeDetailStart', challenge_accepted_data: currentChallenge })
   }
@@ -144,7 +134,7 @@ function ChallengeBottomSheet({ }) {
     {completed !== 4 && (<>
 
       <View style={{ flex: 0.9, flexDirection: 'row' }}>
-        {challenge_accepted_data && <ChallengeStartFuncs
+        {challenge_accepted_data && <ChallengeStartMap
           challenge_accepted_data={challenge_accepted_data}
           showFull={showFull}
           onFinished={onFinished}

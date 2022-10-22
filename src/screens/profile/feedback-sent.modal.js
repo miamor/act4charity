@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { Alert, Modal, StyleSheet, Pressable, View, Image, Dimensions } from 'react-native'
 import { Button } from 'react-native-paper'
-import { TextBold, Text } from '../paper/typos'
+import { TextBold, Text } from '../../components/paper/typos'
+
 
 function FeedbackSentModal(props) {
-
   const { width } = Dimensions.get('window')
 
   return (

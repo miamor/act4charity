@@ -10,51 +10,12 @@ import { H2, H3, Text, TextBold } from '../../components/paper/typos'
 import * as userAPI from '../../services/userAPI'
 import Loading from '../../components/animations/loading'
 
-const TESTDATA = [
-  {
-    id: '1',
-    challengeTitle: 'Walking for them',
-    challengeSponsor: 'Boots for all',
-    donationAmount: '0.50',
-    type: 'walk',
-  },
-  {
-    id: '2',
-    challengeTitle: 'All for Chris',
-    challengeSponsor: "Children's Health Fund",
-    donationAmount: '0.75',
-    type: 'walk',
-  },
-  {
-    id: '3',
-    challengeTitle: 'Saving Koalas',
-    challengeSponsor: 'Animals Australia',
-    donationAmount: '0.25',
-    type: 'discover',
-  },
-  {
-    id: '4',
-    challengeTitle: 'Summer Reading',
-    challengeSponsor: 'Indigenous Literacy Foundation',
-    donationAmount: '0.30',
-    type: 'discover',
-  },
-]
 
 function RewardScreen() {
   const [{ loggedUser }, dispatch] = useGlobals()
   const { colors } = useTheme()
 
-  const donatedAmount = 246
-
-
   const [loading, setLoading] = useState(true)
-
-  const [targetModal, setTargetModalVisibility] = useState(false)
-  const [progress, setProgress] = useState(0.5)
-  const [donationProgress, setDonationProgress] = useState(246)
-  const [finalDonationAmount, setFinalDonationAmount] = useState(500)
-  const donationProgressPercentage = donationProgress / finalDonationAmount
 
   useEffect(() => {
     loadCompletedChallenge()
@@ -75,8 +36,6 @@ function RewardScreen() {
   const [completedChallenges, setCompletedChallenges] = useState()
   const loadCompletedChallenge = () => {
     userAPI.getCompletedChallenge({ num_per_page: 100 }).then((res) => {
-      console.log('[loadCompletedChallenge] res', res)
-      console.log('[loadCompletedChallenge] res', res.data.length)
       setCompletedChallenges(res.data)
       setLoading(false)
     }).catch(error => {
@@ -95,7 +54,7 @@ function RewardScreen() {
 
       {loading && <Loading />}
 
-      <View style={{ backgroundColor: '#fff' }}>
+      <View style={{ backgroundColor: 'transparent' }}>
 
         <View style={{ height: 165, paddingHorizontal: 20 }}>
           <View style={{
@@ -109,7 +68,7 @@ function RewardScreen() {
               style={{ width: 66, height: 48 }}
             />
             <TextBold style={{ color: colors.primary, marginLeft: 16, fontSize: 38, lineHeight: 55, marginTop: 4 }} variant="displayMedium">
-              ${donatedAmount}
+              ${loggedUser.current_donation}
             </TextBold>
           </View>
           <Text variant="labelSmall"
@@ -126,20 +85,6 @@ function RewardScreen() {
           </H3>
         </View>
 
-        {/* <View style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              marginTop: 8,
-              marginBottom: 12,
-            }}>
-            <TextBold variant="titleSmall">Challenge</TextBold>
-            <TextBold variant="titleSmall">Donation</TextBold>
-          </View> */}
-        {/* {completedChallenges != null && <FlatList
-          data={completedChallenges}
-          renderItem={renderItem}
-          keyExtractor={item => item._id}
-        />} */}
         <ScrollView style={{ marginBottom: 229, marginTop: 5 }}>
           {completedChallenges != null && completedChallenges.map((item, i) => (<View key={`comp-` + i} style={{
             marginHorizontal: 20,

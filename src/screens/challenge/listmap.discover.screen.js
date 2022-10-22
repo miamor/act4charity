@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, ToastAndroid, PermissionsAndroid, View, Animated, TouchableOpacity, TouchableHighlight, ScrollView } from 'react-native'
 import { Appbar, Button, useTheme } from 'react-native-paper'
-import { Text, H2 } from '../../components/paper/typos'
+import { Text, H2, TextBold } from '../../components/paper/typos'
 import { DefaultView } from '../../components/containers'
 import { useGlobals } from '../../contexts/global'
 
@@ -13,7 +13,6 @@ import MapView, { Callout, Marker, Circle, enableLatestRenderer, PROVIDER_GOOGLE
 import { challenges_discovery } from '../../data/challenges.discovery'
 import * as userAPI from '../../services/userAPI'
 import Loading from '../../components/animations/loading'
-import { TextBold } from '../../components/paper'
 
 
 /**

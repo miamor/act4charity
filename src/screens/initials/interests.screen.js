@@ -14,12 +14,12 @@ import * as userAPI from '../../services/userAPI'
  * @returns {*}
  * @constructor
  */
-function InterestCategoryScreen({ navigation }) {
+function InterestsInitialScreen({ navigation }) {
   const [{ loggedUser }, dispatch] = useGlobals()
   const { colors } = useTheme()
 
   const [cats, setCats] = useState()
-  const [selectedCats, setSelectedCats] = useState([])
+  const [selectedCats, setSelectedCats] = useState({})
 
   useEffect(() => {
     userAPI.listInterests({ num_per_page: 100 }).then((res) => {
@@ -36,7 +36,7 @@ function InterestCategoryScreen({ navigation }) {
       loggedUser: {
         ...loggedUser,
         interests: selectedCats,
-        target_donation: 50, // just fix it here
+        target_donation: 50, // just put a fixed value here
       },
     })
     navigation.push('Loading')
@@ -48,15 +48,16 @@ function InterestCategoryScreen({ navigation }) {
     const idx = a.indexOf(cat_id)
     // console.log('idx', idx)
 
-    if (idx < 0) {
-      setSelectedCats([...selectedCats, cat_id])
+    if (!selectedCats.hasOwnProperty(cat_id) || selectedCats[cat_id] === 0) {
+      setSelectedCats({
+        ...selectedCats,
+        [cat_id]: 1
+      })
     } else {
-      a.splice(idx, 1)
-      // console.log('>>> idx', idx)
-      // console.log('>>> a', a)
-      // console.log('>>> a', a)
-      // console.log('>>> a', a)
-      setSelectedCats(a)
+      setSelectedCats({
+        ...selectedCats,
+        [cat_id]: 0
+      })
     }
   }
   // useEffect(() => {
@@ -83,10 +84,10 @@ function InterestCategoryScreen({ navigation }) {
         justifyContent: 'space-between',
       }}>
         {cats != null && cats.map((cat, i) => (
-          <TouchableOpacity key={`cat-`+i}
+          <TouchableOpacity key={`cat-` + i}
             onPress={() => toggleToCats(cat._id)}
             style={[
-              selectedCats.indexOf(cat._id) >= 0 && { backgroundColor: colors.primary },
+              selectedCats.hasOwnProperty(cat._id) && selectedCats[cat._id] === 1 && { backgroundColor: colors.primary },
               {
                 height: 45,
                 paddingHorizontal: 20,
@@ -99,10 +100,7 @@ function InterestCategoryScreen({ navigation }) {
               }
             ]}
           >
-            <Text style={[
-              selectedCats.indexOf(cat._id) >= 0 && { color: '#fff' },
-              {
-              }]}>
+            <Text style={[selectedCats.indexOf(cat._id) >= 0 && { color: '#fff' }]}>
               {cat.title}
             </Text>
           </TouchableOpacity>
@@ -111,7 +109,7 @@ function InterestCategoryScreen({ navigation }) {
 
       <View style={styles.buttonContainer}>
         <Button mode="contained"
-          disabled={!Array.isArray(selectedCats) || selectedCats.length === 0}
+          disabled={Object.keys(selectedCats).length === 0 || Object.values(selectedCats).reduce((a, b) => a + b, 0) === 0}
           onPress={_handleContinue}
           style={{ borderRadius: 30 }}
           labelStyle={{ color: '#fff', paddingVertical: 5 }}
@@ -124,20 +122,6 @@ function InterestCategoryScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  constellation: {
-    zIndex: 0,
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    opacity: 0.1,
-  },
-  scorpio: {
-    zIndex: 0,
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    opacity: 0.2,
-  },
   textContainer: {
     flex: 1.2,
     alignSelf: 'center',
@@ -169,4 +153,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default InterestCategoryScreen
+export default InterestsInitialScreen

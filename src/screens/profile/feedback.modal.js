@@ -1,13 +1,14 @@
 import React, { useCallback, useState } from 'react'
 import { Alert, Modal, StyleSheet, Pressable, View, Image, Dimensions } from 'react-native'
 import { Button, Provider, Surfac, TextInput, useTheme } from 'react-native-paper'
-import { Text, H3, H2 } from '../paper/typos'
+import { Text, H3, H2 } from '../../components/paper/typos'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Dropdown } from 'react-native-element-dropdown'
 import FeedbackSentModal from './feedback-sent.modal'
 import { useGlobals } from '../../contexts/global'
-import { DefaultView } from '../containers'
+import { DefaultView } from '../../components/containers'
 import { useNavigation } from '@react-navigation/core'
+
 
 function FeedbackModal(props) {
   const [{ loggedUser }, dispatch] = useGlobals()
@@ -102,20 +103,17 @@ function FeedbackModal(props) {
 
 
           <View style={{ flex: 0.3, paddingTop: 30 }}>
-            <Button
+            <Button mode="contained"
               onPress={() => {
                 console.log('challenge button pressed')
                 setSentModalVisibility(!sentModal)
-              }}
-              style={{ backgroundColor: '#E89C51', borderRadius: 12 }}
-              contentStyle={styles.targetButtonStyle}
-              mode="contained">
+              }}>
               Send Feedback
             </Button>
 
-            <Button
-              mode="text"
-              style={{ width: 20, marginTop: 65 }}
+            <Button mode="text"
+              style={{ width: 100, marginTop: 35 }}
+              labelStyle={{ paddingHorizontal: 10 }}
               onPress={() => {
                 console.log('back button pressed')
                 props.setFeedbackModalVisibility(!props.feedbackModalVisibility)

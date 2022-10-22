@@ -22,7 +22,7 @@ import * as userAPI from '../../services/userAPI'
 import { useNavigation } from '@react-navigation/core'
 
 
-function ChallengeStartFuncs(props) {
+function ChallengeStartMap(props) {
   const [{ currentChallenge, loggedUser, currentLocation, trackLoc, currentRegion, trackStep, trackMemberLocationStates, trackMemberDistStates, trackMemberStepStates,
     completed, teamCompleted, finished
   }, dispatch] = useGlobals()
@@ -57,7 +57,7 @@ function ChallengeStartFuncs(props) {
     /*
      * only when not detected completed is the tracking enabled
      */
-    console.log('[start.func] currentLocation', currentLocation, ' | completed =', completed)
+    console.log('[mapview] currentLocation', currentLocation, ' | completed =', completed)
     if (completed === 0 && currentLocation != null) {
       processPosition(currentLocation)
     }
@@ -108,7 +108,7 @@ function ChallengeStartFuncs(props) {
   const processPosition = async (position) => {
     setLoading(false)
 
-    console.log('[start.func] processPosition CALLED ', position)
+    console.log('[mapview] processPosition CALLED ', position)
 
     onSetDispatch('setCurrentRegion', 'currentRegion', {
       ...currentRegion,
@@ -178,7 +178,7 @@ function ChallengeStartFuncs(props) {
     }
     await setTrackLocationState(track_loc_state)
 
-    console.log('[start.func][updateTrackState] dispatch setTrackLoc ', JSON.stringify(track_loc_state))
+    console.log('[mapview][updateTrackState] dispatch setTrackLoc ', JSON.stringify(track_loc_state))
     onSetDispatch('setTrackLoc', 'trackLoc', track_loc_state)
   }
 
@@ -231,23 +231,6 @@ function ChallengeStartFuncs(props) {
         : (<Text>Location must be enabled to use map</Text>)}
     </ViewShot>
 
-
-    {props.showFull && (<View style={{
-      position: 'absolute', zIndex: 2,
-      top: 20,
-      left: 20,
-      right: 20,
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center'
-    }}>
-      <Button mode="contained" onPress={() => { }} labelStyle={{ paddingBottom: 1 }}>
-        <MaterialCommunityIcons name="close" size={14} />
-        Cancel Challenge
-      </Button>
-    </View>)}
-
-
   </>)
 }
 
@@ -257,4 +240,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default ChallengeStartFuncs
+export default ChallengeStartMap
