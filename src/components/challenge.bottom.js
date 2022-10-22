@@ -19,7 +19,7 @@ import * as userAPI from '../services/userAPI'
  */
 function ChallengeBottomSheet({ }) {
   const [{ currentChallenge, loggedUser, currentLocation, trackLoc, trackStep,
-    completed, confirmCompleted, started, finished }, dispatch] = useGlobals()
+    completed, started, finished }, dispatch] = useGlobals()
   const { colors } = useTheme()
   const navigation = useNavigation()
 

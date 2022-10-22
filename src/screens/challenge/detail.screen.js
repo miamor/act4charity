@@ -16,7 +16,7 @@ import CreateTeamModal from '../../components/_challenge/create.team.modal'
  * @returns {*}
  * @constructor
  */
-function ChallengeWalkDetailInfoScreen({ route, navigation }) {
+function ChallengeDetailInfoScreen({ route, navigation }) {
   const [{ loggedUser, currentChallenge }, dispatch] = useGlobals()
   const { colors } = useTheme()
 
@@ -43,8 +43,8 @@ function ChallengeWalkDetailInfoScreen({ route, navigation }) {
       if (currentChallenge.challenge_detail._id !== challengeDetail._id) { //? the user is in another challenge
         setShowConfirmDialog(true)
       } else { //? is in this challenge
-        navigation.navigate('_ChallengeWalkDetailStart', {
-          key: '_ChallengeWalkDetailStart',
+        navigation.navigate('_ChallengeDetailStart', {
+          key: '_ChallengeDetailStart',
           challenge_accepted_data: currentChallenge,
         })
       }
@@ -100,8 +100,8 @@ function ChallengeWalkDetailInfoScreen({ route, navigation }) {
       console.log('>> res', res)
       setLoading(false)
 
-      let screen = 'ChallengeWalkDetailStart'
-      if (mode == 'team') screen = 'ChallengeWalkDetailStartTeam'
+      let screen = '_ChallengeDetailStart'
+      if (mode == 'team') screen = '_ChallengeDetailStartTeam'
 
       const challenge_accepted_data = {
         ...res.data,
@@ -184,9 +184,16 @@ function ChallengeWalkDetailInfoScreen({ route, navigation }) {
         </View>
 
         <View style={{ flex: 0.6, paddingHorizontal: 10, marginTop: 20, alignItems: 'center' }}>
+
           <View style={{ flex: 0.35, justifyContent: 'center', marginTop: 5, marginBottom: 5 }}>
-            <Text style={{ textAlign: 'center', flex: 1, paddingHorizontal: 15 }}>Your challenge is to walk <TextBold>{challengeDetail.distance}</TextBold> km to donate <TextBold>${challengeDetail.donation}</TextBold></Text>
+            {challengeDetail.type === 'walk' ? (<>
+              <Text style={{ textAlign: 'center', flex: 1, paddingHorizontal: 15 }}>Your challenge is to walk <TextBold>{challengeDetail.distance}</TextBold> km to donate <TextBold>${challengeDetail.donation}</TextBold></Text>
+            </>)
+              : (<>
+                <Text style={{ textAlign: 'center', flex: 1, paddingHorizontal: 15 }}>Your challenge is to discover <TextBold>{challengeDetail.place_detail.local_name}</TextBold> to donate <TextBold>${challengeDetail.donation}</TextBold></Text>
+              </>)}
           </View>
+
           <View style={{ flex: 1, justifyContent: 'center' }}>
             <Text style={{ textAlign: 'center', flex: 1 }}>Donations from this challenge will go to <TextBold>{challengeDetail.charity_detail.name}</TextBold> who <TextBold>{challengeDetail.charity_detail.description}</TextBold></Text>
           </View>
@@ -218,4 +225,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default ChallengeWalkDetailInfoScreen
+export default ChallengeDetailInfoScreen

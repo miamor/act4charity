@@ -21,7 +21,7 @@ function ChallengeStartActionsTeam(props) {
     currentLocation, currentRegion, trackLoc, trackStep,
     privateSockMsg, privateSockMsgs, socket,
     trackMemberLocationStates, trackMemberDistStates, trackMemberStepStates, membersJoinStatus, completedMembers, chatMessages, processedPrivateSockMsgs,
-    started, completed, confirmCompleted, finished
+    started, completed, finished
   }, dispatch] = useGlobals()
   const { colors } = useTheme()
   const navigation = useNavigation()
@@ -146,8 +146,7 @@ function ChallengeStartActionsTeam(props) {
    * This function starts on each member's screen
    */
   const startNow = () => {
-    // setIsStarted(true)
-    onSetDispatch('setStarted', 'started', 1)
+    onSetDispatch('setStarted', 'started', true)
   }
 
   /*
@@ -197,7 +196,7 @@ function ChallengeStartActionsTeam(props) {
          * ---
          * start tracking
          */
-        startNow()
+        _handleStart(res)
       }
 
       else if (res.action === 'join') {
@@ -288,6 +287,10 @@ function ChallengeStartActionsTeam(props) {
    * Handler for each message type 
    *
    * ************************/
+  const _handleStart = useCallback((res) => {
+    startNow()
+  }, [])
+
   const _handleChat = useCallback((res) => {
     setMessages([...messages, res])
   }, [messages])
@@ -329,18 +332,11 @@ function ChallengeStartActionsTeam(props) {
   const _handleKill = useCallback((res) => {
     onSetDispatch('setCompleted', 'completed', -1)
 
-    if (challengeDetail.type === 'discover') {
-      navigation.navigate('ChallengeStack', {
-        screen: 'ChallengeDiscoverDetailInfo',
-        params: { key: 'ChallengeDiscoverDetailInfo', challengeDetail: res.data }
-      })
-    } else {
-      // navigation.navigate('ChallengeWalkDetailInfo', { key: 'ChallengeWalkDetailInfo', challengeDetail: item })
-      navigation.navigate('ChallengeStack', {
-        screen: 'ChallengeWalkDetailInfo',
-        params: { key: 'ChallengeWalkDetailInfo', challengeDetail: res.data }
-      })
-    }
+    // navigation.navigate('ChallengeWalkDetailInfo', { key: 'ChallengeWalkDetailInfo', challengeDetail: item })
+    navigation.navigate('ChallengeStack', {
+      screen: 'ChallengeDetailInfo',
+      params: { key: 'ChallengeDetailInfo', challengeDetail: res.data }
+    })
   }, [])
 
   const _handleEnd = useCallback((res) => {
@@ -469,21 +465,30 @@ function ChallengeStartActionsTeam(props) {
    * ************************/
   const [showWarningCantStart, setShowWarningCantStart] = useState(false)
   const hideWarningCantStart = () => setShowWarningCantStart(false)
-  const onStartTeam = () => {
+  const [showHostConfirmStartTeam, setShowHostConfirmStartTeam] = useState(false)
+  const hideConfirmStartTeam = () => setShowHostConfirmStartTeam(false)
+  const onPressStartTeam = () => {
     //? if totStt > 0 => at least one member accepted.
     const totStt = Object.values(membersJoinStatus).reduce((a, b) => a + b, 0)
     if (totStt === 0) {
       setShowWarningCantStart(true)
-      return null
+    } else {
+      setShowHostConfirmStartTeam(true)
     }
-
-    // setIsStarted(true)
+  }
+  const onConfirmStartTeam = () => {
     setLoading(true)
 
     userAPI.startTeamChallenge({ challenge_accepted_id: challenge_accepted_id }).then((res) => {
       console.log('[startTeamChallenge] res', res)
 
-      socket.emit('start', { room_id: room_id, user_id: loggedUser._id, username: loggedUser.username, data: 'Host started the challenge' })
+      socket.emit('cast_private', {
+        room_id: room_id,
+        action: 'start',
+        user_id: loggedUser._id,
+        username: loggedUser.username,
+        data: 'Host started the challenge'
+      })
 
       setLoading(false)
     }).catch(error => {
@@ -569,9 +574,6 @@ function ChallengeStartActionsTeam(props) {
     setCompleted(1)
     setShowConfirmComplete(true)
   }
-  /* 
-   * Confirm complete 
-   */
   const onConfirmComplete = () => {
     hideConfirmComplete()
   }
@@ -602,8 +604,8 @@ function ChallengeStartActionsTeam(props) {
       setLoading(true)
 
       userAPI.completeChallenge({
-        challenge_accepted_id: challenge_accepted_id, 
-        challenge_donation: challengeDetail.donation, 
+        challenge_accepted_id: challenge_accepted_id,
+        challenge_donation: challengeDetail.donation,
         challenge_reward: challengeDetail.reward,
         participants: challengeDetail.participants,
       }).then((res) => {
@@ -657,7 +659,13 @@ function ChallengeStartActionsTeam(props) {
         onSetDispatch('setCompleted', 'completed', -1)
 
         /* cast to other members via socket channel */
-        socket.emit('out', { room_id: room_id, user_id: loggedUser._id, username: loggedUser.username, data: loggedUser.username + ' withdrawn from this challenge' })
+        socket.emit('cast_private', {
+          room_id: room_id,
+          action: 'out',
+          user_id: loggedUser._id,
+          username: loggedUser.username,
+          data: loggedUser.username + ' withdrawn from this challenge',
+        })
 
         /* out this screen */
         navigation.navigate('ChallengeStack', { screen: 'ChallengeListMapDiscover' })
@@ -700,7 +708,13 @@ function ChallengeStartActionsTeam(props) {
         console.log('>> res', res)
 
         /* cast to other members via socket channel */
-        socket.emit('kill', { room_id: room_id, user_id: loggedUser._id, username: loggedUser.username, data: loggedUser.username + ' canceled this challenge' })
+        socket.emit('cast_private', {
+          room_id: room_id,
+          action: 'kill',
+          user_id: loggedUser._id,
+          username: loggedUser.username,
+          data: 'Host canceled this challenge',
+        })
 
         /* done loading */
         setLoading(false)
@@ -944,6 +958,21 @@ function ChallengeStartActionsTeam(props) {
         </Modal>
       </Portal>)}
 
+      {showHostConfirmStartTeam && (<Portal>
+        <Modal visible={showHostConfirmStartTeam} onDismiss={hideConfirmStartTeam} contentContainerStyle={{ zIndex: 1000, backgroundColor: '#fff', padding: 20, marginHorizontal: 20 }}>
+          <H3 style={{ marginBottom: 18, paddingBottom: 12, borderBottomColor: '#f0f0f0', borderBottomWidth: 1 }}>Start now?</H3>
+
+          <Paragraph>
+            Starting a challenge will prevent others accept invitation to join.
+          </Paragraph>
+
+          <View style={{ marginTop: 30, marginHorizontal: 20 }}>
+            <Button mode="contained" labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={onConfirmStartTeam}>Yes, start now</Button>
+            <Button labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={hideConfirmStartTeam}>Wait more</Button>
+          </View>
+        </Modal>
+      </Portal>)}
+
     </>)}
 
 
@@ -958,19 +987,19 @@ function ChallengeStartActionsTeam(props) {
       justifyContent: 'center',
       alignItems: 'center'
     }}>
-      {!started && isHost && (<Button mode="contained" onPress={onStartTeam} labelStyle={{ paddingBottom: 1 }}>
+      {isHost && !started && (<Button mode="contained" onPress={onPressStartTeam} labelStyle={{ paddingBottom: 1 }}>
         <MaterialCommunityIcons name="close" size={14} />
         Start now
+      </Button>)}
+
+      {isHost && started && (<Button mode="contained" onPress={onPressHostCancelChallenge} labelStyle={{ paddingBottom: 1 }}>
+        <MaterialCommunityIcons name="close" size={14} />
+        Cancel Challenge
       </Button>)}
 
       {!isHost && (<Button mode="contained" onPress={onPressCancelChallenge} labelStyle={{ paddingBottom: 1 }}>
         <MaterialCommunityIcons name="close" size={14} />
         Out Challenge
-      </Button>)}
-
-      {isHost && (<Button mode="contained" onPress={onPressHostCancelChallenge} labelStyle={{ paddingBottom: 1 }}>
-        <MaterialCommunityIcons name="close" size={14} />
-        Cancel Challenge
       </Button>)}
 
     </View>)}

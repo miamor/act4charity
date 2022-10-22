@@ -1,11 +1,10 @@
 import { createStackNavigator } from '@react-navigation/stack'
 import React from 'react'
 
-import ChallengeDiscoverDetailInfoScreen from '../screens/challenge/info.discover.screen'
 import ChallengeListWalkScreen from '../screens/challenge/list.walk.screen'
 import ChallengeListMapDiscoverScreen from '../screens/challenge/listmap.discover.screen'
 import ChallengeSelectScreen from '../screens/challenge/select.screen'
-import ChallengeWalkDetailInfoScreen from '../screens/challenge/info.walk.screen'
+import ChallengeDetailInfoScreen from '../screens/challenge/detail.screen'
 
 const Stack = createStackNavigator()
 
@@ -34,13 +33,6 @@ function ChallengeStackNavigation() {
           headerShown: false
         }}
       />
-      <Stack.Screen
-        name="ChallengeWalkDetailInfo"
-        component={ChallengeWalkDetailInfoScreen}
-        options={{
-          headerShown: false
-        }}
-      />
 
       <Stack.Screen
         name="ChallengeListMapDiscover"
@@ -49,9 +41,10 @@ function ChallengeStackNavigation() {
           headerShown: false
         }}
       />
+      
       <Stack.Screen
-        name="ChallengeDiscoverDetailInfo"
-        component={ChallengeDiscoverDetailInfoScreen}
+        name="ChallengeDetailInfo"
+        component={ChallengeDetailInfoScreen}
         options={{
           headerShown: false
         }}

@@ -13,12 +13,12 @@ import io from 'socket.io-client'
 function Sensors() {
   const [{ loggedUser, currentChallenge, currentLocation, trackStep, trackLoc, privateSockMsg, privateSockMsgs, socket, init }, dispatch] = useGlobals()
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.log('[sensors] called')
-    }, 10000)
-    return () => clearInterval(interval)
-  }, [])
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     console.log('[sensors] called')
+  //   }, 10000)
+  //   return () => clearInterval(interval)
+  // }, [])
 
 
   useEffect(() => {

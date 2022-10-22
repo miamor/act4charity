@@ -1,10 +1,10 @@
 import React from 'react';
-import {useState} from 'react';
-import {StyleSheet, View, Dimensions, FlatList, Image} from 'react-native';
-import {Text, Button, useTheme} from 'react-native-paper';
-import {DefaultView} from '../../components/containers';
+import { useState } from 'react';
+import { StyleSheet, View, Dimensions, FlatList, Image } from 'react-native';
+import { Text, Button, useTheme } from 'react-native-paper';
+import { DefaultView } from '../../components/containers';
 
-const {height, width} = Dimensions.get('screen');
+const { height, width } = Dimensions.get('screen');
 
 let distances = [
   {
@@ -72,7 +72,7 @@ let times = [
   },
 ];
 
-function WalkSelectionScreen({navigation}) {
+function WalkSelectionScreen({ navigation }) {
   const [distanceSelected, setDistanceSelected] = useState(distances);
   const [timeSelected, setTimeSelected] = useState(times);
   const [distanceChosen, setDistanceChosen] = useState(false);
@@ -91,7 +91,7 @@ function WalkSelectionScreen({navigation}) {
         } else {
           value.selected = false;
         }
-        return {...value};
+        return { ...value };
       },
     );
     setDistanceSelected(newItem);
@@ -112,7 +112,7 @@ function WalkSelectionScreen({navigation}) {
         } else {
           value.selected = false;
         }
-        return {...value};
+        return { ...value };
       },
     );
     setTimeSelected(newItem);
@@ -120,7 +120,7 @@ function WalkSelectionScreen({navigation}) {
     console.log(timeSelected);
   };
 
-  const {colors} = useTheme();
+  const { colors } = useTheme();
 
   return (
     <DefaultView>
@@ -131,9 +131,11 @@ function WalkSelectionScreen({navigation}) {
           style={styles.image}
         />
       </View>
+      
       <View style={styles.instructionContainer}>
         <Text style={styles.instructionText}>Choose a distance</Text>
       </View>
+
       <View style={styles.selectionContainer}>
         <FlatList
           data={distances}
@@ -145,7 +147,7 @@ function WalkSelectionScreen({navigation}) {
           contentContainerStyle={{
             justifyContent: 'flex-start',
           }}
-          renderItem={({item, index}) => {
+          renderItem={({ item, index }) => {
             return (
               <Button
                 onPress={(item, index) => {
@@ -166,6 +168,7 @@ function WalkSelectionScreen({navigation}) {
             }
           }}></FlatList>
       </View>
+
       <View style={styles.separatorLineContainer}>
         <View
           style={{
@@ -197,9 +200,11 @@ function WalkSelectionScreen({navigation}) {
           }}
         />
       </View>
+
       <View style={styles.instructionContainer}>
         <Text style={styles.instructionText}>Choose a time</Text>
       </View>
+
       <View style={styles.selectionContainer}>
         <FlatList
           data={times}
@@ -211,7 +216,7 @@ function WalkSelectionScreen({navigation}) {
           contentContainerStyle={{
             justifyContent: 'flex-start',
           }}
-          renderItem={({item, index}) => {
+          renderItem={({ item, index }) => {
             return (
               <Button
                 onPress={(item, index) => {
@@ -231,6 +236,7 @@ function WalkSelectionScreen({navigation}) {
             }
           }}></FlatList>
       </View>
+
       <View style={styles.bottomButtonsContainer}>
         <Button
           mode="text"
@@ -242,17 +248,19 @@ function WalkSelectionScreen({navigation}) {
           }}>
           Back
         </Button>
+
         <Button
-          mode="Contained"
+          mode="contained"
           buttonColor="#E89C51"
           textColor="#FFFFFF"
           style={styles.bottomButtonContainer}
           contentStyle={styles.buttonContent}
           labelStyle={styles.bottomButtonLabel}
           disabled={!distanceChosen && timeChosen}
-          onPress={() => {
-            navigation.navigate(ChallengeWalkDetailStart);
-          }}>
+        // onPress={() => {
+        //   navigation.navigate(ChallengeWalkDetailStart);
+        // }}
+        >
           Next
         </Button>
       </View>
@@ -276,7 +284,7 @@ const styles = StyleSheet.create({
     lineHeight: 44,
     width: 0.435 * width,
   },
-  image: {height: 40, width: 40, marginRight: 0.048 * width},
+  image: { height: 40, width: 40, marginRight: 0.048 * width },
   instructionContainer: {
     marginTop: 0.0535 * height,
     marginHorizontal: 0.058 * width,

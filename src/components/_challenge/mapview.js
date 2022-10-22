@@ -24,7 +24,7 @@ import { useNavigation } from '@react-navigation/core'
 
 function ChallengeStartMap(props) {
   const [{ currentChallenge, loggedUser, currentLocation, trackLoc, currentRegion, trackStep, trackMemberLocationStates, trackMemberDistStates, trackMemberStepStates,
-    completed, teamCompleted, finished
+    completed, teamCompleted, started, finished
   }, dispatch] = useGlobals()
   const { colors } = useTheme()
   const navigation = useNavigation()
@@ -51,17 +51,17 @@ function ChallengeStartMap(props) {
       setCaptured(true)
       takeScreenshot()
     }
-  }, [captured, completed])
+  }, [started, captured, completed])
 
   useEffect(() => {
     /*
      * only when not detected completed is the tracking enabled
      */
     console.log('[mapview] currentLocation', currentLocation, ' | completed =', completed)
-    if (completed === 0 && currentLocation != null) {
+    if (started && completed === 0 && currentLocation != null) {
       processPosition(currentLocation)
     }
-  }, [completed, currentLocation])
+  }, [started, completed, currentLocation])
 
   
 

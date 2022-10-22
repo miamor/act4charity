@@ -95,16 +95,13 @@ function RewardScreen() {
             // alignItems: 'center',
           }}>
             <View style={{ flex: 1, flexDirection: 'row' }}>
-              {item.challenge_detail.type == 'walk' ? <Image
-                style={{ height: 46, width: 46, marginTop: 0 }}
-                source={require('../../../assets/icons/walking.png')}
-              /> : <Image
-                style={{ height: 46, width: 46, marginTop: 0 }}
-                source={require('../../../assets/icons/discover.png')}
-              />}
+              <Image
+                style={{ height: 46, width: 46, marginTop: 1 }}
+                source={item.challenge_detail.type == 'walk' ? require('../../../assets/icons/walking.png') : require('../../../assets/icons/discover.png')}
+              />
               <View style={{ flexDirection: 'column', justifyContent: 'space-between', marginLeft: 12 }}>
-                <Text style={{ color: colors.primary, lineHeight: 22, marginBottom: 8 }} variant="titleMedium">{item.challenge_detail.name}</Text>
-                <Text style={{ color: '#d2d2d2', fontSize: 14, lineHeight: 16 }} variant="bodyMedium">
+                <Text style={{ color: colors.primary, lineHeight: 21, marginBottom: 8 }} variant="titleMedium">{item.challenge_detail.name}</Text>
+                <Text style={{ color: '#d2d2d2', fontSize: 14, lineHeight: 15 }} variant="bodyMedium">
                   {item.challenge_detail.sponsor_detail.name}
                 </Text>
               </View>

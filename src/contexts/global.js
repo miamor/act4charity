@@ -125,11 +125,6 @@ export const reducer = (state, action) => {
         ...state,
         completed: action.completed
       }
-    case 'setConfirmCompleted':
-      return {
-        ...state,
-        confirmCompleted: action.confirmCompleted
-      }
     case 'setTeamCompleted':
       return {
         ...state,
@@ -169,6 +164,7 @@ export const initialState = {
   loggedUser: default_loggedUser,
   currentChallenge: null,
   showBottomBar: false,
+
   currentLocation: null,
   trackLoc: {
     latitude: LATITUDE,
@@ -198,14 +194,33 @@ export const initialState = {
   processedPrivateSockMsgs: 0,
   socket: null,
   completed: 0,
-  confirmCompleted: 0,
   teamCompleted: 0,
-  finished: 0,
-  started: 0,
+  finished: false,
+  started: false,
+
   init: false,
   showLoader: false,
   coin: 0
 }
+
+export const levels_ranges = [
+  {
+    start: 0,
+    title: 'Bronze member',
+    image: require('../../assets/icons/medal-bronze.png')
+  },
+  {
+    start: 200,
+    title: 'Silver member',
+    image: require('../../assets/icons/medal-silver.png')
+  },
+  {
+    start: 400,
+    title: 'Gold member',
+    image: require('../../assets/icons/medal-gold.png')
+  }
+]
+
 
 /**
  * @type {React.Context<{loggedUser: {}, theme: string, showLoader: boolean}>}

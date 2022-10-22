@@ -30,7 +30,7 @@ import axios from 'axios'
 
 function ChallengeStartActionsIndividual(props) {
   const [{ currentChallenge, loggedUser, currentLocation, trackLoc, currentRegion,
-    completed }, dispatch] = useGlobals()
+    completed, started }, dispatch] = useGlobals()
   const { colors } = useTheme()
   const navigation = useNavigation()
 
@@ -109,8 +109,8 @@ function ChallengeStartActionsIndividual(props) {
 
     userAPI.completeChallenge({
       challenge_accepted_id: challenge_accepted_id,
-      challenge_donation: challengeDetail.donation, 
-      challenge_reward: challengeDetail.reward, 
+      challenge_donation: challengeDetail.donation,
+      challenge_reward: challengeDetail.reward,
       participants: challengeDetail.participants,
     }).then((res) => {
       console.log('[confirmCompleteCallback] res', res)
@@ -266,58 +266,61 @@ function ChallengeStartActionsIndividual(props) {
   return (<>
     {props.showFull && loading && <Loading />}
 
+    {started && (<>
 
-    {showConfirmCancel && (<Portal>
-      <Modal visible={showConfirmCancel} onDismiss={hideConfirmCancel} contentContainerStyle={{ zIndex: 1000, backgroundColor: '#fff', padding: 20, marginHorizontal: 20 }}>
-        <H3 style={{ marginBottom: 18, paddingBottom: 12, borderBottomColor: '#f0f0f0', borderBottomWidth: 1 }}>Are you sure to cancel?</H3>
+      {showConfirmCancel && (<Portal>
+        <Modal visible={showConfirmCancel} onDismiss={hideConfirmCancel} contentContainerStyle={{ zIndex: 1000, backgroundColor: '#fff', padding: 20, marginHorizontal: 20 }}>
+          <H3 style={{ marginBottom: 18, paddingBottom: 12, borderBottomColor: '#f0f0f0', borderBottomWidth: 1 }}>Are you sure to cancel?</H3>
 
-        <Paragraph>
-          This cannot be undone.
-        </Paragraph>
-        <Paragraph>
-          Are you sure?
-        </Paragraph>
+          <Paragraph>
+            This cannot be undone.
+          </Paragraph>
+          <Paragraph>
+            Are you sure?
+          </Paragraph>
 
-        <View style={{ marginTop: 30, marginHorizontal: 20 }}>
-          <Button mode="contained" labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={onConfirmCancel}>Yes, cancel</Button>
-          <Button labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={hideConfirmCancel}>No, continue</Button>
-        </View>
-      </Modal>
-    </Portal>)}
-
-
-    {showConfirmComplete && (<Portal>
-      <Modal visible={showConfirmComplete} onDismiss={onConfirmComplete} contentContainerStyle={{ zIndex: 1000, backgroundColor: '#fff', padding: 20, marginHorizontal: 20 }}>
-        <H3 style={{ marginBottom: 18, paddingBottom: 12, borderBottomColor: '#f0f0f0', borderBottomWidth: 1 }}>One more step!</H3>
-
-        <Paragraph>
-          Congratulation!
-        </Paragraph>
-        <Paragraph>
-          Click this button to confirm your completion!
-        </Paragraph>
-
-        <View style={{ marginTop: 30, marginHorizontal: 20 }}>
-          <Button mode="contained" labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={onConfirmComplete}>Complete!</Button>
-        </View>
-      </Modal>
-    </Portal>)}
+          <View style={{ marginTop: 30, marginHorizontal: 20 }}>
+            <Button mode="contained" labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={onConfirmCancel}>Yes, cancel</Button>
+            <Button labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={hideConfirmCancel}>No, continue</Button>
+          </View>
+        </Modal>
+      </Portal>)}
 
 
-    {props.showFull && (<View style={{
-      position: 'absolute', zIndex: 2,
-      top: 20,
-      left: 20,
-      right: 20,
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center'
-    }}>
-      <Button mode="contained" onPress={onPressCancelChallenge} labelStyle={{ paddingBottom: 1 }}>
-        <MaterialCommunityIcons name="close" size={14} />
-        Cancel Challenge
-      </Button>
-    </View>)}
+      {showConfirmComplete && (<Portal>
+        <Modal visible={showConfirmComplete} onDismiss={onConfirmComplete} contentContainerStyle={{ zIndex: 1000, backgroundColor: '#fff', padding: 20, marginHorizontal: 20 }}>
+          <H3 style={{ marginBottom: 18, paddingBottom: 12, borderBottomColor: '#f0f0f0', borderBottomWidth: 1 }}>One more step!</H3>
+
+          <Paragraph>
+            Congratulation!
+          </Paragraph>
+          <Paragraph>
+            Click this button to confirm your completion!
+          </Paragraph>
+
+          <View style={{ marginTop: 30, marginHorizontal: 20 }}>
+            <Button mode="contained" labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={onConfirmComplete}>Complete!</Button>
+          </View>
+        </Modal>
+      </Portal>)}
+
+
+      {props.showFull && (<View style={{
+        position: 'absolute', zIndex: 2,
+        top: 20,
+        left: 20,
+        right: 20,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+        <Button mode="contained" onPress={onPressCancelChallenge} labelStyle={{ paddingBottom: 1 }}>
+          <MaterialCommunityIcons name="close" size={14} />
+          Cancel Challenge
+        </Button>
+      </View>)}
+
+    </>)}
 
 
     {props.showFull && (<BottomSheet
@@ -327,13 +330,6 @@ function ChallengeStartActionsIndividual(props) {
       onChange={handleSheetChange}
       style={{ zIndex: 10 }}
     >
-
-      {/* <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'row', marginTop: -30 }}>
-          <Button mode="contained" onPress={onPressCancelChallenge}>
-            <MaterialCommunityIcons name="close" size={20} style={{ marginTop: 2 }} />
-            Cancel Challenge
-          </Button>
-        </View> */}
 
       <BottomSheetScrollView contentContainerStyle={{ zIndex: 10 }}>
 

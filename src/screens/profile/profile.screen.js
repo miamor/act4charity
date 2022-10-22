@@ -4,7 +4,7 @@ import { StyleSheet, View, ScrollView, Image, TouchableOpacity, Pressable } from
 import { ProgressBar, Button, useTheme, Appbar, Modal, Portal, Paragraph } from 'react-native-paper'
 import { H3, Text, TextBold } from '../../components/paper/typos'
 
-import { useGlobals } from '../../contexts/global'
+import { levels_ranges, useGlobals } from '../../contexts/global'
 import { DefaultView } from '../../components/containers'
 
 import Storer from '../../utils/storer'
@@ -38,6 +38,13 @@ function ProfileScreen({ navigation }) {
   const [interestsModal, setInterestsModalVisibility] = useState(false)
   const [informationModal, setInformationModalVisibility] = useState(false)
 
+  const [levelProgress, setLevelProgress] = useState(0.3)
+  const [currentLevel, setCurrentLevel] = useState(0)
+  const [nextLevel, setNextLevel] = useState(1)
+
+  /*
+   * Logout
+   */
   const onConfirmLogOut = () => {
     Storer.delete(TOKEN_KEY)
     dispatch({
@@ -57,6 +64,32 @@ function ProfileScreen({ navigation }) {
       currentChallenge: null,
     })
   }
+
+
+  /*
+   * Compute current level, next level and level progress
+   */
+  useEffect(() => {
+    let i = -1
+    const reachMaxLevel = levels_ranges.every(level => {
+      i += 1
+      if (loggedUser.current_reward < level.start) {
+        setNextLevel(i)
+        setCurrentLevel(i - 1)
+
+        setLevelProgress(loggedUser.current_reward / levels_ranges[i].start)
+
+        return false
+      }
+      return true
+    })
+
+    console.log('>>> reachMaxLevel', reachMaxLevel)
+    if (reachMaxLevel) {
+      setNextLevel(i)
+      setCurrentLevel(i)
+    }
+  }, [loggedUser])
 
 
   /*
@@ -195,10 +228,6 @@ function ProfileScreen({ navigation }) {
     <ScrollView style={{ backgroundColor: 'transparent' }}>
       <View style={styles.mainViewContainer}>
 
-        {/* <Text variant="headlineMedium" style={{ color: '#6750A4' }}>
-          Profile
-        </Text> */}
-
         <View style={styles.profileDetailsViewContainer}>
           <TouchableOpacity onPress={onPressAvatar}>
             <Image
@@ -208,9 +237,12 @@ function ProfileScreen({ navigation }) {
           </TouchableOpacity>
           <View style={styles.profileDetailsTextContainer}>
             <H3>{loggedUser.first_name}</H3>
-            <Text style={{ alignSelf: 'flex-start', marginBottom: 5 }}>
-              {loggedUser.level}
-            </Text>
+            <View style={{ flexDirection: 'row', marginTop: 4 }}>
+              <Image source={levels_ranges[currentLevel].image} style={{ height: 20, width: 20, marginLeft: -5 }} />
+              <Text style={{ alignSelf: 'flex-start', marginBottom: 5, color: '#777', fontSize: 14, lineHeight: 18 }}>
+                {levels_ranges[currentLevel].title}
+              </Text>
+            </View>
           </View>
         </View>
 

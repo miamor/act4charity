@@ -22,12 +22,12 @@ import { CURRENT_CHALLENGE_KEY } from '../../constants/keys'
  * @constructor
  */
 function ChallengeCompletedScreen({ route, navigation }) {
-  const [{ loggedUser, currentChallenge }, dispatch] = useGlobals()
+  const [{ loggedUser, currentChallenge, trackLoc, trackStep }, dispatch] = useGlobals()
   const { colors } = useTheme()
 
   const onSetDispatch = (type, key, value) => dispatch({ type: type, [key]: value })
 
-  
+
   const { challengeDetail, captured_image, distanceTravelled, routeCoordinates, challenge_accepted_id } = route.params
 
 
@@ -35,11 +35,37 @@ function ChallengeCompletedScreen({ route, navigation }) {
     console.log('challengeDetail', challengeDetail)
     console.log('route.params', route.params)
 
-    onSetDispatch('setCompleted', 'completed', 5)
+    /* 
+     * clean everything
+     */
+    onSetDispatch('setStarted', 'started', false)
+    onSetDispatch('setFinished', 'finished', false)
+    onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', {})
+    onSetDispatch('setTrackMemberDistStates', 'trackMemberDistStates', {})
+    onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {})
+    onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', {})
+    onSetDispatch('setCompletedMembers', 'completedMembers', [])
+    onSetDispatch('setChatMessages', 'chatMessages', [])
+    onSetDispatch('setPrivateSockMsgs', 'privateSockMsgs', [])
+    onSetDispatch('setPrivateSockMsg', 'privateSockMsg', null)
+    onSetDispatch('setProcessedPrivateSockMsgs', 'processedPrivateSockMsgs', 0)
+    onSetDispatch('setTeamCompleted', 'teamCompleted', 0)
+    onSetDispatch('setTrackLoc', 'trackLoc', {
+      ...trackLoc,
+      routeCoordinates: [],
+      distanceTravelled: 0,
+      prevLatLng: {},
+    })
+    onSetDispatch('setTrackStep', 'trackStep', {
+      distanceTravelled: 0,
+      currentStepCount: 0
+    })
 
     onSetDispatch('setShowBottomBar', 'showBottomBar', false)
     Storer.delete(CURRENT_CHALLENGE_KEY)
     onSetDispatch('setCurrentChallenge', 'currentChallenge', null)
+
+    onSetDispatch('setCompleted', 'completed', 5)
   }, [])
 
 
@@ -65,11 +91,11 @@ function ChallengeCompletedScreen({ route, navigation }) {
           <Image source={{ uri: captured_image }} style={{ flex: 1, width: dimensions.width - 20, height: 200 }} />
 
           <View style={{ flex: 0.2, marginTop: -25, justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
-          <Button mode="contained" labelStyle={{ paddingBottom: 1 }}>Share to my Feed</Button>
-          <Button style={{ backgroundColor: '#fff', borderRadius: 30, marginTop: -5 }} labelStyle={{ width: 30, height: 40, justifyContent: 'center', alignItems: 'center', paddingTop: 8 }}>
-            <MaterialCommunityIcons name="share" size={22} />
-          </Button>
-        </View>
+            <Button mode="contained" labelStyle={{ paddingBottom: 1 }}>Share to my Feed</Button>
+            <Button style={{ backgroundColor: '#fff', borderRadius: 30, marginTop: -5 }} labelStyle={{ width: 30, height: 40, justifyContent: 'center', alignItems: 'center', paddingTop: 8 }}>
+              <MaterialCommunityIcons name="share" size={22} />
+            </Button>
+          </View>
 
         </View>
 

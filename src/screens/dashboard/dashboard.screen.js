@@ -3,16 +3,11 @@ import { StyleSheet, View, Image, ScrollView, ToastAndroid, PermissionsAndroid, 
 import { ProgressBar, Button, Appbar, useTheme, Badge } from 'react-native-paper'
 import { H2, H3, Text, TextBold } from '../../components/paper/typos'
 import { DefaultView } from '../../components/containers'
-import { useGlobals } from '../../contexts/global'
+import { levels_ranges, useGlobals } from '../../contexts/global'
 import Loading from '../../components/animations/loading'
 
 import * as userAPI from '../../services/userAPI'
 import haversine from 'haversine'
-
-
-const levels_ranges = {
-  0:
-}
 
 
 /**
@@ -27,15 +22,19 @@ function DashboardHomeScreen({ navigation }) {
 
   const [loading, setLoading] = useState(true)
 
-  const [targetModal, setTargetModalVisibility] = useState(false)
-  const [progress, setProgress] = useState(0.3)
   const [donationProgress, setDonationProgress] = useState()
 
+  const [levelProgress, setLevelProgress] = useState(0.3)
+  const [currentLevel, setCurrentLevel] = useState(0)
+  const [nextLevel, setNextLevel] = useState(1)
 
   const [currentChallenges, setCurrentChallenges] = useState()
   const [pendingInvitations, setPendingInvitations] = useState()
 
 
+  /*
+   * Compute donation progress
+   */
   useEffect(() => {
     if (loggedUser.target_donation != null) {
       setDonationProgress(Math.min(loggedUser.current_donation / loggedUser.target_donation, 100))
@@ -44,8 +43,38 @@ function DashboardHomeScreen({ navigation }) {
     }
   }, [loggedUser])
 
+
+  /*
+   * Compute current level, next level and level progress
+   */
   useEffect(() => {
-    loadCurrentChallenge()
+    let i = -1
+    const reachMaxLevel = levels_ranges.every(level => {
+      i += 1
+      if (loggedUser.current_reward < level.start) {
+        setNextLevel(i)
+        setCurrentLevel(i - 1)
+
+        setLevelProgress(loggedUser.current_reward / levels_ranges[i].start)
+
+        return false
+      }
+      return true
+    })
+
+    console.log('>>> reachMaxLevel', reachMaxLevel)
+    if (reachMaxLevel) {
+      setNextLevel(i)
+      setCurrentLevel(i)
+    }
+  }, [loggedUser])
+
+
+  /* 
+   * Load unfinished challenges and pending invitations
+   */
+  useEffect(() => {
+    loadCurrentChallenges()
     loadPendingInvitations()
   }, [])
 
@@ -57,7 +86,7 @@ function DashboardHomeScreen({ navigation }) {
   }, [currentChallenges, pendingInvitations])
 
 
-  
+
   /*
    * Calculate distance between two points
    */
@@ -73,9 +102,9 @@ function DashboardHomeScreen({ navigation }) {
    * Load my current challenge
    *
    * **********************************************/
-  const loadCurrentChallenge = () => {
+  const loadCurrentChallenges = () => {
     userAPI.getCurrentChallenge({ num_per_page: 100 }).then((res) => {
-      // console.log('[loadCurrentChallenge] res', res.data.length)
+      // console.log('[loadCurrentChallenges] res', res.data.length)
       setCurrentChallenges(res.data)
     }).catch(error => {
       console.error(error)
@@ -117,7 +146,7 @@ function DashboardHomeScreen({ navigation }) {
 
   }
 
-  
+
   const goToProfile = () => {
     navigation.navigate('ProfileStack')
   }
@@ -143,15 +172,18 @@ function DashboardHomeScreen({ navigation }) {
           />
           <View style={styles.profileDetailsTextContainer}>
             <H3>{loggedUser.first_name}</H3>
-            <Text style={{ alignSelf: 'flex-start', marginBottom: 5 }}>
-              {loggedUser.level}
-            </Text>
+            <View style={{ flexDirection: 'row', marginTop: 4 }}>
+              <Image source={levels_ranges[currentLevel].image} style={{ height: 20, width: 20, marginLeft: -5 }} />
+              <Text style={{ alignSelf: 'flex-start', marginBottom: 5, color: '#777', fontSize: 14, lineHeight: 18 }}>
+                {levels_ranges[currentLevel].title}
+              </Text>
+            </View>
           </View>
         </TouchableOpacity>
 
         <View style={{ width: width - 40, flexDirection: 'row' }}>
           <Image
-            source={require('../../../assets/icons/medal-bronze.png')}
+            source={levels_ranges[currentLevel].image}
             style={{
               height: 48,
               width: 48,
@@ -162,12 +194,12 @@ function DashboardHomeScreen({ navigation }) {
           <View style={{ justifyContent: 'center', marginTop: -4, marginLeft: -10 }}>
             <ProgressBar
               style={{ height: 10, width: width - 40 - 33 * 2 }}
-              progress={progress}
+              progress={levelProgress}
               color={colors.primary}
             />
           </View>
           <Image
-            source={require('../../../assets/icons/medal-silver.png')}
+            source={levels_ranges[nextLevel].image}
             style={{
               height: 48,
               width: 48,
@@ -238,29 +270,40 @@ function DashboardHomeScreen({ navigation }) {
               source={require('../../../assets/images/nochallenge.png')}
               style={{ height: 175, width: 175 }}
             /> : (<View style={{}}>
-              {currentChallenges.map((item, i) => (<View key={`my-challenge-` + i} style={{ flexDirection: 'row', marginVertical: 10, marginRight: 20 }}>
 
-                <Image style={{ height: 46, width: 46, marginTop: 2 }}
+              {currentChallenges.map((item, i) => (<TouchableOpacity key={`my-challenge-` + i}
+                onPress={() => onContinueChallenge(item)}
+                style={{
+                  flexDirection: 'row',
+                  marginVertical: 10,
+                }}>
+
+                <Image style={{ height: 46, width: 46, marginTop: 15, marginLeft: 0, marginRight: -23, zIndex: 3, }}
                   source={item.challenge_detail.type == 'walk' ? require('../../../assets/icons/walking.png') : require('../../../assets/icons/discover.png')} />
 
-                <View style={{ flex: 1, marginLeft: 10 }}>
-                  <TextBold style={{ color: colors.primary, lineHeight: 25 }}>{item.challenge_detail.name}</TextBold>
+                <View style={{
+                  flex: 1,
+                  paddingVertical: 15,
+                  paddingLeft: 30,
+                  paddingRight: 10,
+                  borderWidth: 1,
+                  borderColor: '#f4f4f4',
+                  backgroundColor: '#fff',
+                  borderRadius: 6,
+                }}>
+                  <TextBold style={{ color: colors.primary, fontSize: 15.5, lineHeight: 22 }}>{item.challenge_detail.name}</TextBold>
                   {/* <Text>{item.challenge_detail.type}</Text> */}
 
-                  <View style={{}}>
-                    {currentLocation != null && item.challenge_detail.type === 'discover' && <Text>{calcDistance(item.challenge_detail.place_detail.coordinates, currentLocation)}</Text>}
+                  <View style={{ marginTop: 8 }}>
+                    {currentLocation != null && item.challenge_detail.type === 'discover' && <Text style={styles.subtitle}>{calcDistance(item.challenge_detail.place_detail.coordinates, currentLocation)}</Text>}
+                    {item.challenge_detail.type === 'walk' && <Text style={styles.subtitle}>{item.challenge_detail.distance}km</Text>}
+
                     <Badge style={{ paddingHorizontal: 10, position: 'absolute', right: 0, marginTop: 6, lineHeight: 12 }}>{item.mode}</Badge>
                   </View>
-
-                  <View style={{ flexDirection: 'row', marginTop: 10, alignItems: 'flex-end' }}>
-                    <Button mode="contained" onPress={() => onContinueChallenge(item)}>
-                      Continue
-                    </Button>
-                  </View>
-
                 </View>
 
-              </View>))}
+              </TouchableOpacity>))}
+
             </View>)}
           </View>
         </View>
@@ -281,45 +324,42 @@ function DashboardHomeScreen({ navigation }) {
               source={require('../../../assets/images/nochallenge.png')}
               style={{ height: 175, width: 175 }}
             /> : (<View style={{}}>
-              {pendingInvitations.map((item, i) => (<View key={`my-challenge-` + i} style={{ flexDirection: 'row', marginVertical: 10, marginRight: 20 }}>
 
-                <Image style={{ height: 46, width: 46, marginTop: 2 }}
+              {pendingInvitations.map((item, i) => (<TouchableOpacity key={`my-challenge-` + i}
+                onPress={() => onContinueChallenge(item)}
+                style={{
+                  flexDirection: 'row',
+                  marginVertical: 10,
+                }}>
+
+                <Image style={{ height: 46, width: 46, marginTop: 15, marginLeft: 0, marginRight: -23, zIndex: 3, }}
                   source={item.challenge_detail.type == 'walk' ? require('../../../assets/icons/walking.png') : require('../../../assets/icons/discover.png')} />
 
-                <View style={{ flex: 1, marginLeft: 10 }}>
-                  <TextBold style={{ color: colors.primary, lineHeight: 25 }}>{item.challenge_detail.name}</TextBold>
+                <View style={{
+                  flex: 1,
+                  paddingVertical: 15,
+                  paddingLeft: 30,
+                  paddingRight: 10,
+                  borderWidth: 1,
+                  borderColor: '#f4f4f4',
+                  backgroundColor: '#fff',
+                  borderRadius: 6,
+                }}>
+                  <TextBold style={{ color: colors.primary, fontSize: 15.5, lineHeight: 22 }}>{item.challenge_detail.name}</TextBold>
 
-                  <View style={{}}>
-                    <Text>
-                      From <TextBold>{item.from_user.username}</TextBold>
-                      |
-                      {currentLocation != null && item.challenge_detail.type === 'discover' && <Text>{calcDistance(item.challenge_detail.place_detail.coordinates, currentLocation)}</Text>}
-                    </Text>
+                  <View style={{ marginTop: 8 }}>
+                    <Text style={styles.subtitle}>From <TextBold>{item.from_user.username}</TextBold></Text>
+
+                    {currentLocation != null && item.challenge_detail.type === 'discover' && <Text style={styles.subtitle}>{calcDistance(item.challenge_detail.place_detail.coordinates, currentLocation)}</Text>}
+                    {item.challenge_detail.type === 'walk' && <Text style={styles.subtitle}>{item.challenge_detail.distance}km</Text>}
+
                   </View>
-
-                  <View style={{ flexDirection: 'row', marginTop: 10, alignItems: 'flex-end' }}>
-                    <Button mode="contained">
-                      Accept
-                    </Button>
-                  </View>
-
                 </View>
 
-              </View>))}
+              </TouchableOpacity>))}
+
             </View>)}
 
-
-            {/* : pendingInvitations.map((invitation, i) => (<View key={`my-invitations-` + i}>
-              <H3>{invitation.challenge_detail.name}</H3>
-              <Text>{invitation.challenge_detail.type}</Text>
-              <Text>From <TextBold>{invitation.from_user.username}</TextBold></Text>
-              {currentLocation != null && invitation.challenge_detail.type === 'discover' && <Text>{calcDistance(invitation.challenge_detail.place_detail.coordinates, currentLocation)}</Text>}
-              <View style={{ flexDirection: 'row', marginTop: 10 }}>
-                <Button mode="contained">
-                  Accept
-                </Button>
-              </View>
-            </View>))} */}
           </View>
         </View>
 
@@ -336,7 +376,7 @@ function DashboardHomeScreen({ navigation }) {
 
 
       </ScrollView>
-    </DefaultView>
+    </DefaultView >
   )
 }
 const styles = StyleSheet.create({
@@ -355,8 +395,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 8,
     flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
   targetButtonStyle: {
     height: 48,
@@ -370,5 +408,10 @@ const styles = StyleSheet.create({
     marginTop: 51,
     marginBottom: 48,
   },
+  subtitle: {
+    fontSize: 14,
+    color: '#888',
+    lineHeight: 16,
+  }
 })
 export default DashboardHomeScreen

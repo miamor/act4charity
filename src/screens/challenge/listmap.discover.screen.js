@@ -282,8 +282,7 @@ function ChallengeListMapDiscoverScreen({ navigation }) {
    * Go to detail challenge
    */
   const openChallenge = (item) => {
-    console.log('to ChallengeDiscoverDetailInfoScreen')
-    navigation.navigate('ChallengeDiscoverDetailInfo', { key: 'ChallengeDiscoverDetailInfo', challengeDetail: item })
+    navigation.navigate('ChallengeDetailInfo', { key: 'ChallengeDetailInfo', challengeDetail: item })
   }
 
 

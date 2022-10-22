@@ -26,7 +26,7 @@ import ChallengeStartActionsIndividual from '../../components/_challenge/actions
  */
 function ChallengeStartScreen({ route, navigation }) {
   const [{ currentChallenge, loggedUser, currentLocation, trackLoc, trackStep,
-    completed, confirmCompleted, started, finished }, dispatch] = useGlobals()
+    completed, started, finished }, dispatch] = useGlobals()
   const { colors } = useTheme()
 
   const onSetDispatch = (type, key, value) => dispatch({ type: type, [key]: value })
@@ -37,14 +37,31 @@ function ChallengeStartScreen({ route, navigation }) {
   const challengeDetail = challenge_accepted_data.challenge_detail
 
 
+  /*
+   * If is `individual` mode, start now.
+   * If is `team` mode, needs the host to click Start => is handled in `actions.team`
+   */
+  const startNow = () => {
+    onSetDispatch('setStarted', 'started', true)
+  }
   useEffect(() => {
-    if (completed === 0 && currentLocation != null) {
+    if (!started && currentChallenge != null && currentChallenge.mode === 'individual') {
+      startNow()
+    }
+  }, [started, currentChallenge])
+
+  /*
+   * Start tracking and checking if completed.
+   * Only when the challenge is started and not completed.
+   */
+  useEffect(() => {
+    if (started && completed === 0 && currentLocation != null) {
       checkComplete()
     }
-    else if (completed === 5) {
-      navigation.navigate('ChallengeStack', { screen: 'ChallengeListMap' })
-    }
-  }, [completed, currentLocation, trackLoc])
+    // else if (completed === 5) {
+    //   navigation.navigate('ChallengeStack', { screen: 'ChallengeListMap' })
+    // }
+  }, [started, completed, currentLocation, trackLoc])
 
 
 

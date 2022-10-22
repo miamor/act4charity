@@ -68,7 +68,7 @@ function ChallengeListWalkScreen({ navigation }) {
    * Go to detail challenge
    */
   const openChallenge = (item) => {
-    navigation.navigate('ChallengeWalkDetailInfo', { key: 'ChallengeWalkDetailInfo', challengeDetail: item })
+    navigation.navigate('ChallengeDetailInfo', { key: 'ChallengeDetailInfo', challengeDetail: item })
   }
 
 
