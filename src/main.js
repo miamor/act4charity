@@ -58,6 +58,7 @@ const Main: () => Node = () => {
       // Storer.set(LOGGED_USER_KEY, null)
       // Storer.set(TOKEN_KEY, null)
       // Storer.set(CURRENT_CHALLENGE_KEY, null)
+      // Storer.set('started', false)
 
       try {
         const _loggedUser = await Storer.get(LOGGED_USER_KEY)

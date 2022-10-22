@@ -162,15 +162,19 @@ function ChallengeStartActionsTeam(props) {
    * On update of trackLoc, send new loc to socket channel
    */
   useEffect(() => {
-    console.log('[team.func] *** trackLoc', trackLoc)
-    submitUserLocState(trackLoc)
+    if (started) {
+      console.log('[team.func] *** trackLoc', trackLoc)
+      submitUserLocState(trackLoc)
+    }
   }, [trackLoc])
 
   /*
    * On update of trackStep, send new step to socket channel
    */
   useEffect(() => {
-    submitUserStepState(trackStep)
+    if (started) {
+      submitUserStepState(trackStep)
+    }
   }, [trackStep])
 
 

@@ -17,15 +17,7 @@ function ChallengeBarDiscoverTeam(props) {
 
 
   return (<>
-    <View style={{ flex: 0.18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10, flexDirection: 'column', marginBottom: 10 }}>
-      <View style={{ marginTop: 3, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-        <TextBold style={{ fontSize: 30, lineHeight: 30 }}>00:08:00</TextBold>
-        <Text style={{ fontSize: 13, marginLeft: 5, lineHeight: 30 }}>Time</Text>
-      </View>
-      {/* <View style={{ width: windowWidth }}>
-        <ProgressBar progress={0.5} color={MD3Colors.primary0} />
-      </View> */}
-
+    <View style={{ flex: 0.18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10, flexDirection: 'column', marginBottom: 20 }}>
       <View style={{ marginTop: 6, flexDirection: 'row' }}>
         <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
           <View style={{ backgroundColor: 'transparent' }}>
@@ -41,18 +33,11 @@ function ChallengeBarDiscoverTeam(props) {
           </View>
         </View>
 
-        <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
-          <View style={{ backgroundColor: 'transparent' }}>
-            <PercentageCircle radius={30} percent={50} color={MD3Colors.primary20}>
-              <TextBold style={{ fontSize: 26, lineHeight: 50 }}>
-                {Object.values(trackMemberStepStates).length === 0 ? 0
-                  : Object.values(trackMemberStepStates).reduce((a, b) => a + b, 0)}
-              </TextBold>
-            </PercentageCircle>
-            <Badge style={{ position: 'absolute', zIndex: 1, top: 0 }}>
-              {trackStep.currentStepCount}
-            </Badge>
-          </View>
+        <View style={{ flexDirection: 'column', flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 4 }}>
+          <TextBold style={{ fontSize: 30, lineHeight: 30 }}>
+            {'00:08:00'}
+          </TextBold>
+          <Text style={{ fontSize: 13, marginLeft: 5, lineHeight: 15 }}>Time</Text>
         </View>
       </View>
     </View>

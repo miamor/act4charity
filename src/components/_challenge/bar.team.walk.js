@@ -17,7 +17,7 @@ function ChallengeBarWalkTeam(props) {
 
 
   return (<>
-    <View style={{ flex: 0.18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10, flexDirection: 'column', marginBottom: 10 }}>
+    <View style={{ flex: 0.18, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10, flexDirection: 'column', marginBottom: 20 }}>
       <View style={{ marginTop: 3, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         <TextBold style={{ fontSize: 30, lineHeight: 30 }}>00:08:00</TextBold>
         <Text style={{ fontSize: 13, marginLeft: 5, lineHeight: 30 }}>Time</Text>

@@ -37,7 +37,7 @@ function ChallengeStartMap(props) {
   const challenge_accepted_id = challenge_accepted_data._id
 
   
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   const [captured, setCaptured] = useState(false)
 
