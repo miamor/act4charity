@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Alert, Modal, StyleSheet, ScrollView, View, Image, TouchableOpacity, ToastAndroid } from 'react-native'
+import { Alert, Modal, StyleSheet, ScrollView, View, Image, TouchableOpacity, ToastAndroid, FlatList, Dimensions } from 'react-native'
 import { Button, useTheme } from 'react-native-paper'
 import { useGlobals } from '../../contexts/global'
 import { Text, H2 } from '../../components/paper/typos'
@@ -7,7 +7,6 @@ import { Text, H2 } from '../../components/paper/typos'
 import * as userAPI from '../../services/userAPI'
 import Loading from '../../components/animations/loading'
 import Storer from '../../utils/storer'
-import { LOGGED_USER_KEY } from '../../constants/keys'
 
 
 function InterestsModal(props) {
@@ -34,19 +33,7 @@ function InterestsModal(props) {
     }
   }, [])
 
-  const _handleContinue = () => {
-    dispatch({
-      type: 'setLoggedUser',
-      loggedUser: {
-        ...loggedUser,
-        interests: selectedCats,
-        target_donation: 50, // just put a fixed value here
-      },
-    })
-    navigation.push('Loading')
-  }
-
-  const toggleToCats = (cat_id) => {
+  const onToggleInterest = (cat_id) => {
     if (!selectedCats.hasOwnProperty(cat_id) || selectedCats[cat_id] === 0) {
       setSelectedCats({
         ...selectedCats,
@@ -64,14 +51,14 @@ function InterestsModal(props) {
     setLoading(true)
     // const selected_ids = Object.keys(selectedCats).find(key => selectedCats[key] === 1)
     const selected_ids = Object.keys(selectedCats).filter(function (key) { return selectedCats[key] === 1 })
-    // console.log('>>> selected_ids', selected_ids)
+    // //console.log('>>> selected_ids', selected_ids)
 
     const finished_user_info = {
       ...loggedUser,
       interests: selected_ids
     }
     userAPI.updateProfile({ interests: selected_ids }).then((res) => {
-      Storer.set(LOGGED_USER_KEY, finished_user_info)
+      Storer.set('loggedUser', finished_user_info)
       dispatch({
         type: 'setLoggedUser',
         loggedUser: finished_user_info,
@@ -86,85 +73,85 @@ function InterestsModal(props) {
     })
   }
 
+  const { height } = Dimensions.get('window')
+
 
   return (
-    <View style={{ color: '#ffffff' }}>
-      <Modal
-        animationType="slide"
-        visible={props.interestModalVisibility}
-        onRequestClose={() => {
-          props.setInterestModalVisibility(!props.interestModalVisibility)
-        }}>
+    <Modal
+      animationType="slide"
+      visible={props.interestModalVisibility}
+      onRequestClose={() => {
+        props.setInterestModalVisibility(!props.interestModalVisibility)
+      }}>
 
-        {loading && <Loading />}
+      {loading && <Loading />}
 
-        <View style={styles.mainViewContainer}>
-          <H2>Interests</H2>
+      <View style={[styles.mainViewContainer, { height: height, flexDirection: 'column' }]}>
+        <H2>Interests</H2>
 
-          <Text style={{ marginTop: 24, marginBottom: 24 }} variant="bodyMedium">
-            Select the topics that interest you the most
-          </Text>
+        <Text style={{ marginTop: 24, marginBottom: 24 }} variant="bodyMedium">
+          Select the topics that interest you the most
+        </Text>
 
 
-          <ScrollView>
-            <View style={{ flex: 0.6 }}>
-              {cats != null && cats.map((cat, i) => (
-                <TouchableOpacity key={`cat-` + i}
-                  onPress={() => toggleToCats(cat._id)}
-                  style={[
-                    selectedCats.hasOwnProperty(cat._id) && selectedCats[cat._id] === 1 && { backgroundColor: colors.primary },
-                    {
-                      height: 45,
-                      paddingHorizontal: 20,
-                      paddingVertical: 5,
-                      borderColor: colors.primary,
-                      borderRadius: 30,
-                      borderWidth: 1,
-                      margin: 15,
-                    }
-                  ]}
-                >
-                  <View style={{ flexDirection: 'column', alignItems: 'center' }}>
-                    {/* <Image /> */}
-                    <View>
-                      <Text style={[selectedCats.hasOwnProperty(cat._id) && selectedCats[cat._id] === 1 && { color: '#fff' }]}>
-                        {cat.title}
-                      </Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <View style={{ flex: 0.6, marginTop: 30 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-                <Button mode="text"
-                  style={{ marginHorizontal: 10 }}
-                  labelStyle={{ paddingHorizontal: 10 }}
-                  onPress={() => {
-                    console.log('back button pressed')
-                    props.setInterestModalVisibility(!props.interestModalVisibility)
-                  }}>
-                  BACK
-                </Button>
-
-                <Button mode="contained"
-                  style={{ marginHorizontal: 10 }}
-                  labelStyle={{ paddingHorizontal: 10 }}
-                  disabled={Object.keys(selectedCats).length === 0 || Object.values(selectedCats).reduce((a, b) => a + b, 0) === 0}
-                  onPress={onUpdateInterests}
-                  style={{ borderRadius: 30 }}
-                >
-                  Update
-                </Button>
-              </View>
-            </View>
-
-          </ScrollView>
-
+        <View style={{ flex: 0.4 }}>
+          {cats && <FlatList
+            data={cats}
+            style={styles.list}
+            numColumns={2}
+            scrollEnabled={false}
+            keyExtractor={item => item._id}
+            bounces={false}
+            contentContainerStyle={{
+              justifyContent: 'space-between',
+            }}
+            renderItem={({ item, index }) => (
+              <Button
+                onPress={() => onToggleInterest(item._id)}
+                mode={selectedCats.hasOwnProperty(item._id) && selectedCats[item._id] === 1 ? 'contained' : 'outlined'}
+                // buttonColor={item.selected ? 'rgba(31, 31, 31, 0.12)' : ''}
+                style={{
+                  flex: 1,
+                  marginHorizontal: 4,
+                  marginVertical: 10,
+                  borderRadius: 40
+                }}
+                labelStyle={{
+                  paddingVertical: selectedCats.hasOwnProperty(item._id) && selectedCats[item._id] === 1 ? 5 : 4,
+                  fontSize: 17
+                }}
+              >
+                {item.title}
+              </Button>
+            )}></FlatList>}
         </View>
-      </Modal>
-    </View>
+
+        <View style={{ flex: 0.1, justifyContent: 'center' }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+            <Button mode="text"
+              style={{ marginHorizontal: 10 }}
+              labelStyle={{ paddingHorizontal: 10 }}
+              onPress={() => {
+                //console.log('back button pressed')
+                props.setInterestModalVisibility(!props.interestModalVisibility)
+              }}>
+              BACK
+            </Button>
+
+            <Button mode="contained"
+              style={{ marginHorizontal: 10 }}
+              labelStyle={{ paddingHorizontal: 10 }}
+              disabled={Object.keys(selectedCats).length === 0 || Object.values(selectedCats).reduce((a, b) => a + b, 0) === 0}
+              onPress={onUpdateInterests}
+              style={{ borderRadius: 30 }}
+            >
+              Update
+            </Button>
+          </View>
+        </View>
+
+      </View>
+    </Modal>
   )
 }
 const styles = StyleSheet.create({

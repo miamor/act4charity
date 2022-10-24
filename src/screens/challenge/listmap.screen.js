@@ -58,7 +58,7 @@ function ChallengeListMapScreen({ navigation }) {
    * Process retrieved lng lat 
    */
   const processPosition = (position) => {
-    // console.log('[listmap][processPosition] position', position)
+    // //console.log('[listmap][processPosition] position', position)
 
     setRegion({
       ...region,
@@ -67,10 +67,12 @@ function ChallengeListMapScreen({ navigation }) {
     })
 
 
-    // console.log('[listmap][processPosition] >>>>>>>>>>> setFilter CALLING')
+    // //console.log('[listmap][processPosition] >>>>>>>>>>> setFilter CALLING')
     setFilter({
       ...filter,
-      user_loc: [position.longitude, position.latitude]
+      distance: 1.5,
+      user_loc: [position.longitude, position.latitude],
+      interests: loggedUser.interests,
     })
   }
 
@@ -82,28 +84,40 @@ function ChallengeListMapScreen({ navigation }) {
    *
    * **********************************************/
   const [dataList, setDataList] = useState()
+  const [loaded, setLoaded] = useState(false)
 
   /* 
    * Load
    */
   useEffect(() => {
-    setLoading(true)
-    // console.log('[listmap] currentLocation | filter updated', currentLocation, filter)
+    console.log('[listmap] filter updated', filter)
 
-    //? fetch data
-    if (currentLocation != null) {
-      userAPI.listChallenges({ filter: filter, num_per_page: 100 }).then((res) => {
-        if (res.status === 'success') {
-          setDataList(res.data)
-          setLoading(false)
-        }
-      }).catch(error => {
-        console.error(error)
-        ToastAndroid.show('Oops', ToastAndroid.SHORT)
-      })
+    if (!loaded && filter.user_loc != null) {
+      setLoading(true)
+      loadData(filter)
     }
-  }, [currentLocation, filter])
+  }, [filter, loaded])
 
+  const loadData = (_filter) => {
+    //~console.log('[listmap] loadData called', _filter)
+    //? fetch data
+    setLoaded(true)
+    userAPI.listChallenges({ filter: _filter, num_per_page: 100 }).then((res) => {
+      // console.log('res', res)
+      if (res.status === 'success') {
+        setDataList(res.data)
+        setLoading(false)
+      } else {
+        setLoading(false)
+        console.error(error)
+        ToastAndroid.show(error, ToastAndroid.SHORT)
+      }
+    }).catch(error => {
+      setLoading(false)
+      console.error(error)
+      ToastAndroid.show('Oops', ToastAndroid.SHORT)
+    })
+  }
 
 
   /* **********************************************
@@ -243,21 +257,22 @@ function ChallengeListMapScreen({ navigation }) {
    */
   const [filterModal, setFilterModalVisibility] = useState(false)
   const openFilter = () => {
-    // console.log('openFilter')
+    // //console.log('openFilter')
     setFilterModalVisibility(!filterModal)
   }
   /* 
    * on finish set filter
    */
   const onFinishFilter = useCallback((values) => {
-    // console.log('[listmap][onFinishFilter] >> values', values)
-    // console.log('[listmap][onFinishFilter] >> filter', filter)
+    // //console.log('[listmap][onFinishFilter] >> values', values)
+    // //console.log('[listmap][onFinishFilter] >> filter', filter)
     let newFilter = {
       ...filter,
       ...values
     }
-    // console.log('[listmap][onFinishFilter] >> newFilter', newFilter)
+    // //console.log('[listmap][onFinishFilter] >> newFilter', newFilter)
     setFilter(newFilter)
+    loadData(newFilter)
   }, [filter])
 
   const [helpModal, setHelpModalVisibility] = useState(false)
@@ -275,7 +290,7 @@ function ChallengeListMapScreen({ navigation }) {
         onIndexChange={setIndex}
       />
 
-      <Button onPress={openFilter}>Filter</Button>
+      {/* <Button onPress={openFilter}>Filter</Button> */}
 
       <FilterModal
         filterModalVisibility={filterModal}

@@ -39,20 +39,20 @@ const rewardAd = RewardedAd.createForAdRequest(rewardedAdIDs, {
 // function showRewardAd(onFinishAdSuccess, onFinishAdFailed) {
 //   AdMobRewarded.setAdUnitID(rewardedAdID)
 //   AdMobRewarded.requestAdAsync().then(() => {
-//     AdMobRewarded.showAdAsync().catch((e) => console.log(e.message))
+//     AdMobRewarded.showAdAsync().catch((e) => //console.log(e.message))
 //   })
 // }
 
 export function BannerAdView() {
-  // console.log('bannerAdID', bannerAdID)
-  // console.log('bannerAdIDs', bannerAdIDs)
+  // //console.log('bannerAdID', bannerAdID)
+  // //console.log('bannerAdIDs', bannerAdIDs)
   return (<View style={{ justifyContent: 'center', alignItems: 'center', marginVertical: 20 }}>
     {/* <Text>Hello</Text> */}
     <BannerAd unitId={bannerAdIDs}
       // size='320x50'
       size={BannerAdSize.SMART_BANNER}
       requestOptions={{ requestNonPersonalizedAdsOnly: true, }}
-      onAdLoaded={() => { console.log('Advert loaded')}}
+      onAdLoaded={() => { //console.log('Advert loaded')}}
       onAdFailedToLoad={(error) => { console.error('Advert failed to load: ', error)}}
     />
   </View>)
@@ -62,17 +62,17 @@ export function BannerAdView() {
 // export function loadInterstitialAd(onSuccess, onFailed) { 
 //   interstitialAd.onAdEvent((type, error) => {
 //     if (type === AdEventType.LOADED) {
-//       //console.log('InterstitialAd adLoaded')
+//       ////console.log('InterstitialAd adLoaded')
 //     } else if (type === AdEventType.ERROR) {
 //       console.warn('InterstitialAd => Error')
 //     } else if (type === AdEventType.OPENED) {
-//       //console.log('InterstitialAd => adOpened')
+//       ////console.log('InterstitialAd => adOpened')
 //     } else if (type === AdEventType.CLICKED) {
-//       //console.log('InterstitialAd => adClicked')
+//       ////console.log('InterstitialAd => adClicked')
 //     } else if (type === AdEventType.LEFT_APPLICATION) {
-//       //console.log('InterstitialAd => adLeft_App')
+//       ////console.log('InterstitialAd => adLeft_App')
 //     } else if (type === AdEventType.CLOSED) {
-//       //console.log('InterstitialAd => adClosed')
+//       ////console.log('InterstitialAd => adClosed')
 //       interstitialAd.load()
 //     }
 //   })
@@ -92,19 +92,19 @@ export function BannerAdView() {
 // export function loadRewardAd(onSuccess, onFailed) { 
 //   rewardAd.onAdEvent((type, error, reward) => {
 //     if (type === RewardedAdEventType.LOADED) {
-//       //console.log('RewardedAdEventType adLoaded')
+//       ////console.log('RewardedAdEventType adLoaded')
 //     } else if (type === RewardedAdEventType.ERROR) {
 //       console.warn('RewardedAdEventType => Error')
 //     } else if (type === RewardedAdEventType.OPENED) {
-//       //console.log('RewardedAdEventType => adOpened')
+//       ////console.log('RewardedAdEventType => adOpened')
 //     } else if (type === RewardedAdEventType.CLICKED) {
-//       //console.log('RewardedAdEventType => adClicked')
+//       ////console.log('RewardedAdEventType => adClicked')
 //     } else if (type === RewardedAdEventType.LEFT_APPLICATION) {
-//       //console.log('RewardedAdEventType => adLeft_App')
+//       ////console.log('RewardedAdEventType => adLeft_App')
 //     } else if (type === RewardedAdEventType.EARNED_REWARD) {
-//       //console.log('RewardedAdEventType => adReward', reward)
+//       ////console.log('RewardedAdEventType => adReward', reward)
 //     } else if (type === RewardedAdEventType.CLOSED) {
-//       //console.log('RewardedAdEventType => adClosed')
+//       ////console.log('RewardedAdEventType => adClosed')
 //       rewardAd.load()
 //     }
 //   })
@@ -134,21 +134,21 @@ export const showRewardedAd = async (onSuccess, onFailed) => {
     if (type === RewardedAdEventType.LOADED) {
       rewarded.show()
       loaded = true
-      //console.log('RewardedAdEventType LOADED')
+      ////console.log('RewardedAdEventType LOADED')
     }
     else if (type === RewardedAdEventType.CLOSED) {
       gotReward = false
-      //console.log('RewardedAdEventType CLOSED')
+      ////console.log('RewardedAdEventType CLOSED')
       onFailed()
     }
     else if (type === RewardedAdEventType.EARNED_REWARD) {
       gotReward = true
-      //console.log('RewardedAdEventType EARNED_REWARD')
+      ////console.log('RewardedAdEventType EARNED_REWARD')
 
       userAPI.finishedWatchingAd().then((res) => {
-        //console.log('[finishedWatchingAd] res', res)
+        ////console.log('[finishedWatchingAd] res', res)
         // setLoading(false)
-        // Storer.set(LOGGED_USER_KEY, res).then(() => {
+        // Storer.set('loggedUser', res).then(() => {
         // })
         if (res.status === 'error') {
           onFailed()
@@ -190,8 +190,8 @@ export const showRewardedAd = async (onSuccess, onFailed) => {
 //     }
     
 //     if (type === RewardedAdEventType.EARNED_REWARD) {
-//       //console.log('User earned reward of 3 stars')
-//       // Alert.alert( 'New Reward', 'You just earned a reward of 3 stars', [ {text: 'OK', onPress: () => console.log('OK Pressed')}, ], { cancelable: true } ) 
+//       ////console.log('User earned reward of 3 stars')
+//       // Alert.alert( 'New Reward', 'You just earned a reward of 3 stars', [ {text: 'OK', onPress: () => //console.log('OK Pressed')}, ], { cancelable: true } ) 
 //     }
 //   })
   
@@ -200,13 +200,13 @@ export const showRewardedAd = async (onSuccess, onFailed) => {
 // }
 
 // export function showRewardAd(onSuccess, onFailed) {
-//   console.log('rewardedAdID', rewardedAdID)
-//   console.log('rewardedAdIDs', rewardedAdIDs)
-//   // console.log('[showRewardAd] DONE ! Reward user 5 point ! updateDB')
+//   //console.log('rewardedAdID', rewardedAdID)
+//   //console.log('rewardedAdIDs', rewardedAdIDs)
+//   // //console.log('[showRewardAd] DONE ! Reward user 5 point ! updateDB')
 
 //   // AdMobRewarded.setAdUnitID(rewardedAdID)
 //   // AdMobRewarded.requestAdAsync().then(() => {
-//   //   AdMobRewarded.showAdAsync().catch((e) => console.log(e.message))
+//   //   AdMobRewarded.showAdAsync().catch((e) => //console.log(e.message))
 //   // })
 
 //   const rewarded = RewardedAd.createForAdRequest(rewardedAdID, {
@@ -219,12 +219,12 @@ export const showRewardedAd = async (onSuccess, onFailed) => {
 //     }
     
 //     if (type === RewardedAdEventType.EARNED_REWARD) {
-//       //console.log('User earned reward of ', reward)
+//       ////console.log('User earned reward of ', reward)
 
 //       userAPI.finishedWatchingAd().then((res) => {
-//         //console.log('[finishedWatchingAd] res', res)
+//         ////console.log('[finishedWatchingAd] res', res)
 //         // setLoading(false)
-//         // Storer.set(LOGGED_USER_KEY, res).then(() => {
+//         // Storer.set('loggedUser', res).then(() => {
 //         // })
 //         if (res.status === 'error') {
 //           onFailed()
@@ -241,17 +241,17 @@ export const showRewardedAd = async (onSuccess, onFailed) => {
 //   })
   
 //   if (!rewarded.loaded) {
-//     //console.log('[showRewardAd] rewarded.loaded', rewarded.loaded)
+//     ////console.log('[showRewardAd] rewarded.loaded', rewarded.loaded)
 //     rewarded.load()
 //   }
 
 
-//   // console.log('User earned reward of 5 lives')
+//   // //console.log('User earned reward of 5 lives')
 //   // Alert.alert(
 //   //   'Reward Ad',
 //   //   'You just earned a reward of 5 lives',
 //   //   [
-//   //     { text: 'OK', onPress: () => console.log('OK Pressed') },
+//   //     { text: 'OK', onPress: () => //console.log('OK Pressed') },
 //   //   ],
 //   //   { cancelable: true }
 //   // )

@@ -1,5 +1,4 @@
 import Axios from 'axios'
-import { TOKEN_KEY } from '../constants/keys'
 import Storer from '../utils/storer'
 
 const _makeRequest = createRequest => async args => {
@@ -28,9 +27,9 @@ const _makeRequest = createRequest => async args => {
 const _makeAuthRequest = createRequest => async (args) => {
   const requestHeaders = args.headers ? args.headers : {}
 
-  // const accessToken = localStorage.getItem(TOKEN_KEY)
-  const accessToken = await Storer.get(TOKEN_KEY)
-  // console.log('>>> accessToken', accessToken)
+  // const accessToken = localStorage.getItem('token')
+  const accessToken = await Storer.get('token')
+  // //console.log('>>> accessToken', accessToken)
 
   let headers = {
     'Authorization': `${accessToken}`,
@@ -60,7 +59,7 @@ const _makeAuthRequest = createRequest => async (args) => {
 
 }
 
-export const REACT_APP_API_URL = 'http://149.28.157.194:5005'
+export const REACT_APP_API_URL = 'https://act4charity.monster' //'http://149.28.157.194:5005'
 export const SOCKET_URL = 'http://149.28.157.194:5007'
 
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { Button, Headline, TouchableRipple } from 'react-native-paper'
-import { Text } from '../../components/paper/typos'
+import { Button, Headline, TouchableRipple, useTheme } from 'react-native-paper'
+import { H3, Text } from '../../components/paper/typos'
 
 import { DefaultView } from '../../components/containers'
 import { useGlobals } from '../../contexts/global'
@@ -15,29 +15,32 @@ import Male from '../../svgs/Male'
  */
 function SexScreen({ navigation }) {
   const [{ loggedUser }, dispatch] = useGlobals()
+  const { colors } = useTheme()
+
   const [sex, setSex] = useState('')
   const buttonDisabled = !sex
   const _handleContinue = () => {
     dispatch({
       type: 'setLoggedUser',
-      loggedUser: { 
+      loggedUser: {
         ...loggedUser,
         sex: sex
-       },
+      },
     })
     navigation.push('InterestCategory')
   }
 
   return (
     <DefaultView>
-      <View style={{ flex: 1 }} />
       <View style={styles.textContainer}>
-        <Headline style={styles.textHeadline}>Your gender</Headline>
+        <H3 style={[styles.textHeadline, { color: colors.primary }]}>
+          Your gender
+        </H3>
         <Text style={styles.textText}>
         </Text>
       </View>
 
-      <View style={styles.sexContainer}>
+      <View style={[styles.inputContainer, styles.sexContainer]}>
         <TouchableRipple
           onPress={() => setSex('Male')}
           rippleColor="rgba(0,0,0,0)"
@@ -74,24 +77,12 @@ function SexScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  constellation: {
-    zIndex: 0,
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    opacity: 0.1,
-  },
-  leo: {
-    zIndex: 0,
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    opacity: 0.2,
-  },
   textContainer: {
-    flex: 1,
-    alignSelf: 'center',
-    paddingHorizontal: 20,
+    flex: 0.2,
+    paddingTop: 50,
+    // justifyContent: 'center',
+    // alignSelf: 'center',
+    paddingHorizontal: 40,
   },
   textHeadline: {
     textAlign: 'center',
@@ -100,17 +91,16 @@ const styles = StyleSheet.create({
   },
   textText: {
     textAlign: 'center',
-    paddingVertical: 5,
+    paddingVertical: 10,
+    lineHeight: 28
   },
-  logoContainer: {
-    flex: 1,
-    alignSelf: 'center',
-    paddingVertical: 25,
-    zIndex: 1,
+  inputContainer: {
+    flex: 0.6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
   },
   sexContainer: {
-    flex: 1,
-    paddingHorizontal: 50,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -120,8 +110,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   buttonContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
+    flex: 0.2,
+    paddingHorizontal: 40,
     paddingTop: 35,
     justifyContent: 'flex-end',
     marginBottom: 20,

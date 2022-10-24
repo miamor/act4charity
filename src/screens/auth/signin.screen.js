@@ -66,8 +66,9 @@ function SigninScreen({ navigation }) {
         setLoading(false)
         navigation.navigate('Auth', res.data)
       }).catch(error => {
-        console.error(error)
-        ToastAndroid.show('Oops', ToastAndroid.SHORT)
+        setLoading(false)
+        // console.error(error)
+        ToastAndroid.show(error, ToastAndroid.SHORT)
       })
     }).catch(error => {
       ToastAndroid.show('Oops', ToastAndroid.SHORT)

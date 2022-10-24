@@ -140,6 +140,16 @@ export const reducer = (state, action) => {
         ...state,
         started: action.started
       }
+    case 'setStartTime':
+      return {
+        ...state,
+        startTime: action.startTime
+      }
+    case 'setJoined':
+      return {
+        ...state,
+        joined: action.joined
+      }
     case 'setInit':
       return {
         ...state,
@@ -197,6 +207,8 @@ export const initialState = {
   teamCompleted: 0,
   finished: false,
   started: false,
+  joined: false,
+  startTime: null,
 
   init: false,
   showLoader: false,

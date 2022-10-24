@@ -7,7 +7,6 @@ import { View, Text } from 'react-native'
 import { useGlobals } from './contexts/global'
 import themes from './constants/themes'
 
-import { CURRENT_CHALLENGE_KEY, LOGGED_USER_KEY, TOKEN_KEY } from './constants/keys'
 import Storer from './utils/storer'
 
 import AuthStackNavigation from './navigation/auth-stack'
@@ -16,13 +15,14 @@ import MainStackNavigation from './navigation/main-stack'
 import Loading from './components/animations/loading'
 import SplashModal from './screens/splash.modal'
 import Sensors from './components/sensors'
+import ChallengeBottomSheet from './screens/challenge.bottom'
 
 /**
  * @returns {*}
  * @constructor
  */
 const Main: () => Node = () => {
-  const [{ loggedUser, currentChallenge, theme }, dispatch] = useGlobals()
+  const [{ loggedUser, currentChallenge, showBottomBar, theme }, dispatch] = useGlobals()
   const [isReady, setIsReady] = useState(false)
   const _theme = themes[theme]
 
@@ -38,7 +38,7 @@ const Main: () => Node = () => {
         appState.current.match(/inactive|background/) &&
         nextAppState === 'active'
       ) {
-        console.log('App has come to the foreground')
+        //console.log('App has come to the foreground')
       }
 
       appState.current = nextAppState
@@ -55,13 +55,14 @@ const Main: () => Node = () => {
    */
   useEffect(() => {
     (async () => {
-      // Storer.set(LOGGED_USER_KEY, null)
-      // Storer.set(TOKEN_KEY, null)
-      // Storer.set(CURRENT_CHALLENGE_KEY, null)
-      // Storer.set('started', false)
+      // Storer.delete('loggedUser')
+      // Storer.delete('token')
+      // Storer.delete('currentChallenge')
+      // Storer.delete('started')
+      // Storer.delete('joined')
 
       try {
-        const _loggedUser = await Storer.get(LOGGED_USER_KEY)
+        const _loggedUser = await Storer.get('loggedUser')
         if (_loggedUser) {
           dispatch({
             type: 'setLoggedUser',
@@ -69,7 +70,7 @@ const Main: () => Node = () => {
           })
         }
 
-        const _currentChallenge = await Storer.get(CURRENT_CHALLENGE_KEY)
+        const _currentChallenge = await Storer.get('currentChallenge')
         if (_currentChallenge) {
           dispatch({
             type: 'setCurrentChallenge',
@@ -89,6 +90,28 @@ const Main: () => Node = () => {
           })
         }
 
+        const _joined = await Storer.get('joined')
+        if (_joined) {
+          dispatch({
+            type: 'setJoined',
+            joined: _joined,
+          })
+        }
+
+        const _startTime = await Storer.get('startTime')
+        if (_startTime) {
+          dispatch({
+            type: 'setStartTime',
+            startTime: new Date(_startTime),
+          })
+        }
+
+        // console.log('_loggedUser', _loggedUser)
+        // console.log('_started', _started)
+        // console.log('_joined', _joined)
+        // console.log('_startTime', _startTime)
+        // console.log('_currentChallenge', _currentChallenge)
+
       } finally {
         setIsReady(true)
       }
@@ -107,13 +130,14 @@ const Main: () => Node = () => {
       {showSpash && <SplashModal onFinishSpash={onFinishSpash} />}
 
       {loggedUser == null || loggedUser._id == null ? (<AuthStackNavigation />)
-        : loggedUser.basicsDone != true ? (<InitialStackNavigation />)
+        : loggedUser.basicsDone !== true ? (<InitialStackNavigation />)
           : (<>
             <Sensors />
             <MainStackNavigation />
+            {!showSpash && currentChallenge != null && showBottomBar && (<ChallengeBottomSheet />)}
           </>)}
 
-      {/* {!isReady ? (<SplashModal onFinishSpash={() => console.log('onFinishSpash')} />)
+      {/* {!isReady ? (<SplashModal onFinishSpash={() => //console.log('onFinishSpash')} />)
         : loggedUser == null || loggedUser._id == null ? (<AuthStackNavigation />)
           : loggedUser.basicsDone != true ? (<InitialStackNavigation />)
             // : (<View />)

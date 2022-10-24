@@ -6,7 +6,6 @@ import { DefaultView } from '../../components/containers'
 import Loading from '../../components/animations/loading'
 
 import { useGlobals } from '../../contexts/global'
-import { LOGGED_USER_KEY, TOKEN_KEY } from '../../constants/keys'
 import Storer from '../../utils/storer'
 
 
@@ -26,16 +25,16 @@ function AuthScreen({ route, navigation }) {
   const res = route.params
 
   const doAuth = () => {
-    console.log('[doAuth] res.user_info', res.user_info)
-    console.log('[doAuth] res.token', res.token)
+    //console.log('[doAuth] res.user_info', res.user_info)
+    //console.log('[doAuth] res.token', res.token)
 
-    Storer.set(TOKEN_KEY, res.token)
+    Storer.set('token', res.token)
     dispatch({
       type: 'setToken',
       token: res.token,
     })
 
-    Storer.set(LOGGED_USER_KEY, res.user_info)
+    Storer.set('loggedUser', res.user_info)
     dispatch({
       type: 'setLoggedUser',
       loggedUser: res.user_info,
@@ -43,7 +42,7 @@ function AuthScreen({ route, navigation }) {
   }
 
   React.useEffect(() => {
-    console.log('loggedUser', loggedUser)
+    //console.log('loggedUser', loggedUser)
     if (loggedUser == null || loggedUser._id == null) {
       doAuth()
     }

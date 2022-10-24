@@ -1,8 +1,6 @@
-import React from 'react';
-import { StyleSheet, TextInput } from 'react-native';
-import { TextInput as PaperTextInput, useTheme } from 'react-native-paper';
-
-import MainNav from '../navs/main-nav';
+import React from 'react'
+import { StyleSheet, TextInput } from 'react-native'
+import { TextInput as PaperTextInput, useTheme } from 'react-native-paper'
 
 /**
  * @param props
@@ -10,8 +8,8 @@ import MainNav from '../navs/main-nav';
  * @constructor
  */
 function CustomInput(props) {
-  const { colors } = useTheme();
-  const maxLength = props.keyboardType === 'number-pad' ? 5 : null;
+  const { colors } = useTheme()
+  const maxLength = props.keyboardType === 'number-pad' ? 5 : null
   return (
     // <TextInput
     //   {...props}
@@ -29,7 +27,7 @@ function CustomInput(props) {
         />
       )}
     />
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -45,9 +43,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     justifyContent: 'flex-end',
   },
-});
-MainNav.defaultProps = {
-  customStyle: null,
-};
+})
 
-export default CustomInput;
+export default CustomInput

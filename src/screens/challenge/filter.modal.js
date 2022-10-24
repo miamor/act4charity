@@ -24,7 +24,7 @@ function FilterModal(props) {
    */
   const [selectedDistance, setSelectedDistance] = useState()
   const onToggleDistance = (item) => {
-    console.log(item)
+    //console.log(item)
     setSelectedDistance(item)
   }
 
@@ -79,6 +79,9 @@ function FilterModal(props) {
       filterOptions.distance = selectedDistance
     }
 
+    const selected_ids = Object.keys(selectedCats).filter(function (key) { return selectedCats[key] === 1 })
+    filterOptions.interests = selected_ids
+
     props.onFinishFilter(filterOptions)
   }
 
@@ -120,7 +123,11 @@ function FilterModal(props) {
                   style={{
                     flex: 1,
                     marginHorizontal: 4,
-                    marginVertical: 3
+                    marginVertical: 3,
+                    borderRadius: 40
+                  }}
+                  labelStyle={{
+                    paddingVertical: selectedCats.hasOwnProperty(item._id) && selectedCats[item._id] === 1 ? 3 : 2,
                   }}
                 >
                   {item}km
@@ -151,15 +158,19 @@ function FilterModal(props) {
                   style={{
                     flex: 1,
                     marginHorizontal: 4,
-                    marginVertical: 3
+                    marginVertical: 3,
+                    borderRadius: 40
                   }}
-                >
+                  labelStyle={{
+                    paddingVertical: selectedCats.hasOwnProperty(item._id) && selectedCats[item._id] === 1 ? 3 : 2,
+                  }}
+                    >
                   {item.title}
                 </Button>
               )}></FlatList>}
           </View>
 
-          <View style={{ flex: 0.2 }}>
+          <View style={{ flex: 0.1, justifyContent: 'flex-end' }}>
             <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
               <Button mode="text"
                 style={{ marginHorizontal: 10 }}

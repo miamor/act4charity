@@ -8,7 +8,6 @@ import { levels_ranges, useGlobals } from '../../contexts/global'
 import { DefaultView } from '../../components/containers'
 
 import Storer from '../../utils/storer'
-import { CURRENT_CHALLENGE_KEY, default_loggedUser, LOGGED_USER_KEY, TOKEN_KEY } from '../../constants/keys'
 
 import * as ImagePicker from 'react-native-image-picker'
 import { REACT_APP_API_URL } from '../../services/APIServices'
@@ -21,6 +20,7 @@ import LogOutModal from './logout.modal'
 import NotificationsModal from './notifications.modal'
 import HelpModal from './help.modal'
 import FeedbackModal from './feedback.modal'
+import { default_loggedUser } from '../../constants/keys'
 
 
 function ProfileScreen({ navigation }) {
@@ -42,23 +42,35 @@ function ProfileScreen({ navigation }) {
   const [currentLevel, setCurrentLevel] = useState(0)
   const [nextLevel, setNextLevel] = useState(1)
 
+
+  const [token, setToken] = useState()
+  useEffect(() => {
+    (async () => {
+      if (token == null) {
+        const _token = await Storer.get('token')
+        setToken(_token)
+      }
+    })()
+  }, [token])
+
+  
   /*
    * Logout
    */
   const onConfirmLogOut = () => {
-    Storer.delete(TOKEN_KEY)
+    Storer.delete('token')
     dispatch({
       type: 'setToken',
       token: null,
     })
 
-    Storer.delete(LOGGED_USER_KEY)
+    Storer.delete('loggedUser')
     dispatch({
       type: 'setLoggedUser',
       loggedUser: default_loggedUser,
     })
 
-    Storer.delete(CURRENT_CHALLENGE_KEY)
+    Storer.delete('currentChallenge')
     dispatch({
       type: 'setCurrentChallenge',
       currentChallenge: null,
@@ -77,7 +89,7 @@ function ProfileScreen({ navigation }) {
         setNextLevel(i)
         setCurrentLevel(i - 1)
 
-        setLevelProgress(loggedUser.current_reward / levels_ranges[i].start)
+        setLevelProgress((loggedUser.current_reward - levels_ranges[i-1].start) / (levels_ranges[i].start - levels_ranges[i-1].start))
 
         return false
       }
@@ -88,7 +100,7 @@ function ProfileScreen({ navigation }) {
       setNextLevel(i)
       setCurrentLevel(i)
     }
-  }, [loggedUser])
+  }, [loggedUser, token])
 
 
   /*
@@ -110,16 +122,18 @@ function ProfileScreen({ navigation }) {
       selectionLimit: 1,
       mediaType: 'photo',
       includeBase64: false,
+      maxWidth: 500, maxHeight: 500,
     }
     ImagePicker.launchImageLibrary(options, setPickerResponse)
   }, [])
 
-  const onCameraPress = React.useCallback(() => {
+  const onCameraPress = useCallback(() => {
     hideAskImgSource()
     const options = {
       saveToPhotos: true,
       mediaType: 'photo',
       includeBase64: false,
+      maxWidth: 500, maxHeight: 500,
     }
     ImagePicker.launchCamera(options, setPickerResponse)
   }, [])
@@ -131,62 +145,70 @@ function ProfileScreen({ navigation }) {
    */
   useEffect(() => {
     if (pickerResponse != null && pickerResponse.assets != null) {
-      console.log('[profile] >> pickerResponse', pickerResponse)
+      //console.log('[profile] >> pickerResponse', pickerResponse)
       handleUploadPhoto()
     }
   }, [pickerResponse])
 
-  const handleUploadPhoto = async () => {
-    setLoading(true)
+  const handleUploadPhoto = useCallback(() => {
+    // setLoading(true)
 
-    const accessToken = await Storer.get(TOKEN_KEY)
+    // const accessToken = await Storer.get('token')
 
-    let fileToUpload = {
-      uri: pickerResponse.assets[0].uri,
-      type: pickerResponse.assets[0].type,
-      name: pickerResponse.assets[0].fileName,
-    }
+    if (token != null) {
+      setLoading(true)
 
-    console.log('[handleUploadPhoto] fileToUpload =', fileToUpload)
-
-    let data = new FormData()
-    data.append('files', fileToUpload)
-
-    console.log('[handleUploadPhoto] data =', data)
-
-    axios({
-      method: 'POST',
-      url: REACT_APP_API_URL + '/user/me/uploadAvt',
-      data: data,
-      headers: {
-        'Authorization': accessToken,
-        'Accept': 'application/json',
-        'Content-Type': 'multipart/form-data'
+      let fileToUpload = {
+        uri: pickerResponse.assets[0].uri,
+        type: pickerResponse.assets[0].type,
+        name: pickerResponse.assets[0].fileName,
       }
-    }).then((response) => {
-      const res = response.data
-      if (res.status === 'success') {
-        console.log('[handleUploadPhoto] res =', res)
 
-        Storer.set(LOGGED_USER_KEY, {
-          ...loggedUser,
-          avatar: res.data.avatar
-        })
+      //console.log('[handleUploadPhoto] fileToUpload =', fileToUpload)
 
-        dispatch({
-          type: 'setLoggedUser',
-          loggedUser: {
+      let data = new FormData()
+      data.append('files', fileToUpload)
+
+      //~console.log('[handleUploadPhoto]', REACT_APP_API_URL + '/user/me/uploadAvt')
+      //~console.log('[handleUploadPhoto] data =', data)
+      //~console.log('[handleUploadPhoto] accessToken =', accessToken)
+
+      axios({
+        method: 'POST',
+        url: REACT_APP_API_URL + '/user/me/uploadAvt',
+        data: data,
+        headers: {
+          'Authorization': token,
+          'Accept': 'application/json',
+          'Content-Type': 'multipart/form-data'
+        }
+      }).then((response) => {
+        const res = response.data
+        //~console.log('[handleUploadPhoto] res =', res)
+
+        if (res.status === 'success') {
+
+          Storer.set('loggedUser', {
             ...loggedUser,
             avatar: res.data.avatar
-          }
-        })
+          })
 
+          dispatch({
+            type: 'setLoggedUser',
+            loggedUser: {
+              ...loggedUser,
+              avatar: res.data.avatar
+            }
+          })
+
+          setLoading(false)
+        }
+      }).catch(error => {
         setLoading(false)
-      }
-    }).catch(error => {
-      console.error(error)
-    })
-  }
+        console.error(error)
+      })
+    }
+  }, [token])
 
 
   return (<DefaultView>
@@ -236,7 +258,7 @@ function ProfileScreen({ navigation }) {
             />
           </TouchableOpacity>
           <View style={styles.profileDetailsTextContainer}>
-            <H3>{loggedUser.first_name}</H3>
+            <H3>{loggedUser.firstname}</H3>
             <View style={{ flexDirection: 'row', marginTop: 4 }}>
               <Image source={levels_ranges[currentLevel].image} style={{ height: 20, width: 20, marginLeft: -5 }} />
               <Text style={{ alignSelf: 'flex-start', marginBottom: 5, color: '#777', fontSize: 14, lineHeight: 18 }}>
@@ -361,7 +383,7 @@ function ProfileScreen({ navigation }) {
           <TouchableOpacity
             style={{ flexDirection: 'row', justifyContent: 'space-between' }}
             onPress={() => {
-              console.log('tos clicked')
+              //console.log('tos clicked')
             }}>
             <Text variant="bodyMedium">Terms of Service</Text>
             <Image
@@ -388,7 +410,7 @@ function ProfileScreen({ navigation }) {
 
       <Button
         mode="text"
-        style={{ width: 100, marginTop: 12 }}
+        style={{ width: 100, marginTop: 12, marginLeft: 20 }}
         onPress={() => setModalVisible(!modalVisible)}>
         {
           <Text style={{
@@ -445,7 +467,7 @@ const styles = StyleSheet.create({
   },
   profileDetailsTextContainer: {
     marginLeft: 16,
-    marginTop: 8,
+    marginTop: 15,
     marginBottom: 8,
   },
   button: {

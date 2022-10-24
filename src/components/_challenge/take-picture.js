@@ -4,9 +4,6 @@ import { StyleSheet, View, Image, TouchableOpacity, Pressable, Platform, Dimensi
 import { ProgressBar, Button, useTheme, Appbar, Modal, Portal, Paragraph, TextInput } from 'react-native-paper'
 import { H3, Text } from '../paper/typos'
 
-import Storer from '../../utils/storer'
-import { CURRENT_CHALLENGE_KEY, default_loggedUser, LOGGED_USER_KEY, TOKEN_KEY } from '../../constants/keys'
-
 import * as ImagePicker from 'react-native-image-picker'
 import Loading from '../animations/loading'
 import { useGlobals } from '../../contexts/global'
@@ -18,7 +15,6 @@ function TakePicture(props) {
 
   const [loading, setLoading] = useState(false)
 
-
   /*
    * Select / Capture image from source
    */
@@ -29,16 +25,18 @@ function TakePicture(props) {
       selectionLimit: 1,
       mediaType: 'photo',
       includeBase64: false,
+      maxWidth: 500, maxHeight: 500,
     }
     ImagePicker.launchImageLibrary(options, setPickerResponse)
   }, [])
 
-  const onCameraPress = React.useCallback(() => {
+  const onCameraPress = useCallback(() => {
     props.hideAskImgSource()
     const options = {
       saveToPhotos: true,
       mediaType: 'photo',
       includeBase64: false,
+      maxWidth: 500, maxHeight: 500,
     }
     ImagePicker.launchCamera(options, setPickerResponse)
   }, [])
@@ -51,7 +49,7 @@ function TakePicture(props) {
   const [showTextForm, setShowTextForm] = useState(false)
   useEffect(() => {
     if (pickerResponse != null && pickerResponse.assets != null) {
-      // console.log('[take-picture] >> pickerResponse', pickerResponse, '   |   setShowTextForm true')
+      // //console.log('[take-picture] >> pickerResponse', pickerResponse, '   |   setShowTextForm true')
       setShowTextForm(true)
     }
   }, [pickerResponse])
@@ -70,7 +68,7 @@ function TakePicture(props) {
     data.append('files', fileToUpload)
     data.append('content', statusText)
 
-    props.onSubmitShareStory(data)
+    props.callbackSubmitShareStory(data)
   }
 
   const { width, height } = Dimensions.get('window')
@@ -106,21 +104,26 @@ function TakePicture(props) {
     </Portal>)}
 
 
-    {loading && <Loading />}
+    {/* {loading && <Loading />} */}
 
-    {showTextForm && (<View style={{ flexDirection: 'column', position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', }}>
-
-      {/* <Text>Loading? {loading}</Text> */}
+    {showTextForm && (<View style={{ flexDirection: 'column', position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'flex-end', backgroundColor: '#fff', }}>
 
       {/* <ScrollView> */}
-        <View style={{ flex: 0.6, justifyContent: 'center', alignItems: 'center' }}>
-          <Image
-            source={{ uri: pickerResponse.assets[0].uri }}
-            style={{ width: width - 60, height: height / 2 }}
-          />
-        </View>
+      <View style={{
+        // flex: 0.6, 
+        // justifyContent: 'center', 
+        alignItems: 'center',
+        position: 'absolute', top: 60, left: 0, right: 0, bottom: 200
+      }}>
+        <Image
+          source={{ uri: pickerResponse.assets[0].uri }}
+          style={{ width: width - 60, height: height / 2 }}
+        />
+      </View>
 
-        <View style={{ flex: 0.2, paddingHorizontal: 30 }}>
+      <View style={{ flex: 0.4, paddingHorizontal: 30, paddingVertical: 20, backgroundColor: '#fff', flexDirection: 'column' }}>
+
+        <View style={{ flex: 0.9 }}>
           <TextInput
             style={{ flex: 1, }}
             mode="outlined"
@@ -132,7 +135,7 @@ function TakePicture(props) {
           />
         </View>
 
-        <View style={{ flex: 0.1, marginTop: 20, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ marginTop: 20, justifyContent: 'center', alignItems: 'center' }}>
           <View style={{ flexDirection: 'row' }}>
             <Button mode="text" onPress={props.onCloseShareStory} style={{ marginHorizontal: 10 }} labelStyle={{ paddingHorizontal: 10 }}>
               BACK
@@ -142,6 +145,8 @@ function TakePicture(props) {
             </Button>
           </View>
         </View>
+
+      </View>
 
       {/* </ScrollView> */}
     </View>)}

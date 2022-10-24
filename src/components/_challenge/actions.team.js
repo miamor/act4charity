@@ -12,18 +12,15 @@ import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import * as userAPI from '../../services/userAPI'
 import { useNavigation } from '@react-navigation/core'
 
-import ChallengeBarDiscoverTeam from './bar.team.discover'
-import ChallengeBarWalkTeam from './bar.team.walk'
 import Storer from '../../utils/storer'
-import { TOKEN_KEY } from '../../constants/keys'
+import ChallengeBarTeam from './bar.team'
 
 
 function ChallengeStartActionsTeam(props) {
   const [{ currentChallenge, loggedUser,
     currentLocation, currentRegion, trackLoc, trackStep,
-    privateSockMsg, privateSockMsgs, socket,
-    trackMemberLocationStates, trackMemberDistStates, trackMemberStepStates, membersJoinStatus, completedMembers, chatMessages, processedPrivateSockMsgs,
-    started, completed, finished
+    socket, privateSockMsg, privateSockMsgs, trackMemberLocationStates, trackMemberDistStates, trackMemberStepStates, membersJoinStatus, completedMembers, chatMessages, processedPrivateSockMsgs,
+    started, completed, joined
   }, dispatch] = useGlobals()
   const { colors } = useTheme()
   const navigation = useNavigation()
@@ -41,8 +38,19 @@ function ChallengeStartActionsTeam(props) {
   const [loading, setLoading] = useState(true)
 
 
+  const [token, setToken] = useState()
   useEffect(() => {
-    console.log('[actions.team.func] currentLocation', currentLocation, ' | completed =', completed)
+    (async () => {
+      if (token == null) {
+        const _token = await Storer.get('token')
+        setToken(_token)
+      }
+    })()
+  }, [token])
+
+
+  useEffect(() => {
+    //console.log('[actions.team.func] currentLocation', currentLocation, ' | completed =', completed)
 
     if (completed === 1) {
       onComplete()
@@ -56,12 +64,6 @@ function ChallengeStartActionsTeam(props) {
   const [messages, setMessages] = useState([])
 
 
-  /*
-   * My join status ?
-   */
-  const [joinStatus, setJoinStatus] = useState(false)
-
-
 
   /* ************************
    *
@@ -70,21 +72,26 @@ function ChallengeStartActionsTeam(props) {
    * ************************/
   const [isHost, setIsHost] = useState(false)
   const hostJoin = () => {
-    // console.log('[team.func] >>> membersJoinStatus', membersJoinStatus)
+    // //console.log('[team.func] >>> membersJoinStatus', membersJoinStatus)
     if (loggedUser._id === challenge_accepted_data.user) {
       setIsHost(true)
-      setJoinStatus(true)
 
-      console.log('[team.func][hostJoin] >>> Im host. I joined')
+      if (!joined) {
+        /* dispatch and store so that not join again */
+        onSetDispatch('setJoined', 'joined', true)
+        Storer.set('joined', true)
 
-      //? host joined for the first time
-      socket.emit('cast_private', {
-        room_id: room_id,
-        action: 'join',
-        user_id: loggedUser._id,
-        username: loggedUser.username,
-        data: loggedUser.username + ' joined'
-      })
+        //console.log('[team.func][hostJoin] >>> Im host. I joined')
+
+        //? host joined for the first time
+        socket.emit('cast_private', {
+          room_id: room_id,
+          action: 'join',
+          user_id: loggedUser._id,
+          username: loggedUser.username,
+          data: loggedUser.username + ' joined'
+        })
+      }
     }
   }
 
@@ -99,18 +106,18 @@ function ChallengeStartActionsTeam(props) {
 
   const loadMembersStatus = () => {
     userAPI.getChallengeInvitations({ challenge_accepted_id: challenge_accepted_id }).then((res) => {
-      // console.log('[team.func][loadMembersStatus] >>> membersJoinStatus', membersJoinStatus)
+      // //console.log('[team.func][loadMembersStatus] >>> membersJoinStatus', membersJoinStatus)
 
       let members_joins = { ...membersJoinStatus }
       res.data.forEach((invitation) => {
-        // console.log('>> invitation', invitation)
+        // //console.log('>> invitation', invitation)
         // members_joins[invitation.to_uid] = invitation.accept
         if (!isHost) {
           members_joins[invitation.to_uid] = invitation.accept
         }
       })
 
-      console.log('[team.func][loadMembersStatus] (first fetch) members_joins', members_joins)
+      //console.log('[team.func][loadMembersStatus] (first fetch) members_joins', members_joins)
       onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
 
       hostJoin()
@@ -147,9 +154,16 @@ function ChallengeStartActionsTeam(props) {
    * This function is triggered when the host started the challenge.
    * This function starts on each member's screen
    */
-  const startNow = () => {
+  const startNow = async() => {
+    await Storer.set('started', true)
     onSetDispatch('setStarted', 'started', true)
-    Storer.set('started', true)
+
+    await Storer.set('completed', 0)
+    onSetDispatch('setCompleted', 'completed', 0)
+
+    const dt = new Date()
+    await Storer.set('startTime', dt)
+    onSetDispatch('setStartTime', 'startTime', dt)
   }
 
   /*
@@ -163,7 +177,7 @@ function ChallengeStartActionsTeam(props) {
    */
   useEffect(() => {
     if (started) {
-      console.log('[team.func] *** trackLoc', trackLoc)
+      //console.log('[team.func] *** trackLoc', trackLoc)
       submitUserLocState(trackLoc)
     }
   }, [trackLoc])
@@ -189,13 +203,24 @@ function ChallengeStartActionsTeam(props) {
    *
    * ************************/
   useEffect(() => {
-    // console.log('[team.func] privateSockMsgs', privateSockMsgs)
+    //console.log('[team.func] ********** privateSockMsgs', privateSockMsgs)
+    //console.log('[team.func] >>>>>>>>>> privateSockMsg ', privateSockMsg)
 
     // privateSockMsgs.forEach((res, i) => {
-    //   // console.log('> res', res)
+    //   // //console.log('> res', res)
     if (privateSockMsg != null) {
       const res = privateSockMsg
+      onSetDispatch('setPrivateSockMsg', 'privateSockMsg', null)
       onSetDispatch('setProcessedPrivateSockMsgs', 'processedPrivateSockMsgs', processedPrivateSockMsgs + 1)
+
+      /*
+       * //! for signals other than chat, add to messages just for debug
+       * for action `chat`, `_handleChat` already append data to messages so no need.
+       */
+      if (res.action !== 'chat') {
+        setMessages([...messages, res])
+      }
+
 
       if (res.action === 'start') {
         /*
@@ -287,7 +312,7 @@ function ChallengeStartActionsTeam(props) {
       }
     }
     // })
-  }, [privateSockMsgs])
+  }, [privateSockMsg])
 
   /* ************************
    *
@@ -299,6 +324,7 @@ function ChallengeStartActionsTeam(props) {
   }, [])
 
   const _handleChat = useCallback((res) => {
+    setLoading(false)
     setMessages([...messages, res])
   }, [messages])
 
@@ -308,7 +334,7 @@ function ChallengeStartActionsTeam(props) {
       [res.user_id]: 1,
     }
     onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
-    console.log('[someone joined] members_joins', members_joins)
+    //console.log('[someone joined] members_joins', members_joins)
   }, [membersJoinStatus])
 
   const _handleDecline = useCallback((res) => {
@@ -317,7 +343,7 @@ function ChallengeStartActionsTeam(props) {
       [res.user_id]: -1,
     }
     onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
-    console.log('[someone declined] members_joins', members_joins)
+    //console.log('[someone declined] members_joins', members_joins)
   }, [membersJoinStatus])
 
   const _handleOut = useCallback((res) => {
@@ -326,7 +352,7 @@ function ChallengeStartActionsTeam(props) {
       [res.user_id]: -2,
     }
     onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
-    console.log('[someone out] members_joins', members_joins)
+    //console.log('[someone out] members_joins', members_joins)
   }, [membersJoinStatus])
 
   const _handleComplete = useCallback((res) => {
@@ -340,10 +366,10 @@ function ChallengeStartActionsTeam(props) {
     onSetDispatch('setCompleted', 'completed', -1)
 
     // navigation.navigate('ChallengeWalkDetailInfo', { key: 'ChallengeWalkDetailInfo', challengeDetail: item })
-    navigation.navigate('ChallengeStack', {
-      screen: 'ChallengeDetailInfo',
-      params: { key: 'ChallengeDetailInfo', challengeDetail: res.data }
-    })
+    // navigation.navigate('ChallengeStack', {
+    //   screen: 'ChallengeDetailInfo',
+    //   params: { key: 'ChallengeDetailInfo', challengeDetail: res.data }
+    // })
   }, [])
 
   const _handleEnd = useCallback((res) => {
@@ -351,9 +377,6 @@ function ChallengeStartActionsTeam(props) {
 
     /* set completed = 3 to take screenshot within `Map` view */
     onSetDispatch('setCompleted', 'completed', 3)
-
-    /* callback function to handle when the challenge is really completed */
-    props.onFinished()
   }, [completed])
 
   const _handleLocState = useCallback((res) => {
@@ -394,7 +417,11 @@ function ChallengeStartActionsTeam(props) {
        * Update invitation accept status db 
        */
       userAPI.acceptInvitation({ challenge_accepted_id: challenge_accepted_id }).then((res) => {
-        console.log('[acceptInvitation] res', res)
+        //console.log('[acceptInvitation] res', res)
+
+        /* dispatch and store so that not join again */
+        onSetDispatch('setJoined', 'joined', true)
+        Storer.set('joined', true)
 
         /*
          * join the room 
@@ -407,7 +434,7 @@ function ChallengeStartActionsTeam(props) {
           data: loggedUser.username + ' joined'
         })
 
-        setJoinStatus(1)
+        onSetDispatch('setJoined', 'joined', true)
         // loadMembersStatus()
 
         setLoading(false)
@@ -419,7 +446,7 @@ function ChallengeStartActionsTeam(props) {
     } else { //? or else, just join the chat ? well, no need to rejoin
       // socket.emit('join', { room_id: room_id, user_id: loggedUser._id, username: loggedUser.username, data: loggedUser.username + ' joined' })
 
-      setJoinStatus(1)
+      onSetDispatch('setJoined', 'joined', true)
       setLoading(false)
     }
   }
@@ -439,7 +466,7 @@ function ChallengeStartActionsTeam(props) {
        * Update invitation accept status db 
        */
       userAPI.declineInvitation({ challenge_accepted_id: challenge_accepted_id }).then((res) => {
-        console.log('[declineInvitation] res', res)
+        //console.log('[declineInvitation] res', res)
 
         socket.emit('cast_private', {
           room_id: room_id,
@@ -450,7 +477,6 @@ function ChallengeStartActionsTeam(props) {
         })
 
         setLoading(false)
-        setJoinStatus(-1)
 
         navigation.goBack()
 
@@ -477,7 +503,7 @@ function ChallengeStartActionsTeam(props) {
   const onPressStartTeam = () => {
     //? if totStt > 0 => at least one member accepted.
     const totStt = Object.values(membersJoinStatus).reduce((a, b) => a + b, 0)
-    if (totStt === 0) {
+    if (totStt <= 1) {
       setShowWarningCantStart(true)
     } else {
       setShowHostConfirmStartTeam(true)
@@ -485,9 +511,10 @@ function ChallengeStartActionsTeam(props) {
   }
   const onConfirmStartTeam = () => {
     setLoading(true)
+    hideConfirmStartTeam()
 
     userAPI.startTeamChallenge({ challenge_accepted_id: challenge_accepted_id }).then((res) => {
-      console.log('[startTeamChallenge] res', res)
+      //console.log('[startTeamChallenge] res', res)
 
       socket.emit('cast_private', {
         room_id: room_id,
@@ -511,15 +538,19 @@ function ChallengeStartActionsTeam(props) {
    *
    * ************************/
   const submitChatMessage = () => {
-    console.log('[submitChatMessage] CALLED', chatMessage)
-    socket.emit('cast_private', {
-      room_id: room_id,
-      action: 'chat',
-      user_id: loggedUser._id,
-      username: loggedUser.username,
-      data: chatMessage
-    })
-    setChatMessage('')
+    if (chatMessage && chatMessage.length > 0) {
+      setLoading(true)
+      //console.log('[submitChatMessage] CALLED', chatMessage)
+
+      socket.emit('cast_private', {
+        room_id: room_id,
+        action: 'chat',
+        user_id: loggedUser._id,
+        username: loggedUser.username,
+        data: chatMessage
+      })
+      setChatMessage('')
+    }
   }
 
   /* ************************
@@ -572,17 +603,29 @@ function ChallengeStartActionsTeam(props) {
    * Individual completion !
    * When the system detects that the user completed the challenge,
    * show a button for the user to announce
+   * ---
+   * For walk challenge, when this is triggered, it means the challenge is completed.
+   * As for walk challenge, the distance walked is computed by summing everyone's distance walked.
    *
    * **********************************************/
   const [showConfirmComplete, setShowConfirmComplete] = useState(false)
-  const hideConfirmComplete = () => setShowConfirmComplete(false)
+  const hideConfirmComplete = () => {
+    setShowConfirmComplete(false)
+    onSetDispatch('setCompleted', 'completed', 1.5)
+  }
   const onComplete = () => {
-    setLoading(true)
-    setCompleted(1)
+    // setLoading(true)
+    // setCompleted(1)
+    onSetDispatch('setCompleted', 'completed', 1)
     setShowConfirmComplete(true)
   }
   const onConfirmComplete = () => {
     hideConfirmComplete()
+  }
+  const onHostPressEnd = () => {
+    hideConfirmComplete()
+    // setLoading(false)
+    onPressHostEndChallenge()
   }
 
 
@@ -609,14 +652,15 @@ function ChallengeStartActionsTeam(props) {
   const onHostConfirmEnd = () => {
     if (isHost) { //? only host can perform this action
       setLoading(true)
+      hideHostConfirmEnd()
 
       userAPI.completeChallenge({
         challenge_accepted_id: challenge_accepted_id,
         challenge_donation: challengeDetail.donation,
         challenge_reward: challengeDetail.reward,
-        participants: challengeDetail.participants,
+        participants: challenge_accepted_data.participants,
       }).then((res) => {
-        console.log('[confirmCompleteCallback] res', res)
+        //console.log('[confirmCompleteCallback] res', res)
 
         socket.emit('cast_private', {
           room_id: room_id,
@@ -653,6 +697,7 @@ function ChallengeStartActionsTeam(props) {
   const hideConfirmCancel = () => setShowConfirmCancel(false)
   const onConfirmCancel = () => {
     setLoading(true)
+    hideConfirmCancel()
 
     if (!isHost) {
       /*
@@ -660,7 +705,7 @@ function ChallengeStartActionsTeam(props) {
        * Simply out the challenge
        */
       userAPI.cancelInvitation({ challenge_accepted_id: challenge_accepted_id }).then((res) => {
-        console.log('>> res', res)
+        //console.log('>> res', res)
 
         /* dispatch global states */
         onSetDispatch('setCompleted', 'completed', -1)
@@ -674,8 +719,8 @@ function ChallengeStartActionsTeam(props) {
           data: loggedUser.username + ' withdrawn from this challenge',
         })
 
-        /* out this screen */
-        navigation.navigate('ChallengeStack', { screen: 'ChallengeListMapDiscover' })
+        // /* out this screen */
+        // navigation.navigate('ChallengeStack', { screen: 'ChallengeListMapDiscover' })
 
         /* done loading */
         setLoading(false)
@@ -704,6 +749,7 @@ function ChallengeStartActionsTeam(props) {
   const hideHostConfirmCancel = () => setHostShowConfirmCancel(false)
   const onHostConfirmCancel = () => {
     setLoading(true)
+    hideHostConfirmCancel()
 
     if (isHost) {
       /*
@@ -712,7 +758,7 @@ function ChallengeStartActionsTeam(props) {
        * There will be a handler to handle receive end signals for everyone (including host)
        */
       userAPI.cancelChallenge({ challenge_accepted_id: challenge_accepted_id }).then((res) => {
-        console.log('>> res', res)
+        //console.log('>> res', res)
 
         /* cast to other members via socket channel */
         socket.emit('cast_private', {
@@ -744,49 +790,54 @@ function ChallengeStartActionsTeam(props) {
   const hideAskImgSource = useCallback(() => setShowAskImgSource(false))
 
   const [showShareStoryModal, setShowShareStoryModal] = useState(false)
-  const onSubmitShareStory = useCallback(async (postData) => {
-    setLoading(true)
+  const callbackSubmitShareStory = useCallback((postData) => {
+    // setLoading(true)
+    // const accessToken = await Storer.get('token')
+    // console.log('postData', JSON.stringify(postData))
+    // console.log('accessToken', accessToken)
 
-    const accessToken = await Storer.get(TOKEN_KEY)
+    if (token != null) {
+      setLoading(true)
 
-    postData.append('challenge_accepted_id', challenge_accepted_id)
-    postData.append('challenge_id', challengeDetail._id)
-    postData.append('public', false)
+      postData.append('challenge_accepted_id', challenge_accepted_id)
+      postData.append('challenge_id', challengeDetail._id)
+      postData.append('public', false)
 
-    // console.log('>>> accessToken =', accessToken)
-    // console.log('>>> ', REACT_APP_API_URL + '/user/challenges/share_story')
-    // console.log('>>> postData =', JSON.stringify(postData))
+      // //console.log('>>> accessToken =', accessToken)
+      // //console.log('>>> ', REACT_APP_API_URL + '/user/challenges/share_story')
+      // //console.log('>>> postData =', JSON.stringify(postData))
 
-    axios({
-      method: 'POST',
-      url: REACT_APP_API_URL + '/user/challenges/share_story',
-      data: postData,
-      headers: {
-        'Authorization': accessToken,
-        'Accept': 'application/json',
-        'Content-Type': 'multipart/form-data'
-      }
-    }).then((response) => {
-      const res = response.data
-      if (res.status === 'success') {
-        console.log('[shareStory] res =', res)
-        setLoading(false)
-        setShowShareStoryModal(false)
+      axios({
+        method: 'POST',
+        url: REACT_APP_API_URL + '/user/challenges/share_story',
+        data: postData,
+        headers: {
+          'Authorization': token,
+          'Accept': 'application/json',
+          'Content-Type': 'multipart/form-data'
+        }
+      }).then((response) => {
+        const res = response.data
+        if (res.status === 'success') {
+          //console.log('[shareStory] res =', res)
+          setLoading(false)
+          setShowShareStoryModal(false)
 
-        /* cast to other members via socket channel */
-        socket.emit('cast_private', {
-          room_id: room_id,
-          action: 'chat',
-          user_id: loggedUser._id,
-          username: loggedUser.username,
-          data: content,
-          picture: res.picture
-        })
-      }
-    }).catch(error => {
-      console.error(error)
-    })
-  }, [])
+          /* cast to other members via socket channel */
+          socket.emit('cast_private', {
+            room_id: room_id,
+            action: 'chat',
+            user_id: loggedUser._id,
+            username: loggedUser.username,
+            data: content,
+            picture: res.picture
+          })
+        }
+      }).catch(error => {
+        console.error(error)
+      })
+    }
+  }, [token])
 
   const onOpenShareStory = useCallback((postData) => {
     setShowAskImgSource(true)
@@ -812,7 +863,8 @@ function ChallengeStartActionsTeam(props) {
     []
   )
   const snapPoints = useMemo(() => [
-    challengeDetail.type === 'discover' ? '13%' : '17%',
+    // challengeDetail.type === 'discover' ? '13%' : '17%',
+    '18%',
     '90%'], [])
   const [currentSnapPoint, setCurrentSnapPoint] = useState(0)
 
@@ -840,6 +892,15 @@ function ChallengeStartActionsTeam(props) {
   const imageWidth = dimensions.width - 100
 
 
+  /* **********************************************
+   *
+   * Tab view
+   *
+   * **********************************************/
+  const [tabIndex, setTabIndex] = useState(0)
+  const [onFocus, setOnFocus] = useState(false)
+
+
 
   return (<>
 
@@ -851,61 +912,109 @@ function ChallengeStartActionsTeam(props) {
       snapPoints={snapPoints}
       onChange={handleSheetChange}
     >
-      <BottomSheetScrollView contentContainerStyle={{}}>
+      <BottomSheetScrollView contentContainerStyle={{ flex: 1, }}>
 
-        {challengeDetail.type === 'discover' ? <ChallengeBarDiscoverTeam challenge_accepted_data={challenge_accepted_data} />
-          : <ChallengeBarWalkTeam challenge_accepted_data={challenge_accepted_data} />}
+        <View style={{
+          // flex: 0.18,
+          height: 110,
+          // backgroundColor: '#00f',
+          justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10, flexDirection: 'column', marginBottom: 10
+        }}>
+          <ChallengeBarTeam challenge_accepted_data={challenge_accepted_data} />
+        </View>
 
 
-        {membersJoinStatus != null && challenge_accepted_data.participants_details.map((user, i) => {
-          if (loggedUser._id !== user._id && !membersJoinStatus.hasOwnProperty(user._id)) return null
-          return (<View key={`us-` + i} style={{ flexDirection: 'row' }}>
-            <Text>{user.username} ({user._id}) </Text>
-            <Text>{loggedUser._id === user._id ? 1 : membersJoinStatus[user._id]}</Text>
-          </View>)
-        })}
 
-        {joinStatus && (<View style={{ flexDirection: 'column' }}>
-          <View style={{ flex: 0.7 }}>
-            {messages.map((res, i) => {
-              if (res.data.length > 0) {
-                return (<View key={`res-` + i} style={{ flexDirection: 'row' }}>
-                  <TextBold>{res.username}</TextBold>
-                  <Text>{res.data}</Text>
-                  {res.picture != null && <Image source={{ uri: res.picture }} style={{ marginTop: 5, height: imageHeight, width: imageWidth }} />}
-                </View>)
-              }
+        <View style={{ flexDirection: 'row', paddingHorizontal: 20 }}>
+          <TouchableOpacity onPress={() => setTabIndex(0)}
+            style={{
+              // backgroundColor: '#00f',
+              paddingHorizontal: 10,
+              paddingVertical: 5,
+              borderBottomWidth: 2,
+              borderBottomColor: tabIndex === 0 ? colors.primary : 'transparent',
+            }}>
+            <Text style={[tabIndex === 0 && { color: colors.primary, fontWeight: 'bold' }]}>
+              Chat
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setTabIndex(1)}
+            style={{
+              paddingHorizontal: 10,
+              paddingVertical: 5,
+              borderBottomWidth: 2,
+              borderBottomColor: tabIndex === 1 ? colors.primary : 'transparent',
+            }}>
+            <Text style={[tabIndex === 1 && { color: colors.primary, fontWeight: 'bold' }]}>
+              Members
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+
+        <View style={{ flex: 1 }}>
+
+          {tabIndex === 0 ? (<>
+            {joined ? (<View style={{ flexDirection: 'column', flex: 1, paddingTop: 10 }}>
+              <View style={{ flex: 1, paddingHorizontal: 30 }}>
+                {messages.map((res, i) => {
+                  if (res.data.length > 0) {
+                    return (<View key={`res-` + i} style={{ flexDirection: 'row', marginVertical: 6 }}>
+                      <TextBold style={{ marginRight: 10 }}>{res.username}</TextBold>
+                      <Text>{res.data}</Text>
+                      {res.picture != null && <Image source={{ uri: res.picture }} style={{ marginTop: 5, height: imageHeight, width: imageWidth }} />}
+                    </View>)
+                  }
+                })}
+              </View>
+
+              <View style={{ flexDirection: 'row', marginTop: 5, paddingVertical: 15, paddingHorizontal: 20, backgroundColor: '#eee' }}>
+                <IconButton style={{ alignSelf: 'center' }} icon="camera" size={40} onPress={onOpenShareStory} />
+                <TextInput
+                  style={{ flex: 1, height: 30, borderWidth: 2 }}
+                  autoCorrect={false}
+                  value={chatMessage}
+                  onSubmitEditing={() => submitChatMessage()}
+                  onChangeText={res => setChatMessage(res)}
+                  onFocus={() => setOnFocus(true)}
+                />
+                <View style={{ alignSelf: 'center', paddingLeft: 10 }}>
+                  <Button mode="contained" onPress={submitChatMessage}>
+                    Send
+                  </Button>
+                </View>
+              </View>
+            </View>) : (<Text style={{ paddingHorizontal: 30, paddingTop: 10 }}>You need to join to see the messages</Text>)}
+          </>)
+            : (<></>)}
+
+
+          {tabIndex === 1 ? (<View style={{ paddingHorizontal: 30, paddingTop: 10 }}>
+            {membersJoinStatus != null && challenge_accepted_data.participants_details.map((user, i) => {
+              if (loggedUser._id !== user._id && !membersJoinStatus.hasOwnProperty(user._id)) return null
+              return (<View key={`us-` + i} style={{ flexDirection: 'row' }}>
+                <Text>{user.username}</Text>
+                <Text style={{ marginLeft: 10, color: '#999', fontSize: 13, marginTop: 3 }}>
+                  {/* {loggedUser._id === user._id ? 1 : membersJoinStatus[user._id]} */}
+                  {user._id === challenge_accepted_data.user ? 'Host'
+                    : membersJoinStatus.hasOwnProperty(user._id) && membersJoinStatus[user._id] === 1 ? 'Joined'
+                      : ''}
+                </Text>
+              </View>)
             })}
-          </View>
+          </View>)
+            : (<></>)}
 
-          <View style={{ flex: 0.3, flexDirection: 'row' }}>
-            <TextInput
-              style={{ flex: 0.8, height: 40, borderWidth: 2 }}
-              autoCorrect={false}
-              value={chatMessage}
-              onSubmitEditing={() => submitChatMessage()}
-              onChangeText={res => {
-                setChatMessage(res)
-              }}
-              onFocus={() => setCurrentSnapPoint(1)}
-            />
-            <Button mode="contained" onPress={submitChatMessage}>
-              Send
-            </Button>
-          </View>
-        </View>)}
+        </View>
 
-        {!joinStatus && (<View style={{ flexDirection: 'row', paddingHorizontal: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Button mode="contained" onPress={onJoin}>
-            Accept
-          </Button>
-          <Button onPress={onDecline}>
-            Decline
-          </Button>
-        </View>)}
       </BottomSheetScrollView>
     </BottomSheet>)}
 
+
+
+    {joined && showShareStoryModal && (<View style={{ zIndex: 12, position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}>
+      <TakePicture showAskImgSource={showAskImgSource} hideAskImgSource={hideAskImgSource} onCloseShareStory={onCloseShareStory} callbackSubmitShareStory={callbackSubmitShareStory} />
+    </View>)}
 
 
 
@@ -933,25 +1042,64 @@ function ChallengeStartActionsTeam(props) {
     </Portal>)}
 
 
-    {showConfirmComplete && (<Portal>
+    {!isHost && showConfirmComplete && (<Portal>
       <Modal visible={showConfirmComplete} onDismiss={hideConfirmComplete} contentContainerStyle={{ zIndex: 1000, backgroundColor: '#fff', padding: 20, marginHorizontal: 20 }}>
         <H3 style={{ marginBottom: 18, paddingBottom: 12, borderBottomColor: '#f0f0f0', borderBottomWidth: 1 }}>Well done!</H3>
 
-        <Paragraph>
-          You've completed this challenge.
-        </Paragraph>
-        <Paragraph>
-          Now let's wait for other members.
-        </Paragraph>
+        {challengeDetail.type === 'discover' ? (<>
+          <Paragraph>
+            You've completed this challenge!
+          </Paragraph>
+          <Paragraph>
+            Now let's wait for other members.
+          </Paragraph>
+        </>)
+          : (<>
+            <Paragraph>
+              Seems like your team completed the challenge!
+            </Paragraph>
+          </>)}
+
         <Paragraph>
           This challenge will end when the host ends the challenge.
         </Paragraph>
 
         <View style={{ marginTop: 30, marginHorizontal: 20 }}>
-          <Button mode="contained" labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={onConfirmComplete}>I got it</Button>
+          <Button mode="contained" labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={hideConfirmComplete}>I got it</Button>
         </View>
       </Modal>
     </Portal>)}
+
+
+    {isHost && showConfirmComplete && (<Portal>
+      <Modal visible={showConfirmComplete} onDismiss={hideConfirmComplete} contentContainerStyle={{ zIndex: 1000, backgroundColor: '#fff', padding: 20, marginHorizontal: 20 }}>
+        <H3 style={{ marginBottom: 18, paddingBottom: 12, borderBottomColor: '#f0f0f0', borderBottomWidth: 1 }}>Well done!</H3>
+
+        {challengeDetail.type === 'discover' ? (<>
+          <Paragraph>
+            You've completed this challenge!
+          </Paragraph>
+          <Paragraph>
+            Now let's wait for other members.
+          </Paragraph>
+        </>)
+          : (<>
+            <Paragraph>
+              Seems like your team completed the challenge!
+            </Paragraph>
+          </>)}
+
+        <Paragraph>
+          You're the host. Do you want to end the challenge now?
+        </Paragraph>
+
+        <View style={{ marginTop: 30, marginHorizontal: 20, flexDirection: 'row' }}>
+          <Button mode="contained" labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={hideConfirmComplete}>No, wait more</Button>
+          <Button mode="text" labelStyle={{ paddingHorizontal: 10, paddingBottom: 1, lineHeight: 20 }} onPress={onHostPressEnd}>Ok, end now</Button>
+        </View>
+      </Modal>
+    </Portal>)}
+
 
 
 
@@ -1070,15 +1218,26 @@ function ChallengeStartActionsTeam(props) {
         Start now
       </Button>)}
 
-      {isHost && started && (<Button mode="contained" onPress={onPressHostCancelChallenge} labelStyle={{ paddingBottom: 1 }}>
+      {isHost && (<Button mode="contained" onPress={onPressHostCancelChallenge} labelStyle={{ paddingBottom: 1 }}>
         <MaterialCommunityIcons name="close" size={14} />
-        Cancel Challenge
+        {started ? 'End Challenge' : 'Cancel Challenge'}
       </Button>)}
 
-      {!isHost && (<Button mode="contained" onPress={onPressCancelChallenge} labelStyle={{ paddingBottom: 1 }}>
+      {!isHost && joined && (<Button mode="contained" onPress={onPressCancelChallenge} labelStyle={{ paddingBottom: 1 }}>
         <MaterialCommunityIcons name="close" size={14} />
         Out Challenge
       </Button>)}
+
+
+      {!isHost && !joined && (<View style={{ flexDirection: 'row', paddingHorizontal: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Button mode="contained" onPress={onJoin}>
+          Accept
+        </Button>
+        <Button mode="outlined" style={{ backgroundColor: '#fafafa', marginLeft: 10 }} onPress={onDecline}>
+          Decline
+        </Button>
+      </View>)}
+
 
     </View>)}
 

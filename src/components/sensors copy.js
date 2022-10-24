@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { PermissionsAndroid, ToastAndroid } from 'react-native'
+import { PermissionsAndroid } from 'react-native'
 
 import { useGlobals } from '../contexts/global'
 import { useIsDark } from '../hooks/use-theme'
@@ -41,35 +41,34 @@ function Sensors() {
         socket: true
       })
 
-      requestPermissions()
       // requestPedometerPermission()
       // requestLocationPermission()
+      // return () => {
+      //   unsubscribeLocation()
+      //   unsubscribePedometer()
+      // }
+    }
+  }, [init])
+  useEffect(() => {
+    if (initLoc === false) {
+      setInitLoc(true)
+
+      requestLocationPermission()
       return () => {
         unsubscribeLocation()
+      }
+    }
+  }, [initLoc])
+  useEffect(() => {
+    if (initStep === false) {
+      setInitStep(true)
+
+      requestPedometerPermission()
+      return () => {
         unsubscribePedometer()
       }
     }
-  }, [init])
-  // useEffect(() => {
-  //   if (initLoc === false) {
-  //     setInitLoc(true)
-
-  //     requestLocationPermission()
-  //     return () => {
-  //       unsubscribeLocation()
-  //     }
-  //   }
-  // }, [initLoc])
-  // useEffect(() => {
-  //   if (initStep === false) {
-  //     setInitStep(true)
-
-  //     requestPedometerPermission()
-  //     return () => {
-  //       unsubscribePedometer()
-  //     }
-  //   }
-  // }, [initStep])
+  }, [initStep])
 
 
 
@@ -116,58 +115,43 @@ function Sensors() {
 
   /* **********************************************
    *
-   * Request all permissions needed
+   * Location
    * 
    * -------------------
-   * Request location, 
+   * Request location, retrieve location, dispatch to all screens
+   * Get my current position to find nearby challenges, etc.
    *
    * **********************************************/
   const [locationStatus, setLocationStatus] = useState(0)
-  const [stepCounterStatus, setStepCounterStatus] = useState(0)
   /*
    * Request user's permission to retrieve location
    */
-  const requestPermissions = async () => {
+  const requestLocationPermission = async () => {
     //console.log('[sensors][requestLocationPermission] CALLED')
     if (Platform.OS === 'ios') {
       // getOneTimeLocation()
       subscribeLocation()
     } else {
-      PermissionsAndroid.requestMultiple([
-        // PermissionsAndroid.PERMISSIONS.CAMERA,
-        // PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
-        // PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        // PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-        // PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        // PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        PermissionsAndroid.PERMISSIONS.ACTIVITY_RECOGNITION
-      ]).then((result) => {
-        if (result['android.permission.ACCESS_FINE_LOCATION']
-          && result['android.permission.ACTIVITY_RECOGNITION'] === 'granted') {
-          subscribeLocation()
-          subscribePedometer()
-        }
-        else if (result['android.permission.ACCESS_FINE_LOCATION']
-          || result['android.permission.ACTIVITY_RECOGNITION'] === 'never_ask_again') {
-          setLocationStatus(-2)
-          setStepCounterStatus(-2)
+      try {
+        const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, {
+          title: 'Location Access Required',
+          message: 'This App needs to Access your location',
+        })
 
-          ToastAndroid.show('Please Go into Settings -> Applications -> APP_NAME -> Permissions and Allow permissions to continue', ToastAndroid.SHORT)
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          //? check if permission is granted
+          // getOneTimeLocation()
+          subscribeLocation()
+        } else {
+          setLocationStatus(-2)
+          // setLoading(false)
         }
-      })
+      } catch (err) {
+        console.warn(err)
+      }
     }
   }
 
-  /* **********************************************
-   *
-   * Location
-   * 
-   * -------------------
-   * Retrieve location, dispatch to all screens
-   * Get my current position to find nearby challenges, etc.
-   *
-   * **********************************************/
   /*
    * Subscribe so that the app will track the user's location without asking for permission again
    */
@@ -211,9 +195,28 @@ function Sensors() {
    * Step counter
    * 
    * -------------------
-   * Retrieve data, dispatch to all screens
+   * Request pedometer, retrieve data, dispatch to all screens
    *
    * **********************************************/
+  const [stepCounterStatus, setStepCounterStatus] = useState(0)
+  /*
+   * Request user's permission to retrieve sensor data
+   */
+  const requestPedometerPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACTIVITY_RECOGNITION, {
+      })
+
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        subscribePedometer()
+      } else {
+        setStepCounterStatus(0)
+      }
+    } catch (err) {
+      console.warn(err)
+    }
+  }
+
   /*
    * Subscribe so that the app will track the user's step without asking for permission again
    */

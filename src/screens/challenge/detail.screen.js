@@ -3,7 +3,6 @@ import { StyleSheet, ToastAndroid, PermissionsAndroid, View, Animated, Touchable
 import { Appbar, Button, useTheme, Paragraph, Dialog, Portal, Modal } from 'react-native-paper'
 import { TextBold, Text, H2, H3 } from '../../components/paper/typos'
 import { DefaultView } from '../../components/containers'
-import CustomInput from '../../components/paper/custom-input'
 import { useGlobals } from '../../contexts/global'
 import Loading from '../../components/animations/loading'
 
@@ -25,11 +24,12 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false)
 
 
-  // useEffect(() => {
-  //   // console.log('challengeDetail', challengeDetail)
-  //   // console.log('route.params', route.params)
-  //   setLoading(false)
-  // }, [])
+  useEffect(() => {
+    // //console.log('challengeDetail', challengeDetail)
+    // //console.log('route.params', route.params)
+    // setLoading(false)
+    //~console.log('currentChallenge', currentChallenge)
+  }, [])
 
 
   /*
@@ -43,10 +43,7 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
       if (currentChallenge.challenge_detail._id !== challengeDetail._id) { //? the user is in another challenge
         setShowConfirmDialog(true)
       } else { //? is in this challenge
-        navigation.navigate('_ChallengeDetailStart', {
-          key: '_ChallengeDetailStart',
-          challenge_accepted_data: currentChallenge,
-        })
+        startChallengeNow('individual', [loggedUser._id])
       }
     } else {
       onConfirmStart()
@@ -59,6 +56,7 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
   const [showJoinModeDialog, setShowJoinModeDialog] = useState(false)
   const hideJoinModeDialog = () => setShowJoinModeDialog(false)
   const onConfirmStart = () => {
+    setShowConfirmDialog(false)
     setShowJoinModeDialog(true)
   }
   const onJoinModeSelect = (mode) => {
@@ -77,7 +75,7 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
   const hideCreateTeamModal = useCallback(() => setShowCreateTeamModal(false))
   const startChallengeTeam = useCallback((participants_id, participants_username) => {
     setShowCreateTeamModal(false)
-    // console.log('>>> [startChallengeTeam]', participants_id, participants_username)
+    // //console.log('>>> [startChallengeTeam]', participants_id, participants_username)
     startChallengeNow('team', [...participants_id, loggedUser._id])
   })
 
@@ -97,8 +95,12 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
       participants: participants_id
     }
     userAPI.startChallenge(params).then((res) => {
-      // console.log('>> res', res)
+      // //console.log('>> res', res)
       setLoading(false)
+
+      //! has to reset started to false. this will be set to true depends on join mode
+      onSetDispatch('setStarted', 'started', false)
+      onSetDispatch('setCompleted', 'completed', 0)
 
       const challenge_accepted_data = {
         ...res.data,
@@ -171,7 +173,7 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
 
 
       <View style={{ flex: 1, paddingHorizontal: 10 }}>
-        <View style={{ flex: 0.6, backgroundColor: '#f0f', justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ flex: 0.6, backgroundColor: '#eee', justifyContent: 'center', alignItems: 'center' }}>
           <Image source={{ uri: challengeDetail.charity_detail.image }} style={{ width: dimensions.width - 20, height: 290 }} />
         </View>
 

@@ -13,7 +13,6 @@ import { ProgressBar, Button, RadioButton, useTheme, Appbar } from 'react-native
 import Loading from '../../components/animations/loading'
 import { DefaultView } from '../../components/containers'
 import { Text } from '../../components/paper/typos'
-import { LOGGED_USER_KEY } from '../../constants/keys'
 import { useGlobals } from '../../contexts/global'
 
 import * as userAPI from '../../services/userAPI'
@@ -36,9 +35,9 @@ function TargetScreenModal({ route, navigation }) {
     setLoading(true)
 
     userAPI.updateProfile({ target_donation: selectedAmount }).then((res) => {
-      console.log('[target][updateProfile] res', res)
+      //console.log('[target][updateProfile] res', res)
 
-      Storer.set(LOGGED_USER_KEY, {
+      Storer.set('loggedUser', {
         ...loggedUser,
         target_donation: selectedAmount
       })
@@ -68,7 +67,7 @@ function TargetScreenModal({ route, navigation }) {
 
       {loading && <Loading />}
 
-      <View style={{ backgroundColor: '#ffffff', flexDirection: 'column', paddingHorizontal: 20 }}>
+      <View style={{ flexDirection: 'column', paddingHorizontal: 20 }}>
         <Text style={{ marginTop: 24, marginBottom: 24 }} variant="bodyMedium">
           {targetText}
         </Text>
@@ -85,7 +84,7 @@ function TargetScreenModal({ route, navigation }) {
             justifyContent: 'center',
           }}>
             <TouchableOpacity onPress={() => {
-              console.log('minus pressed')
+              //console.log('minus pressed')
               setSelectedAmount(Math.max((selectedAmount / 10 - 1) * 10, 10))
             }}>
               <Image
@@ -102,7 +101,7 @@ function TargetScreenModal({ route, navigation }) {
 
             <TouchableOpacity
               onPress={() => {
-                console.log('plus pressed')
+                //console.log('plus pressed')
                 setSelectedAmount((selectedAmount / 10 + 1) * 10)
               }}>
               <Image
@@ -121,7 +120,7 @@ function TargetScreenModal({ route, navigation }) {
             contentStyle={styles.saveButtonStyle}>
             Save
           </Button>
-          <Button mode="text" style={{ width: 100, marginTop: 25 }} onPress={() => console.log('back button pressed')}>
+          <Button mode="text" style={{ width: 100, marginTop: 25 }} onPress={() => navigation.goBack()}>
             Back
           </Button>
         </View>

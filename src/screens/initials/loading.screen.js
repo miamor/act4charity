@@ -8,7 +8,6 @@ import { useGlobals } from '../../contexts/global'
 import SolarSystem from '../../svgs/SolarSystem'
 import Storer from '../../utils/storer'
 import * as userAPI from '../../services/userAPI'
-import { LOGGED_USER_KEY } from '../../constants/keys'
 
 /**
  * @param navigation
@@ -40,8 +39,8 @@ function LoadingScreen({ navigation }) {
         }
 
         userAPI.updateProfile(finished_user_info).then((res) => {
-          // console.log('res', res)
-          Storer.set(LOGGED_USER_KEY, finished_user_info).then(() => {
+          // //console.log('res', res)
+          Storer.set('loggedUser', finished_user_info).then(() => {
             dispatch({
               type: 'setLoggedUser',
               loggedUser: finished_user_info,

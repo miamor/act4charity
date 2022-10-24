@@ -1,11 +1,11 @@
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
-import { useNavigation } from '@react-navigation/core';
-import PropTypes from 'prop-types';
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { useTheme } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/core'
+import PropTypes from 'prop-types'
+import React from 'react'
+import { StyleSheet, View } from 'react-native'
+import { useTheme } from 'react-native-paper'
 
-import PlatformUtils from '../../utils/platform';
+import PlatformUtils from '../../utils/platform'
 
 /**
  * @param navigation
@@ -15,9 +15,9 @@ import PlatformUtils from '../../utils/platform';
  * @constructor
  */
 function Close({ style, position }) {
-  const navigation = useNavigation();
-  const { colors } = useTheme();
-  const innerPosition = position === 'left' ? { left: 20 } : { right: 20 };
+  const navigation = useNavigation()
+  const { colors } = useTheme()
+  const innerPosition = position === 'left' ? { left: 20 } : { right: 20 }
   return PlatformUtils.isAndroid ? (
     <MaterialCommunityIcons
       onPress={() => navigation.goBack()}
@@ -37,7 +37,7 @@ function Close({ style, position }) {
         ]}
       />
     </View>
-  );
+  )
   // return (
   //   <View style={styles.iosBarContainer}>
   //     <View
@@ -49,17 +49,17 @@ function Close({ style, position }) {
   //       ]}
   //     />
   //   </View>
-  // );
+  // )
 }
 
 Close.propTypes = {
   style: PropTypes.object,
   position: PropTypes.oneOf(['left', 'right']),
-};
+}
 
 Close.defaultProps = {
   position: 'left',
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -79,6 +79,6 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     marginTop: 20,
   },
-});
+})
 
-export default Close;
+export default Close

@@ -2,8 +2,6 @@ import React from 'react'
 import { View, StyleSheet, Text } from 'react-native'
 import { TextInput as Input, useTheme } from 'react-native-paper'
 
-import MainNav from '../navs/main-nav'
-
 /**
  * @param props
  * @returns {*}
@@ -40,8 +38,5 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
 })
-MainNav.defaultProps = {
-  customStyle: null,
-}
 
 export default CustomTextInput

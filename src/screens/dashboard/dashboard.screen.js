@@ -1,6 +1,6 @@
 import React, { PropTypes, Component, useEffect, useState, useCallback } from 'react'
 import { StyleSheet, View, Image, ScrollView, ToastAndroid, PermissionsAndroid, Dimensions, TouchableOpacity } from 'react-native'
-import { ProgressBar, Button, Appbar, useTheme, Badge, Portal, Modal, Paragraph } from 'react-native-paper'
+import { ProgressBar, Button, Appbar, useTheme, Badge, Portal, Modal, Paragraph, MD2Colors, MD3Colors } from 'react-native-paper'
 import { H2, H3, Text, TextBold } from '../../components/paper/typos'
 import { DefaultView } from '../../components/containers'
 import { levels_ranges, useGlobals } from '../../contexts/global'
@@ -8,6 +8,7 @@ import Loading from '../../components/animations/loading'
 
 import * as userAPI from '../../services/userAPI'
 import haversine from 'haversine'
+import Storer from '../../utils/storer'
 
 
 /**
@@ -19,6 +20,9 @@ import haversine from 'haversine'
 function DashboardHomeScreen({ navigation }) {
   const [{ loggedUser, currentChallenge, currentLocation, trackStep, trackLoc }, dispatch] = useGlobals()
   const { colors } = useTheme()
+
+  const onSetDispatch = (type, key, value) => dispatch({ type: type, [key]: value })
+
 
   const [loading, setLoading] = useState(true)
 
@@ -55,7 +59,7 @@ function DashboardHomeScreen({ navigation }) {
         setNextLevel(i)
         setCurrentLevel(i - 1)
 
-        setLevelProgress(loggedUser.current_reward / levels_ranges[i].start)
+        setLevelProgress((loggedUser.current_reward - levels_ranges[i-1].start) / (levels_ranges[i].start - levels_ranges[i-1].start))
 
         return false
       }
@@ -73,13 +77,14 @@ function DashboardHomeScreen({ navigation }) {
    * Load unfinished challenges and pending invitations
    */
   useEffect(() => {
+    setLoading(true)
     loadCurrentChallenges()
     loadPendingInvitations()
-  }, [])
+  }, [currentChallenge])
 
   useEffect(() => {
     if (currentChallenges != null && pendingInvitations != null) {
-      // console.log('Loaded')
+      // //console.log('Loaded')
       setLoading(false)
     }
   }, [currentChallenges, pendingInvitations])
@@ -103,7 +108,7 @@ function DashboardHomeScreen({ navigation }) {
    * **********************************************/
   const loadCurrentChallenges = () => {
     userAPI.getCurrentChallenge({ num_per_page: 100 }).then((res) => {
-      // console.log('[loadCurrentChallenges] res', res.data.length)
+      // //console.log('[loadCurrentChallenges] res', res.data.length)
       setCurrentChallenges(res.data)
     }).catch(error => {
       console.error(error)
@@ -119,7 +124,7 @@ function DashboardHomeScreen({ navigation }) {
    * **********************************************/
   const loadPendingInvitations = () => {
     userAPI.getPendingInvitations({ num_per_page: 100 }).then((res) => {
-      // console.log('[loadPendingInvitations] res', res.data.length)
+      // //console.log('[loadPendingInvitations] res', res.data.length)
       setPendingInvitations(res.data)
     }).catch(error => {
       console.error(error)
@@ -134,7 +139,7 @@ function DashboardHomeScreen({ navigation }) {
   }
 
   // const onContinueChallenge = (challenge_accepted) => {
-  //   console.log('[Dashboard] onContinueChallenge CALLED ~ ')
+  //   //console.log('[Dashboard] onContinueChallenge CALLED ~ ')
 
   //   const challenge_detail = challenge_accepted.challenge_detail
 
@@ -149,29 +154,47 @@ function DashboardHomeScreen({ navigation }) {
    */
   const [selectedChallenge, setSelectedChallenge] = useState()
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
-  const hideConfirmDialog = () => setShowConfirmDialog(false)
+  const hideConfirmDialog = () => {
+    setShowConfirmDialog(false)
+    setLoading(false)
+  }
+  // const [movingScreen, setMovingScreen] = useState(false)
   const onPressChallenge = (challenge_accepted) => {
+    setLoading(true)
+
+    // setTimeout(() => {
     setSelectedChallenge(challenge_accepted)
-    
+
     if (currentChallenge != null) {
       if (currentChallenge.challenge_detail._id !== challenge_accepted.challenge_detail._id) { //? the user is in another challenge
         setShowConfirmDialog(true)
       } else { //? is in this challenge
-        navigation.navigate('_ChallengeDetailStart', {
-          key: '_ChallengeDetailStart',
-          challenge_accepted_data: currentChallenge,
-        })
+        goToChallengeNow(currentChallenge)
       }
     } else {
       setShowConfirmDialog(false)
       goToChallengeNow(challenge_accepted)
     }
+    // }, 1000)
   }
   const goToChallengeNow = (challenge_accepted) => {
+    setShowConfirmDialog(false)
+
+    console.log('[dashboard][goToChallengeNow] challenge_accepted', challenge_accepted)
+
     navigation.navigate('_ChallengeDetailStart', {
       key: '_ChallengeDetailStart',
       challenge_accepted_data: challenge_accepted,
     })
+
+    //! has to reset started to false. this will be set to true depends on join mode
+    onSetDispatch('setStarted', 'started', false)
+    onSetDispatch('setCompleted', 'completed', 0)
+
+    // Storer.set('currentChallenge', challenge_accepted)
+    // onSetDispatch('setCurrentChallenge', 'currentChallenge', challenge_accepted)
+    // onSetDispatch('setShowBottomBar', 'showBottomBar', false)
+    setLoading(false)
   }
 
 
@@ -218,7 +241,7 @@ function DashboardHomeScreen({ navigation }) {
             style={{ height: 80, width: 80, borderRadius: 100 }}
           />
           <View style={styles.profileDetailsTextContainer}>
-            <H3>{loggedUser.first_name}</H3>
+            <H3>{loggedUser.firstname}</H3>
             <View style={{ flexDirection: 'row', marginTop: 4 }}>
               <Image source={levels_ranges[currentLevel].image} style={{ height: 20, width: 20, marginLeft: -5 }} />
               <Text style={{ alignSelf: 'flex-start', marginBottom: 5, color: '#777', fontSize: 14, lineHeight: 18 }}>
@@ -302,8 +325,8 @@ function DashboardHomeScreen({ navigation }) {
         </View>
 
 
-        <View style={{ marginTop: 20 }}>
-          <H2>Unfinished challenge {loading}</H2>
+        <View style={{ marginTop: 30 }}>
+          <H3>Unfinished challenge</H3>
           <View style={[{
             flexDirection: 'column',
             justifyContent: 'center',
@@ -322,7 +345,7 @@ function DashboardHomeScreen({ navigation }) {
                 onPress={() => onPressChallenge(item)}
                 style={{
                   flexDirection: 'row',
-                  marginVertical: 10,
+                  marginVertical: 5,
                 }}>
 
                 <Image style={{ height: 46, width: 46, marginTop: 15, marginLeft: 0, marginRight: -23, zIndex: 3, }}
@@ -341,11 +364,14 @@ function DashboardHomeScreen({ navigation }) {
                   <TextBold style={{ color: colors.primary, fontSize: 15.5, lineHeight: 22 }}>{item.challenge_detail.name}</TextBold>
                   {/* <Text>{item.challenge_detail.type}</Text> */}
 
-                  <View style={{ marginTop: 8 }}>
+                  <View style={{ marginTop: 5 }}>
                     {currentLocation != null && item.challenge_detail.type === 'discover' && <Text style={styles.subtitle}>{calcDistance(item.challenge_detail.place_detail.coordinates, currentLocation)}</Text>}
                     {item.challenge_detail.type === 'walk' && <Text style={styles.subtitle}>{item.challenge_detail.distance}km</Text>}
 
-                    <Badge style={{ paddingHorizontal: 10, position: 'absolute', right: 0, marginTop: 6, lineHeight: 12 }}>{item.mode}</Badge>
+                    <Badge style={{
+                      paddingHorizontal: 10, position: 'absolute', right: 0, marginTop: 6, lineHeight: 12,
+                      backgroundColor: item.mode === 'individual' ? MD3Colors.primary40 : MD3Colors.primary25
+                    }}>{item.mode}</Badge>
                   </View>
                 </View>
 
@@ -356,8 +382,8 @@ function DashboardHomeScreen({ navigation }) {
         </View>
 
 
-        <View style={{ marginTop: 20 }}>
-          <H2>Pending invitations</H2>
+        <View style={{ marginTop: 35 }}>
+          <H3>Pending invitations</H3>
           <View style={[{
             flexDirection: 'column',
             justifyContent: 'center',
@@ -373,10 +399,10 @@ function DashboardHomeScreen({ navigation }) {
             /> : (<View style={{}}>
 
               {pendingInvitations.map((item, i) => (<TouchableOpacity key={`my-challenge-` + i}
-                onPress={() => onContinueChallenge(item)}
+                onPress={() => onPressChallenge(item)}
                 style={{
                   flexDirection: 'row',
-                  marginVertical: 10,
+                  marginVertical: 5,
                 }}>
 
                 <Image style={{ height: 46, width: 46, marginTop: 15, marginLeft: 0, marginRight: -23, zIndex: 3, }}
@@ -394,8 +420,8 @@ function DashboardHomeScreen({ navigation }) {
                 }}>
                   <TextBold style={{ color: colors.primary, fontSize: 15.5, lineHeight: 22 }}>{item.challenge_detail.name}</TextBold>
 
-                  <View style={{ marginTop: 8 }}>
-                    <Text style={styles.subtitle}>From <TextBold>{item.from_user.username}</TextBold></Text>
+                  <View style={{ marginTop: 5 }}>
+                    <Text style={styles.subtitle}>From <TextBold style={styles.subtitle}>{item.from_user.username}</TextBold></Text>
 
                     {currentLocation != null && item.challenge_detail.type === 'discover' && <Text style={styles.subtitle}>{calcDistance(item.challenge_detail.place_detail.coordinates, currentLocation)}</Text>}
                     {item.challenge_detail.type === 'walk' && <Text style={styles.subtitle}>{item.challenge_detail.distance}km</Text>}
@@ -439,7 +465,7 @@ const styles = StyleSheet.create({
   },
   profileDetailsTextContainer: {
     marginLeft: 16,
-    marginTop: 8,
+    marginTop: 15,
     marginBottom: 8,
     flexDirection: 'column',
   },
@@ -452,13 +478,13 @@ const styles = StyleSheet.create({
     marginTop: 20
   },
   challengeButtonContainer: {
-    marginTop: 51,
+    marginTop: 30,
     marginBottom: 48,
   },
   subtitle: {
     fontSize: 14,
     color: '#888',
-    lineHeight: 16,
+    lineHeight: 18,
   }
 })
 export default DashboardHomeScreen

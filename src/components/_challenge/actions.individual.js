@@ -4,13 +4,12 @@ import { StyleSheet, ToastAndroid, PermissionsAndroid, View, Animated, Touchable
 import { Button, useTheme, IconButton, MD3Colors, Avatar, Paragraph, Dialog, Portal, Modal } from 'react-native-paper'
 import { TextBold, Text, H2, H3 } from '../paper/typos'
 import { DefaultView } from '../containers'
-import CustomInput from '../paper/custom-input'
 import { useGlobals } from '../../contexts/global'
 
 import * as Location from 'expo-location'
 import MapView, { Marker, Polyline, AnimatedRegion, enableLatestRenderer, PROVIDER_GOOGLE } from 'react-native-maps'
 import MapViewDirections from 'react-native-maps-directions'
-import { GOOGLE_API_KEY, TOKEN_KEY } from '../../constants/keys'
+import { GOOGLE_API_KEY } from '../../constants/keys'
 // import MapViewNavigation, { NavigationModes, TravelModeBox, TravelIcons, Geocoder, TravelModes, DirectionsListView, ManeuverView, DurationDistanceView } from 'react-native-maps-navigation'
 import haversine from 'haversine'
 
@@ -20,17 +19,16 @@ import Loading from '../animations/loading'
 
 import * as userAPI from '../../services/userAPI'
 import { useNavigation } from '@react-navigation/core'
-import ChallengeBarDiscoverIndividual from './bar.individual.discover'
-import ChallengeBarWalkIndividual from './bar.individual.walk'
 import { REACT_APP_API_URL } from '../../services/APIServices'
 import Storer from '../../utils/storer'
 import TakePicture from './take-picture'
 import axios from 'axios'
+import ChallengeBarIndividual from './bar.individual'
 
 
 function ChallengeStartActionsIndividual(props) {
   const [{ currentChallenge, loggedUser, currentLocation, trackLoc, currentRegion,
-    completed, started }, dispatch] = useGlobals()
+    completed, started, startTime }, dispatch] = useGlobals()
   const { colors } = useTheme()
   const navigation = useNavigation()
 
@@ -45,6 +43,22 @@ function ChallengeStartActionsIndividual(props) {
   const [loading, setLoading] = useState(false)
 
 
+  const [token, setToken] = useState()
+  useEffect(() => {
+    (async () => {
+      if (token == null) {
+        const _token = await Storer.get('token')
+        setToken(_token)
+      }
+    })()
+  }, [token])
+
+
+  // useEffect(() => {
+  //   //~console.log('[actions.individual] startTime', startTime)
+  // }, [startTime])
+
+
   useEffect(() => {
     if (challengeDetail.type === 'discover') {
       setLoading(true)
@@ -53,7 +67,7 @@ function ChallengeStartActionsIndividual(props) {
   }, [])
 
   useEffect(() => {
-    // console.log('[actions.individual.func] currentLocation', currentLocation, ' | completed =', completed)
+    // //console.log('[actions.individual.func] currentLocation', currentLocation, ' | completed =', completed)
 
     if (completed === 1) {
       onComplete()
@@ -72,7 +86,7 @@ function ChallengeStartActionsIndividual(props) {
     userAPI.listStory({ challenge_id: challengeDetail._id }).then((res) => {
       /* done loading */
       setLoading(false)
-      // console.log('res', res)
+      // //console.log('res', res)
       if (res.status === 'success') {
         setStories(res.data)
       }
@@ -94,7 +108,7 @@ function ChallengeStartActionsIndividual(props) {
    *
    * **********************************************/
   const [showConfirmComplete, setShowConfirmComplete] = useState(false)
-  const hideConfirmComplete = () => setShowConfirmCancel(false)
+  const hideConfirmComplete = () => setShowConfirmComplete(false)
   const onComplete = () => {
     setShowConfirmComplete(true)
   }
@@ -102,22 +116,35 @@ function ChallengeStartActionsIndividual(props) {
    * Confirm complete 
    */
   const onConfirmComplete = () => {
-    console.log('[actions.individual.func][onConfirmComplete] CALLED ~')
+    console.log('[actions.individual][onConfirmComplete] CALLED !!!!!!!!!!!!')
+    setLoading(true)
+    // setCompleted(1.5)
+    // onSetDispatch('setCompleted', 'completed', 1.5)
+    hideConfirmComplete()
+    //console.log('[actions.individual.func][onConfirmComplete] CALLED ~')
 
-    setShowConfirmComplete(false)
     // props.confirmCompleteCallback()
 
     userAPI.completeChallenge({
       challenge_accepted_id: challenge_accepted_id,
       challenge_donation: challengeDetail.donation,
       challenge_reward: challengeDetail.reward,
-      participants: challengeDetail.participants,
-    }).then((res) => {
-      console.log('[confirmCompleteCallback] res', res)
+      participants: challenge_accepted_data.participants,
+    }).then(async (res) => {
+      //~console.log('[actions.individual][onConfirmComplete] (completeChallenge) res', res)
 
       /* dispatch global states */
       /* set completed = 3 to take screenshot within `Map` view */
       onSetDispatch('setCompleted', 'completed', 3)
+
+      /* update `current_donation` & `current_reward` */
+      const newUserData = {
+        ...loggedUser,
+        current_donation: loggedUser.current_donation + challengeDetail.donation,
+        current_reward: loggedUser.current_reward + challengeDetail.reward
+      }
+      await Storer.set('loggedUser', newUserData)
+      onSetDispatch('setLoggedUser', 'loggedUser', newUserData)
 
       /* done loading */
       setLoading(false)
@@ -139,22 +166,21 @@ function ChallengeStartActionsIndividual(props) {
     setShowConfirmCancel(true)
   }
   const onConfirmCancel = () => {
-    setShowConfirmCancel(false)
+    setLoading(true)
+    hideConfirmCancel()
     // props.onConfirmCancel()
 
     /*
      * Update in db
      */
     userAPI.cancelChallenge({ challenge_accepted_id: challenge_accepted_id }).then((res) => {
-      console.log('>> res', res)
+      //console.log('>> res', res)
 
       /* dispatch global states */
       onSetDispatch('setCompleted', 'completed', -1)
 
-      /* out this screen */
-      navigation.navigate('ChallengeStack', {
-        screen: 'ChallengeListMapDiscover',
-      })
+      // /* out this screen */
+      // navigation.navigate('ChallengeStack', { screen: 'ChallengeListMapDiscover' })
 
       /* done loading */
       setLoading(false)
@@ -175,41 +201,51 @@ function ChallengeStartActionsIndividual(props) {
   const hideAskImgSource = useCallback(() => setShowAskImgSource(false))
 
   const [showShareStoryModal, setShowShareStoryModal] = useState(false)
-  const onSubmitShareStory = useCallback(async (postData) => {
-    setLoading(true)
+  const callbackSubmitShareStory = useCallback((postData) => {
+    // setLoading(true)
+    // const accessToken = await Storer.get('token')
+    // console.log('postData', JSON.stringify(postData))
+    // console.log('accessToken', accessToken)
 
-    const accessToken = await Storer.get(TOKEN_KEY)
+    if (token != null) {
+      setLoading(true)
 
-    postData.append('challenge_accepted_id', challenge_accepted_id)
-    postData.append('challenge_id', challengeDetail._id)
-    postData.append('public', true)
+      console.log('postData', JSON.stringify(postData))
+      console.log('token', token)
 
-    // console.log('>>> accessToken =', accessToken)
-    // console.log('>>> ', REACT_APP_API_URL + '/user/challenges/share_story')
-    // console.log('>>> postData =', JSON.stringify(postData))
+      postData.append('challenge_accepted_id', challenge_accepted_id)
+      postData.append('challenge_id', challengeDetail._id)
+      postData.append('public', true)
 
-    axios({
-      method: 'POST',
-      url: REACT_APP_API_URL + '/user/challenges/share_story',
-      data: postData,
-      headers: {
-        'Authorization': accessToken,
-        'Accept': 'application/json',
-        'Content-Type': 'multipart/form-data'
-      }
-    }).then((response) => {
-      const res = response.data
-      if (res.status === 'success') {
-        console.log('[shareStory] res =', res)
+      // //console.log('>>> accessToken =', accessToken)
+      // //console.log('>>> ', REACT_APP_API_URL + '/user/challenges/share_story')
+      // //console.log('>>> postData =', JSON.stringify(postData))
+
+      axios({
+        method: 'POST',
+        url: REACT_APP_API_URL + '/user/challenges/share_story',
+        data: postData,
+        headers: {
+          'Authorization': token,
+          'Accept': 'application/json',
+          'Content-Type': 'multipart/form-data'
+        }
+      }).then((response) => {
+        const res = response.data
+        if (res.status === 'success') {
+          //console.log('[shareStory] res =', res)
+          setLoading(false)
+          setShowShareStoryModal(false)
+
+          listStory()
+        }
+      }).catch(error => {
         setLoading(false)
-        setShowShareStoryModal(false)
-
-        listStory()
-      }
-    }).catch(error => {
-      console.error(error)
-    })
-  }, [])
+        console.error(error)
+        // ToastAndroid.show(error, ToastAndroid.short)
+      })
+    }
+  }, [token])
 
   const onOpenShareStory = useCallback((postData) => {
     setShowAskImgSource(true)
@@ -235,8 +271,8 @@ function ChallengeStartActionsIndividual(props) {
     []
   )
   const snapPoints = useMemo(() => [
-    challengeDetail.type === 'discover' ? '25%' : '17%',
-    challengeDetail.type === 'discover' ? '90%' : '17%'
+    challengeDetail.type === 'discover' ? '25%' : '19%',
+    challengeDetail.type === 'discover' ? '90%' : '19%'
   ], [])
   const [currentSnapPoint, setCurrentSnapPoint] = useState(0)
 
@@ -330,13 +366,19 @@ function ChallengeStartActionsIndividual(props) {
       index={0}
       snapPoints={snapPoints}
       onChange={handleSheetChange}
-      style={{ zIndex: 10 }}
+      style={{ zIndex: 10000 }}
     >
 
       <BottomSheetScrollView contentContainerStyle={{ zIndex: 10 }}>
 
-        {challengeDetail.type === 'discover' ? <ChallengeBarDiscoverIndividual challenge_accepted_data={challenge_accepted_data} />
-          : <ChallengeBarWalkIndividual challenge_accepted_data={challenge_accepted_data} />}
+        <View style={{
+          // flex: 0.17,
+          height: challengeDetail.type === 'discover' ? 80 : 110,
+          // backgroundColor: '#00f',
+          justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10, flexDirection: 'column', marginBottom: 10
+        }}>
+          <ChallengeBarIndividual challenge_accepted_data={challenge_accepted_data} distFromStartToTarget={props.distFromStartToTarget} />
+        </View>
 
 
         {challengeDetail.type == 'discover' && (<>
@@ -354,27 +396,31 @@ function ChallengeStartActionsIndividual(props) {
                 {stories.map((story, i) => (<Avatar.Image key={`story-` + i} size={70} source={{ uri: story.picture }} style={{ marginRight: 10 }} />))}
               </View>
             </>) : (<>
-              <View style={{ flex: 1, paddingHorizontal: 20, height: 100, flexDirection: 'column', marginBottom: 40 }}>
+              <View style={{ flex: 1, paddingHorizontal: 20, height: 140, flexDirection: 'column', marginBottom: 40 }}>
                 <TouchableOpacity onPress={onOpenShareStory} style={{ flex: 1, borderRadius: 6, borderWidth: 2, borderColor: '#ddd', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }}>
                   <MaterialCommunityIcons size={55} name="camera" />
+                  <Text style={{ marginBottom: -6 }}>Share something on your wayy</Text>
                 </TouchableOpacity>
               </View>
             </>)}
           </View>
 
 
-          {currentSnapPoint != 0 && (<>
+          {currentSnapPoint != 0 && (<View style={{ flex: 1 }}>
             {stories.map((story, i) => (<View key={`story-` + i} style={{ flexDirection: 'row', paddingHorizontal: 15, marginBottom: 30 }}>
               <Avatar.Image size={60} source={{ uri: story.user_detail.avatar }} style={{ marginRight: 10, width: 60 }} />
 
               <View>
+                <View>
+                  <Text style={{ color: colors.primary }}>{story.user_detail.username}</Text>
+                </View>
                 <View style={{ marginLeft: 5 }}>
                   <Text>{story.content}</Text>
                 </View>
                 {story.picture != null && <Image source={{ uri: story.picture }} style={{ marginTop: 10, height: imageHeight, width: imageWidth }} />}
               </View>
             </View>))}
-          </>)}
+          </View>)}
         </>)}
 
       </BottomSheetScrollView>
@@ -382,7 +428,7 @@ function ChallengeStartActionsIndividual(props) {
 
 
     {showShareStoryModal && (<View style={{ zIndex: 12, position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}>
-      <TakePicture showAskImgSource={showAskImgSource} hideAskImgSource={hideAskImgSource} onCloseShareStory={onCloseShareStory} onSubmitShareStory={onSubmitShareStory} />
+      <TakePicture showAskImgSource={showAskImgSource} hideAskImgSource={hideAskImgSource} onCloseShareStory={onCloseShareStory} callbackSubmitShareStory={callbackSubmitShareStory} />
     </View>)}
 
 

@@ -12,7 +12,7 @@ import { useIsDark } from '../hooks/use-theme'
 
 import ChallengeStackNavigation from './challenge-stack'
 import RewardStackNavigation from './reward-stack'
-import ChallengeBottomSheet from '../components/challenge.bottom'
+// import ChallengeBottomSheet from '../components/challenge.bottom'
 import DashboardStackNavigation from './dashboard-stack'
 import ProfileStackNavigation from './profile-stack'
 
@@ -77,10 +77,7 @@ const MyTabBarEle = ({ props }) => {
 }
 
 const MyTabBar = ({ state, descriptors, navigation }) => {
-  const [{ currentChallenge, showBottomBar }] = useGlobals()
-
   return (<View style={{ justifyContent: 'center', alignItems: 'center' }}>
-    {currentChallenge != null && showBottomBar === true && (<ChallengeBottomSheet />)}
     <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
       {state.routes.map((route, index) => (<MyTabBarEle key={`tabbarele-` + index} props={{ state, route, index, descriptors, navigation }} />))}
     </View>
@@ -112,7 +109,7 @@ function BottomBarNavigation() {
       tabBar={props => <MyTabBar {...props} />}
     >
       <Tab.Screen
-        name="Dashboard"
+        name="DashboardStack"
         component={DashboardStackNavigation}
         options={{
           tabBarIcon: 'home',
@@ -124,7 +121,7 @@ function BottomBarNavigation() {
         name="ChallengeStack"
         component={ChallengeStackNavigation}
         options={{
-          tabBarIcon: 'theme-light-dark',
+          tabBarIcon: 'map-legend',
           title: 'Challenges',
         }}
       />
@@ -133,7 +130,7 @@ function BottomBarNavigation() {
         name="RewardsStack"
         component={RewardStackNavigation}
         options={{
-          tabBarIcon: 'theme-light-dark',
+          tabBarIcon: 'seal',
           title: 'Rewards',
         }}
       />

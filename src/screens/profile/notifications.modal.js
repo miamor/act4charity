@@ -30,7 +30,7 @@ function NotificationsModal(props) {
         <H2>Notifications</H2>
 
         <View style={{ flex: 1, flexDirection: 'column' }}>
-          <View style={{ flex: 0.8 }}>
+          <View style={{ flex: 0.7 }}>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 24 }}>
               <Image
@@ -43,47 +43,39 @@ function NotificationsModal(props) {
                 Be aware
               </TextBold>
             </View>
+
             <View style={styles.switchViewContainer}>
-              <View>
-                <Text style={{ marginTop: 4 }} variant="bodyMedium">
-                  Notify about new challenges
-                </Text>
-                <Switch
-                  style={{ position: 'absolute', marginLeft: 250 }}
-                  value={beAwareSwitch1}
-                  onValueChange={() => {
-                    setbeAwareSwitch1(!beAwareSwitch1)
-                  }}
-                />
-              </View>
+              <Text style={styles.textLabel} variant="bodyMedium">
+                Notify about new challenges
+              </Text>
+              <Switch
+                value={beAwareSwitch1}
+                onValueChange={() => {
+                  setbeAwareSwitch1(!beAwareSwitch1)
+                }}
+              />
             </View>
             <View style={styles.switchViewContainer}>
-              <View>
-                <Text style={{ marginTop: 4, width: 250 }} variant="bodyMedium">
-                  Notify about discovery challenge locations near you
-                </Text>
-                <Switch
-                  style={{ position: 'absolute', marginLeft: 250, marginTop: 10 }}
-                  value={beAwareSwitch2}
-                  onValueChange={() => {
-                    setbeAwareSwitch2(!beAwareSwitch2)
-                  }}
-                />
-              </View>
+              <Text style={styles.textLabel} variant="bodyMedium">
+                Notify about discovery challenge locations near you
+              </Text>
+              <Switch
+                value={beAwareSwitch2}
+                onValueChange={() => {
+                  setbeAwareSwitch2(!beAwareSwitch2)
+                }}
+              />
             </View>
             <View style={styles.switchViewContainer}>
-              <View>
-                <Text style={{ marginTop: 4, width: 250 }} variant="bodyMedium">
-                  App Updates
-                </Text>
-                <Switch
-                  style={{ position: 'absolute', marginLeft: 250 }}
-                  value={beAwareSwitch3}
-                  onValueChange={() => {
-                    setbeAwareSwitch3(!beAwareSwitch3)
-                  }}
-                />
-              </View>
+              <Text style={styles.textLabel} variant="bodyMedium">
+                App Updates
+              </Text>
+              <Switch
+                value={beAwareSwitch3}
+                onValueChange={() => {
+                  setbeAwareSwitch3(!beAwareSwitch3)
+                }}
+              />
             </View>
 
 
@@ -99,32 +91,26 @@ function NotificationsModal(props) {
               </TextBold>
             </View>
             <View style={styles.switchViewContainer}>
-              <View>
-                <Text style={{ marginTop: 4, width: 220 }} variant="bodyMedium">
-                  Invitations to challenges from others
-                </Text>
-                <Switch
-                  style={{ position: 'absolute', marginLeft: 250, marginTop: 10 }}
-                  value={socialSwitch1}
-                  onValueChange={() => {
-                    setSocialSwitch1(!socialSwitch1)
-                  }}
-                />
-              </View>
+              <Text style={styles.textLabel} variant="bodyMedium">
+                Invitations to challenges from others
+              </Text>
+              <Switch
+                value={socialSwitch1}
+                onValueChange={() => {
+                  setSocialSwitch1(!socialSwitch1)
+                }}
+              />
             </View>
             <View style={styles.switchViewContainer}>
-              <View>
-                <Text style={{ marginTop: 4, width: 220 }} variant="bodyMedium">
-                  Know if there are people around to do group challenges
-                </Text>
-                <Switch
-                  style={{ position: 'absolute', marginLeft: 250, marginTop: 10 }}
-                  value={socialSwitch2}
-                  onValueChange={() => {
-                    setSocialSwitch2(!socialSwitch2)
-                  }}
-                />
-              </View>
+              <Text style={styles.textLabel} variant="bodyMedium">
+                Know if there are people around to do group challenges
+              </Text>
+              <Switch
+                value={socialSwitch2}
+                onValueChange={() => {
+                  setSocialSwitch2(!socialSwitch2)
+                }}
+              />
             </View>
 
 
@@ -140,25 +126,22 @@ function NotificationsModal(props) {
               </TextBold>
             </View>
             <View style={styles.switchViewContainer}>
-              <View>
-                <Text style={{ marginTop: 4 }} variant="bodyMedium">
-                  Recieve inactivity reminders
-                </Text>
-                <Switch
-                  style={{ position: 'absolute', marginLeft: 250 }}
-                  value={reminders1}
-                  onValueChange={() => {
-                    setReminders1(!reminders1)
-                  }}
-                />
-              </View>
+              <Text style={{ marginTop: 0 }} variant="bodyMedium">
+                Recieve inactivity reminders
+              </Text>
+              <Switch
+                value={reminders1}
+                onValueChange={() => {
+                  setReminders1(!reminders1)
+                }}
+              />
             </View>
           </View>
 
 
-          <View style={{ flex: 0.2, marginTop: 30 }}>
+          <View style={{ flex: 0.3, justifyContent: 'center' }}>
             <Button mode="text"
-              style={{ width: 100, marginTop: 35 }}
+              style={{ width: 100 }}
               labelStyle={{ paddingHorizontal: 10 }}
               onPress={() => props.setNotificationModalVisibility(!props.notificationModalVisibility)}>
               BACK
@@ -179,11 +162,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   switchViewContainer: {
-    marginLeft: 42,
-    marginTop: 22,
+    marginLeft: 25,
+    marginTop: 18,
+    marginBottom: 3,
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    // justifyContent: 'flex-start',
     alignItems: 'center',
+    // backgroundColor: '#0f0'
   },
+  textLabel: {
+    flex: 1,
+    // marginTop: 0,
+    lineHeight: 24,
+  }
 })
 export default NotificationsModal

@@ -11,7 +11,7 @@ function LogOutModal(props) {
         animationType="slide"
         visible={props.modalVisibility}
         onRequestClose={() => {
-          console.log('do log out request')
+          //console.log('do log out request')
           props.setModalVisibility(!props.modalVisibility)
         }}>
         <View style={styles.centredView}>
@@ -29,7 +29,7 @@ function LogOutModal(props) {
             <View style={{ flexDirection: 'row', marginTop: 20 }}>
               <Button
                 onPress={() => {
-                  console.log('perform logout here')
+                  //console.log('perform logout here')
                   props.onConfirmLogOut()
                   props.setModalVisibility(!props.modalVisibility)
                 }}
@@ -39,7 +39,7 @@ function LogOutModal(props) {
               </Button>
               <Button mode="contained"
                 onPress={() => {
-                  console.log('no action here')
+                  //console.log('no action here')
                   props.setModalVisibility(!props.modalVisibility)
                 }}
                 labelStyle={{ paddingHorizontal: 10 }}

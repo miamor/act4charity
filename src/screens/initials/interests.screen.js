@@ -1,7 +1,7 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react'
 import { useGlobals } from '../../contexts/global'
 
-import { StyleSheet, ToastAndroid, TouchableOpacity, View } from 'react-native'
+import { FlatList, StyleSheet, ToastAndroid, TouchableOpacity, View } from 'react-native'
 import { DefaultView } from '../../components/containers'
 import { Button, Surface, TouchableRipple, useTheme } from 'react-native-paper'
 import { H3, Text } from '../../components/paper/typos'
@@ -31,43 +31,36 @@ function InterestsInitialScreen({ navigation }) {
   }, [])
 
   const _handleContinue = () => {
+    const selected_ids = Object.keys(selectedCats).filter(function (key) { return selectedCats[key] === 1 })
+
     dispatch({
       type: 'setLoggedUser',
       loggedUser: {
         ...loggedUser,
-        interests: selectedCats,
+        interests: selected_ids,
         target_donation: 50, // just put a fixed value here
       },
     })
     navigation.push('Loading')
   }
 
-  const toggleToCats = (cat_id) => {
-    // console.log('cat_id', cat_id, ' | selectedCats', selectedCats)
-    let a = selectedCats
-    const idx = a.indexOf(cat_id)
-    // console.log('idx', idx)
-
+  const onToggleInterest = (cat_id) => {
     if (!selectedCats.hasOwnProperty(cat_id) || selectedCats[cat_id] === 0) {
       setSelectedCats({
         ...selectedCats,
         [cat_id]: 1
       })
-    } else {
+    } else if (selectedCats[cat_id] === 1) {
       setSelectedCats({
         ...selectedCats,
         [cat_id]: 0
       })
     }
   }
-  // useEffect(() => {
-  //   console.log(' > new selectedCats', selectedCats)
-  // }, [selectedCats])
 
 
   return (
     <DefaultView>
-      <View style={{ flex: 0.7 }} />
       <View style={styles.textContainer}>
         <H3 style={[styles.textHeadline, { color: colors.primary }]}>
           Categories of Interest
@@ -77,34 +70,36 @@ function InterestsInitialScreen({ navigation }) {
         </Text>
       </View>
 
-      <View style={{
-        flex: 1,
-        paddingHorizontal: 50,
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-      }}>
-        {cats != null && cats.map((cat, i) => (
-          <TouchableOpacity key={`cat-` + i}
-            onPress={() => toggleToCats(cat._id)}
-            style={[
-              selectedCats.hasOwnProperty(cat._id) && selectedCats[cat._id] === 1 && { backgroundColor: colors.primary },
-              {
-                height: 45,
-                paddingHorizontal: 20,
-                paddingVertical: 5,
-                // opacity: selectedCats.indexOf(cat._id) >= 0 ? 1 : 0.5,
-
-                borderColor: colors.primary,
-                borderRadius: 30,
-                borderWidth: 1
-              }
-            ]}
-          >
-            <Text style={[selectedCats.indexOf(cat._id) >= 0 && { color: '#fff' }]}>
-              {cat.title}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      <View style={styles.inputContainer}>
+        {cats && <FlatList
+          data={cats}
+          style={styles.list}
+          numColumns={2}
+          scrollEnabled={false}
+          keyExtractor={item => item._id}
+          bounces={false}
+          contentContainerStyle={{
+            justifyContent: 'space-between',
+          }}
+          renderItem={({ item, index }) => (
+            <Button
+              onPress={() => onToggleInterest(item._id)}
+              mode={selectedCats.hasOwnProperty(item._id) && selectedCats[item._id] === 1 ? 'contained' : 'outlined'}
+              // buttonColor={item.selected ? 'rgba(31, 31, 31, 0.12)' : ''}
+              style={{
+                flex: 1,
+                marginHorizontal: 4,
+                marginVertical: 10,
+                borderRadius: 40
+              }}
+              labelStyle={{
+                paddingVertical: selectedCats.hasOwnProperty(item._id) && selectedCats[item._id] === 1 ? 5 : 4,
+                fontSize: 17
+              }}
+            >
+              {item.title}
+            </Button>
+          )}></FlatList>}
       </View>
 
       <View style={styles.buttonContainer}>
@@ -123,9 +118,11 @@ function InterestsInitialScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   textContainer: {
-    flex: 1.2,
-    alignSelf: 'center',
-    paddingHorizontal: 20,
+    flex: 0.2,
+    paddingTop: 50,
+    // justifyContent: 'center',
+    // alignSelf: 'center',
+    paddingHorizontal: 40,
   },
   textHeadline: {
     textAlign: 'center',
@@ -137,16 +134,15 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     lineHeight: 28
   },
-  logoContainer: {
-    flex: 1.1,
-    alignSelf: 'center',
-    paddingTop: 5,
-    paddingBottom: 15,
-    zIndex: 1,
+  inputContainer: {
+    flex: 0.6,
+    // justifyContent: 'center',
+    // alignItems: 'center',
+    paddingHorizontal: 40,
   },
   buttonContainer: {
-    flex: 1,
-    paddingHorizontal: 20,
+    flex: 0.2,
+    paddingHorizontal: 40,
     paddingTop: 35,
     justifyContent: 'flex-end',
     marginBottom: 20,

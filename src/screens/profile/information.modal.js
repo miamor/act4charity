@@ -7,7 +7,6 @@ import { Text, H2 } from '../../components/paper/typos'
 import * as userAPI from '../../services/userAPI'
 import Loading from '../../components/animations/loading'
 import Storer from '../../utils/storer'
-import { LOGGED_USER_KEY } from '../../constants/keys'
 
 
 function InformationModal(props) {
@@ -18,7 +17,7 @@ function InformationModal(props) {
 
   const [username, setUsername] = useState(loggedUser.username)
   const [email, setEmail] = useState(loggedUser.email)
-  const [name, setName] = useState(loggedUser.first_name)
+  const [name, setName] = useState(loggedUser.firstname)
   // const [password, setPassword] = useState('')
   // const [secureText, setSecureText] = useState(true)
 
@@ -28,10 +27,10 @@ function InformationModal(props) {
 
     const update_data = {
       email: email,
-      first_name: name
+      firstname: name
     }
     userAPI.updateProfile(update_data).then((res) => {
-      Storer.set(LOGGED_USER_KEY, {
+      Storer.set('loggedUser', {
         ...loggedUser,
         ...update_data
       })
@@ -47,7 +46,8 @@ function InformationModal(props) {
       setLoading(false)
 
       // ToastAndroid.show('Your information is updated', ToastAndroid.SHORT)
-      navigation.goBack()
+      // navigation.goBack()
+      props.setInformationModalVisibility(!props.informationModalVisibility)
     }).catch(error => {
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)

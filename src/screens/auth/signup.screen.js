@@ -70,10 +70,12 @@ function SignupScreen({ navigation }) {
         setLoading(false)
         navigation.navigate('Auth', res.data)
       }).catch(error => {
-        console.error(error)
-        ToastAndroid.show('Oops', ToastAndroid.SHORT)
+        setLoading(false)
+        // console.error(error)
+        ToastAndroid.show(error, ToastAndroid.SHORT)
       })
     }).catch(error => {
+      setLoading(false)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
     })
   }
@@ -229,7 +231,7 @@ function SignupScreen({ navigation }) {
                   </View>
                 </View>
                 <Button mode="contained"
-                  style={styles.buttonView}
+                  style={[styles.buttonView, {marginTop: 10}]}
                   labelStyle={{ paddingVertical: 5 }}
                   disabled={!isValid}
                   // buttonColor={

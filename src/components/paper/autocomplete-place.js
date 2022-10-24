@@ -18,23 +18,23 @@ const HerePlacesInput = ({ styleType, label, onSelect, value, ...props }) => {
   const [showSuggests, setShowSuggests] = React.useState(false)
 
   const _handleChangeText = (text) => {
-    // console.log('[_handleChangeText] ~~~ text', text)
+    // //console.log('[_handleChangeText] ~~~ text', text)
     setVal(text)
     setSelected(null)
     if (text.length > 2) {
-      // console.log('[here] https://geocode.search.hereapi.com/v1/geocode?apiKey=' + HERE_API_KEY + '&q=' + encodeURIComponent(text))
+      // //console.log('[here] https://geocode.search.hereapi.com/v1/geocode?apiKey=' + HERE_API_KEY + '&q=' + encodeURIComponent(text))
       Axios.get(`https://geocoder.ls.hereapi.com/6.2/geocode.json?apiKey=${HERE_API_KEY}&searchtext=${encodeURIComponent(text)}`).then((res) => {
         // const data = res.data;
         if (res.data.Response.View.length > 0) {
           const data = res.data.Response.View[0].Result;
-          // console.log('[here]  >> data', data)
+          // //console.log('[here]  >> data', data)
           // if (data.hasOwnProperty('items')) {
           if (data.length > 0) {
             const suggestions = []
             // if (data.length > 0) suggestions.push(data.items[0])
             // if (data.length > 1) suggestions.push(data.items[1])
             data.forEach((item, i) => {
-              // console.log('[here]    >> item', item)
+              // //console.log('[here]    >> item', item)
               suggestions.push(item)
             })
             setSuggests(suggestions)

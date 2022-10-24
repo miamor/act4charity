@@ -22,8 +22,8 @@ function CreateTeamModal({ onClose, onSubmit }) {
   const [loading, setLoading] = useState(false)
   const handleSubmit = () => {
     setLoading(true)
-    console.log('\n')
-    console.log(selectedIdList, selectedList)
+    //console.log('\n')
+    //console.log(selectedIdList, selectedList)
     onSubmit(selectedIdList, selectedList)
   }
 
@@ -31,7 +31,7 @@ function CreateTeamModal({ onClose, onSubmit }) {
     setShowSuggest(true)
     if (v.length > 1) {
       userAPI.findUsers({ username: v }).then((res) => {
-        console.log('>> res', res)
+        //console.log('>> res', res)
         setSuggestList(res.data)
       }).catch(error => {
         setLoading(false)
@@ -43,7 +43,7 @@ function CreateTeamModal({ onClose, onSubmit }) {
 
   const onSelectUser = (user) => {
     setShowSuggest(false)
-    // console.log('user.username', user.username)
+    // //console.log('user.username', user.username)
     if (selectedList.indexOf(user.username) < 0 && user.username !== loggedUser.username) {
       setSelectedList([
         ...selectedList,

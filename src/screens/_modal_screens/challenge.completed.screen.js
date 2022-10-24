@@ -13,7 +13,6 @@ import MapView, { Marker, enableLatestRenderer, PROVIDER_GOOGLE } from 'react-na
 
 import * as userAPI from '../../services/userAPI'
 import Storer from '../../utils/storer'
-import { CURRENT_CHALLENGE_KEY } from '../../constants/keys'
 
 
 /**
@@ -32,42 +31,9 @@ function ChallengeCompletedScreen({ route, navigation }) {
 
 
   useEffect(() => {
-    // console.log('[challenge.completed] challengeDetail', challengeDetail)
-    // console.log('[challenge.completed] route.params', route.params)
+    // //console.log('[challenge.completed] challengeDetail', challengeDetail)
+    // //console.log('[challenge.completed] route.params', route.params)
     console.log('[challenge.completed] captured_image', captured_image)
-
-    /* 
-     * clean everything
-     */
-    Storer.set('started', false)
-    onSetDispatch('setStarted', 'started', false)
-    onSetDispatch('setFinished', 'finished', false)
-    onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', {})
-    onSetDispatch('setTrackMemberDistStates', 'trackMemberDistStates', {})
-    onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {})
-    onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', {})
-    onSetDispatch('setCompletedMembers', 'completedMembers', [])
-    onSetDispatch('setChatMessages', 'chatMessages', [])
-    onSetDispatch('setPrivateSockMsgs', 'privateSockMsgs', [])
-    onSetDispatch('setPrivateSockMsg', 'privateSockMsg', null)
-    onSetDispatch('setProcessedPrivateSockMsgs', 'processedPrivateSockMsgs', 0)
-    onSetDispatch('setTeamCompleted', 'teamCompleted', 0)
-    onSetDispatch('setTrackLoc', 'trackLoc', {
-      ...trackLoc,
-      routeCoordinates: [],
-      distanceTravelled: 0,
-      prevLatLng: {},
-    })
-    onSetDispatch('setTrackStep', 'trackStep', {
-      distanceTravelled: 0,
-      currentStepCount: 0
-    })
-
-    onSetDispatch('setShowBottomBar', 'showBottomBar', false)
-    Storer.delete(CURRENT_CHALLENGE_KEY)
-    onSetDispatch('setCurrentChallenge', 'currentChallenge', null)
-
-    onSetDispatch('setCompleted', 'completed', 5)
   }, [])
 
 
@@ -102,13 +68,20 @@ function ChallengeCompletedScreen({ route, navigation }) {
   }
 
 
+  const onShareToFeed = () => {
+    ToastAndroid.show('Shared to your feed !', ToastAndroid.SHORT)
+    // navigation.goBack()
+    navigation.navigate('DashboardStack')
+  }
+
+
 
   const dimensions = Dimensions.get('window')
 
   return (
     <DefaultView>
       <Appbar.Header statusBarHeight={0}>
-        <Appbar.BackAction onPress={() => navigation.navigate('ChallengeStack', { screen: 'ChallengeSelect' })} />
+        <Appbar.BackAction onPress={() => navigation.navigate('DashboardStack')} />
         <Appbar.Content title="Challenge Completed" color={colors.primary} />
       </Appbar.Header>
 
@@ -135,13 +108,13 @@ function ChallengeCompletedScreen({ route, navigation }) {
       </Portal>)}
 
 
-      <View style={{ flex: 1, paddingHorizontal: 10 }}>
+      <View style={{ flex: 1, flexDirection: 'column', paddingHorizontal: 10 }}>
 
-        <View style={{ flex: 0.5, justifyContent: 'center', alignItems: 'center' }}>
-          <Image source={{ uri: captured_image }} style={{ flex: 1, width: dimensions.width - 20, height: 200 }} />
+        <View style={{ flex: 0.45, alignSelf: 'flex-start', justifyContent: 'center', alignItems: 'center' }}>
+          <Image source={captured_image != null ? { uri: captured_image } : require('../../../assets/icons/logo.png')} style={{ flex: 1, width: dimensions.width - 20, height: 200 }} />
 
           <View style={{ flex: 0.2, marginTop: -25, justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
-            <Button mode="contained" labelStyle={{ paddingBottom: 1 }}>Share to my Feed</Button>
+            <Button mode="contained" labelStyle={{ paddingBottom: 1 }} onPress={onShareToFeed}>Share to my Feed</Button>
             <Button style={{ backgroundColor: '#fff', borderRadius: 30, marginTop: -5 }} labelStyle={{ width: 30, height: 40, justifyContent: 'center', alignItems: 'center', paddingTop: 8 }}>
               <MaterialCommunityIcons name="share" size={22} />
             </Button>
@@ -149,23 +122,24 @@ function ChallengeCompletedScreen({ route, navigation }) {
 
         </View>
 
-        <View style={{ flex: 0.3, marginTop: 5, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ flex: 0.35, alignSelf: 'center', justifyContent: 'center', alignItems: 'center' }}>
           <H3>Congratulations!</H3>
 
           <Paragraph>
             You've completed this challenge
           </Paragraph>
-          <Paragraph>
-            An amount of <TextBold>${challengeDetail.donation}</TextBold> has been donated to <TextBold>{challengeDetail.charity_detail.name}</TextBold> under <TextBold>your name</TextBold>
+          <Paragraph style={{textAlign: 'center', marginTop:6}}>
+            An amount of <TextBold>${challengeDetail.donation}</TextBold> has been donated to <TextBold>{challengeDetail.charity_detail.name}</TextBold> under your name <TextBold>{loggedUser.firstname}</TextBold>
           </Paragraph>
           <Paragraph>
             <Text>by </Text>
-            <Image source={{ uri: challengeDetail.sponsor_detail.logo }} />
             <TextBold>{challengeDetail.sponsor_detail.name}</TextBold>
           </Paragraph>
         </View>
 
-        <View style={{ flex: 0.45, backgroundColor: '#f0f', justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ flex: 0.35, backgroundColor: '#eee', marginTop: 20, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Advertisement of sponsor here</Text>
+          {/* <Image source={{ uri: challengeDetail.sponsor_detail.logo }} style={{ flex: 1, width: dimensions.width - 20, height: 200 }} /> */}
         </View>
 
       </View>

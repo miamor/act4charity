@@ -8,7 +8,7 @@ import { useTheme } from 'react-native-paper'
 const Checkbox = ({ label, iconSize, iconStyle, lblStyle, checked, onPress, ...props }) => {
   const { colors } = useTheme()
 
-  console.log('[Checkbox] checked === true', checked === true)
+  //console.log('[Checkbox] checked === true', checked === true)
   return (
     // <View>
     //   <CheckBox
