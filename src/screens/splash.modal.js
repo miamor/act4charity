@@ -8,7 +8,7 @@ function SplashModal(props) {
   setTimeout(() => {
     // navigation.navigate('Onboarding')
     props.onFinishSpash()
-  }, 2500)
+  }, 2000)
 
   return (
     <View style={{

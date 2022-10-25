@@ -417,7 +417,7 @@ function ChallengeStartActionsTeam(props) {
        * Update invitation accept status db 
        */
       userAPI.acceptInvitation({ challenge_accepted_id: challenge_accepted_id }).then((res) => {
-        //console.log('[acceptInvitation] res', res)
+        console.log('[acceptInvitation] res', res)
 
         /* dispatch and store so that not join again */
         onSetDispatch('setJoined', 'joined', true)

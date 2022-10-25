@@ -170,13 +170,13 @@ function ChallengeBottomSheet({ }) {
       {challenge_accepted_data.mode === 'individual' ? (
         <ChallengeStartActionsIndividual
           challenge_accepted_data={challenge_accepted_data}
-          showFull={true}
+          showFull={showFull}
         />
       )
         : (
           <ChallengeStartActionsTeam
             challenge_accepted_data={challenge_accepted_data}
-            showFull={true}
+            showFull={showFull}
           />
         )}
 

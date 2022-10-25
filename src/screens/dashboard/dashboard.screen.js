@@ -282,7 +282,8 @@ function DashboardHomeScreen({ navigation }) {
           <View style={{
             backgroundColor: '#E8DEF8',
             borderRadius: 8,
-            height: 32,
+            height: 34,
+            paddingBottom: 4,
             width: 57,
             alignItems: 'center',
             justifyContent: 'center',
@@ -303,7 +304,8 @@ function DashboardHomeScreen({ navigation }) {
           <View style={{
             backgroundColor: '#E8DEF8',
             borderRadius: 8,
-            height: 32,
+            height: 34,
+            paddingBottom: 4,
             width: 57,
             alignItems: 'center',
             justifyContent: 'center',
