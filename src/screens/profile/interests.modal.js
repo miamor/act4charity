@@ -19,9 +19,13 @@ function InterestsModal(props) {
   const [selectedCats, setSelectedCats] = useState({})
 
   useEffect(() => {
+    setLoading(true)
+    
     userAPI.listInterests({ num_per_page: 100 }).then((res) => {
       setCats(res.data)
+      setLoading(false)
     }).catch(error => {
+      setLoading(false)
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
     })
@@ -68,6 +72,7 @@ function InterestsModal(props) {
 
       props.setInterestModalVisibility(!props.interestModalVisibility)
     }).catch(error => {
+      setLoading(false)
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
     })

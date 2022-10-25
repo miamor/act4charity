@@ -39,6 +39,7 @@ function RewardScreen() {
       setCompletedChallenges(res.data)
       setLoading(false)
     }).catch(error => {
+      setLoading(false)
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
     })

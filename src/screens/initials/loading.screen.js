@@ -47,6 +47,7 @@ function LoadingScreen({ navigation }) {
             })
           })
         }).catch(error => {
+          setLoading(false)
           console.error(error)
           ToastAndroid.show('Oops', ToastAndroid.SHORT)
         })

@@ -109,9 +109,11 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
         challenge_detail: challengeDetail
       }
 
+      onSetDispatch('setCurrentChallenge', 'currentChallenge', challenge_accepted_data)
+
       navigation.navigate('_ChallengeDetailStart', {
         key: '_ChallengeDetailStart',
-        challenge_accepted_data: challenge_accepted_data,
+        // challenge_accepted_data: challenge_accepted_data,
       })
 
     }).catch(error => {
@@ -200,12 +202,12 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
 
         <View style={{ flex: 0.1, marginTop: 30, marginBottom: 20, flexDirection: 'row', justifyContent: 'center' }}>
           <View>
-            <Button onPress={() => navigation.goBack()} style={{ flex: 1, borderRadius: 30, marginHorizontal: 10 }} labelStyle={{ paddingHorizontal: 20 }}>
+            <Button onPress={() => navigation.goBack()} style={{ borderRadius: 30, marginHorizontal: 10 }} labelStyle={{ paddingHorizontal: 20 }}>
               Back
             </Button>
           </View>
           <View>
-            <Button mode="contained" onPress={onPressStartChallenge} style={{ flex: 1, borderRadius: 30, marginHorizontal: 10 }} labelStyle={{ paddingHorizontal: 20 }}>
+            <Button mode="contained" onPress={onPressStartChallenge} style={{ borderRadius: 30, marginHorizontal: 10 }} labelStyle={{ paddingHorizontal: 20 }}>
               {(currentChallenge != null && currentChallenge.challenge_detail._id === challengeDetail._id) ? 'Continue' : 'Start'}
             </Button>
           </View>

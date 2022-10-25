@@ -74,6 +74,14 @@ export const listChallenges = (postData) => {
   })
 }
 
+export const getChallengeAcceptedStatus = (postData) => {
+  return APIServices().makeAuthRequest({
+    url: '/user/challenges/accepted_status',
+    method: 'POST',
+    data: postData,
+  })
+}
+
 export const listChallengesWalk = (postData) => {
   const postData_ = constructListParams(postData)
   return APIServices().makeAuthRequest({
@@ -142,7 +150,15 @@ export const getChallengeInvitations = (postData) => {
 
 export const acceptInvitation = (postData) => {
   return APIServices().makeAuthRequest({
-    url: '/user/challenge/accept_invitation',
+    url: '/user/challenges/accept_invitation',
+    method: 'POST',
+    data: postData,
+  })
+}
+
+export const cancelInvitation = (postData) => {
+  return APIServices().makeAuthRequest({
+    url: '/user/challenges/cancel_invitation',
     method: 'POST',
     data: postData,
   })
@@ -150,7 +166,7 @@ export const acceptInvitation = (postData) => {
 
 export const declineInvitation = (postData) => {
   return APIServices().makeAuthRequest({
-    url: '/user/challenge/decline_invitation',
+    url: '/user/challenges/decline_invitation',
     method: 'POST',
     data: postData,
   })

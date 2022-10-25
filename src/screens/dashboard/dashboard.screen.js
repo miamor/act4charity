@@ -59,7 +59,7 @@ function DashboardHomeScreen({ navigation }) {
         setNextLevel(i)
         setCurrentLevel(i - 1)
 
-        setLevelProgress((loggedUser.current_reward - levels_ranges[i-1].start) / (levels_ranges[i].start - levels_ranges[i-1].start))
+        setLevelProgress((loggedUser.current_reward - levels_ranges[i - 1].start) / (levels_ranges[i].start - levels_ranges[i - 1].start))
 
         return false
       }
@@ -107,10 +107,11 @@ function DashboardHomeScreen({ navigation }) {
    *
    * **********************************************/
   const loadCurrentChallenges = () => {
-    userAPI.getCurrentChallenge({ num_per_page: 100 }).then((res) => {
-      // //console.log('[loadCurrentChallenges] res', res.data.length)
+    userAPI.getCurrentChallenge({ num_per_page: 10 }).then((res) => {
+      // console.log('[loadCurrentChallenges] res', res)
       setCurrentChallenges(res.data)
     }).catch(error => {
+      setCurrentChallenges([]) //! should be something to print the error on the UI
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
     })
@@ -123,10 +124,11 @@ function DashboardHomeScreen({ navigation }) {
    *
    * **********************************************/
   const loadPendingInvitations = () => {
-    userAPI.getPendingInvitations({ num_per_page: 100 }).then((res) => {
-      // //console.log('[loadPendingInvitations] res', res.data.length)
+    userAPI.getPendingInvitations({ num_per_page: 10 }).then((res) => {
+      // console.log('[loadPendingInvitations] res', res)
       setPendingInvitations(res.data)
     }).catch(error => {
+      setPendingInvitations([]) //! should be something to print the error on the UI
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
     })
@@ -135,7 +137,7 @@ function DashboardHomeScreen({ navigation }) {
 
 
   const onFindMoreChallenges = () => {
-    navigation.navigate('ChallengeStack', { screen: 'ChallengeSelect' })
+    navigation.navigate('ChallengeStack')
   }
 
   // const onContinueChallenge = (challenge_accepted) => {
@@ -182,9 +184,11 @@ function DashboardHomeScreen({ navigation }) {
 
     console.log('[dashboard][goToChallengeNow] challenge_accepted', challenge_accepted)
 
+    onSetDispatch('setCurrentChallenge', 'currentChallenge', challenge_accepted)
+
     navigation.navigate('_ChallengeDetailStart', {
       key: '_ChallengeDetailStart',
-      challenge_accepted_data: challenge_accepted,
+      // challenge_accepted_data: challenge_accepted,
     })
 
     //! has to reset started to false. this will be set to true depends on join mode
@@ -343,41 +347,48 @@ function DashboardHomeScreen({ navigation }) {
               style={{ height: 175, width: 175 }}
             /> : (<View style={{}}>
 
-              {currentChallenges.map((item, i) => (<TouchableOpacity key={`my-challenge-` + i}
-                onPress={() => onPressChallenge(item)}
-                style={{
-                  flexDirection: 'row',
-                  marginVertical: 5,
-                }}>
+              {currentChallenges.map((item, i) => {
+                if (
+                  (item.user === loggedUser._id) ||
+                  (item.my_invitation_status != null && (item.my_invitation_status.accept === 0 || item.my_invitation_status.accept === 1))
+                ) {
+                  return (<TouchableOpacity key={`my-challenge-` + i}
+                    onPress={() => onPressChallenge(item)}
+                    style={{
+                      flexDirection: 'row',
+                      marginVertical: 5,
+                    }}>
 
-                <Image style={{ height: 46, width: 46, marginTop: 15, marginLeft: 0, marginRight: -23, zIndex: 3, }}
-                  source={item.challenge_detail.type == 'walk' ? require('../../../assets/icons/walking.png') : require('../../../assets/icons/discover.png')} />
+                    <Image style={{ height: 46, width: 46, marginTop: 15, marginLeft: 0, marginRight: -23, zIndex: 3, }}
+                      source={item.challenge_detail.type == 'walk' ? require('../../../assets/icons/walking.png') : require('../../../assets/icons/discover.png')} />
 
-                <View style={{
-                  flex: 1,
-                  paddingVertical: 15,
-                  paddingLeft: 30,
-                  paddingRight: 10,
-                  borderWidth: 1,
-                  borderColor: '#f4f4f4',
-                  backgroundColor: '#fff',
-                  borderRadius: 6,
-                }}>
-                  <TextBold style={{ color: colors.primary, fontSize: 15.5, lineHeight: 22 }}>{item.challenge_detail.name}</TextBold>
-                  {/* <Text>{item.challenge_detail.type}</Text> */}
+                    <View style={{
+                      flex: 1,
+                      paddingVertical: 15,
+                      paddingLeft: 30,
+                      paddingRight: 10,
+                      borderWidth: 1,
+                      borderColor: '#f4f4f4',
+                      backgroundColor: '#fff',
+                      borderRadius: 6,
+                    }}>
+                      <TextBold style={{ color: colors.primary, fontSize: 15.5, lineHeight: 22 }}>{item.challenge_detail.name}</TextBold>
+                      {/* <Text>{item.challenge_detail.type}</Text> */}
 
-                  <View style={{ marginTop: 5 }}>
-                    {currentLocation != null && item.challenge_detail.type === 'discover' && <Text style={styles.subtitle}>{calcDistance(item.challenge_detail.place_detail.coordinates, currentLocation)}</Text>}
-                    {item.challenge_detail.type === 'walk' && <Text style={styles.subtitle}>{item.challenge_detail.distance}km</Text>}
+                      <View style={{ marginTop: 5 }}>
+                        {currentLocation != null && item.challenge_detail.type === 'discover' && <Text style={styles.subtitle}>{calcDistance(item.challenge_detail.place_detail.coordinates, currentLocation)}</Text>}
+                        {item.challenge_detail.type === 'walk' && <Text style={styles.subtitle}>{item.challenge_detail.distance}km</Text>}
 
-                    <Badge style={{
-                      paddingHorizontal: 10, position: 'absolute', right: 0, marginTop: 6, lineHeight: 12,
-                      backgroundColor: item.mode === 'individual' ? MD3Colors.primary40 : MD3Colors.primary25
-                    }}>{item.mode}</Badge>
-                  </View>
-                </View>
+                        <Badge style={{
+                          paddingHorizontal: 10, position: 'absolute', right: 0, marginTop: 6, lineHeight: 12,
+                          backgroundColor: item.mode === 'individual' ? MD3Colors.primary40 : MD3Colors.primary25
+                        }}>{item.mode}</Badge>
+                      </View>
+                    </View>
 
-              </TouchableOpacity>))}
+                  </TouchableOpacity>)
+                }
+              })}
 
             </View>)}
           </View>

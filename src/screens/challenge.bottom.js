@@ -27,11 +27,6 @@ function ChallengeBottomSheet({ }) {
   const onSetDispatch = (type, key, value) => dispatch({ type: type, [key]: value })
 
 
-  const challenge_accepted_data = currentChallenge
-  const challenge_accepted_id = challenge_accepted_data._id
-  const challengeDetail = challenge_accepted_data.challenge_detail
-
-
   /*
    * If is `individual` mode, start now.
    * If is `team` mode, needs the host to click Start => is handled in `actions.team`
@@ -71,7 +66,7 @@ function ChallengeBottomSheet({ }) {
    * **********************************************/
   const onFinished = useCallback((obj) => {
     console.log('[challenge.bottom][onFinished] CALLED')
-    
+
     // navigation.navigate('_ChallengeDetailCompleted', {
     //   key: '_ChallengeDetailCompleted',
 
@@ -91,10 +86,10 @@ function ChallengeBottomSheet({ }) {
 
   const [showFull, setShowFull] = useState(false)
   const openChallenge = () => {
-    // //console.log('[challenge.bottom] challenge_accepted_data', challenge_accepted_data)
+    // //console.log('[challenge.bottom] currentChallenge', currentChallenge)
     navigation.navigate('_ChallengeDetailStart', {
       key: '_ChallengeDetailStart',
-      challenge_accepted_data: currentChallenge
+      // challenge_accepted_data: currentChallenge
     })
     // navigation.navigate('DashboardStack')
     // Storer.set('currentChallenge', currentChallenge)
@@ -150,34 +145,27 @@ function ChallengeBottomSheet({ }) {
           {currentChallenge.challenge_detail.name}
         </Text>
         <Badge style={{
-          paddingHorizontal: 8, position: 'absolute', right: -8, marginTop: -3, 
+          paddingHorizontal: 8, position: 'absolute', right: -8, marginTop: -3,
           lineHeight: 9, fontSize: 8, height: 16,
           backgroundColor: currentChallenge.mode === 'individual' ? MD3Colors.primary40 : MD3Colors.primary25
         }}>{currentChallenge.mode}</Badge>
       </View>
     </TouchableOpacity>}
 
-    {completed !== 4 && (<>
+    {currentChallenge != null && completed !== 4 && (<>
 
       <View style={{ flex: 0.9, flexDirection: 'row' }}>
-        {challenge_accepted_data && <ChallengeStartMap
-          challenge_accepted_data={challenge_accepted_data}
+        <ChallengeStartMap
           showFull={showFull}
           onFinished={onFinished}
-        />}
+        />
       </View>
 
-      {challenge_accepted_data.mode === 'individual' ? (
-        <ChallengeStartActionsIndividual
-          challenge_accepted_data={challenge_accepted_data}
-          showFull={showFull}
-        />
+      {currentChallenge.mode === 'individual' ? (
+        <ChallengeStartActionsIndividual showFull={showFull} />
       )
         : (
-          <ChallengeStartActionsTeam
-            challenge_accepted_data={challenge_accepted_data}
-            showFull={showFull}
-          />
+          <ChallengeStartActionsTeam showFull={showFull} />
         )}
 
       {/* {showFull && <Button onPress={onMinimize} style={{ backgroundColor: '#0f0' }}>Back</Button>} */}

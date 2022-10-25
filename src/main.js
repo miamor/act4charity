@@ -108,7 +108,7 @@ const Main: () => Node = () => {
 
         // console.log('_loggedUser', _loggedUser)
         // console.log('_started', _started)
-        // console.log('_joined', _joined)
+        console.log('_joined', _joined)
         // console.log('_startTime', _startTime)
         // console.log('_currentChallenge', _currentChallenge)
 

@@ -35,11 +35,6 @@ function ChallengeStartActionsIndividual(props) {
   const onSetDispatch = (type, key, value) => dispatch({ type: type, [key]: value })
 
 
-  const { challenge_accepted_data } = props
-  const challengeDetail = challenge_accepted_data.challenge_detail
-  const challenge_accepted_id = challenge_accepted_data._id
-
-
   const [loading, setLoading] = useState(false)
 
 
@@ -60,7 +55,7 @@ function ChallengeStartActionsIndividual(props) {
 
 
   useEffect(() => {
-    if (challengeDetail.type === 'discover') {
+    if (currentChallenge.challenge_detail.type === 'discover') {
       setLoading(true)
       listStory()
     }
@@ -83,14 +78,13 @@ function ChallengeStartActionsIndividual(props) {
    * **********************************************/
   const [stories, setStories] = useState([])
   const listStory = () => {
-    userAPI.listStory({ challenge_id: challengeDetail._id }).then((res) => {
+    userAPI.listStory({ challenge_id: currentChallenge.challenge_detail._id }).then((res) => {
+      // //console.log('res', res)
+      setStories(res.data)
       /* done loading */
       setLoading(false)
-      // //console.log('res', res)
-      if (res.status === 'success') {
-        setStories(res.data)
-      }
     }).catch(error => {
+      setLoading(false)
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
     })
@@ -126,10 +120,10 @@ function ChallengeStartActionsIndividual(props) {
     // props.confirmCompleteCallback()
 
     userAPI.completeChallenge({
-      challenge_accepted_id: challenge_accepted_id,
-      challenge_donation: challengeDetail.donation,
-      challenge_reward: challengeDetail.reward,
-      participants: challenge_accepted_data.participants,
+      challenge_accepted_id: currentChallenge._id,
+      challenge_donation: currentChallenge.challenge_detail.donation,
+      challenge_reward: currentChallenge.challenge_detail.reward,
+      participants: currentChallenge.participants,
     }).then(async (res) => {
       //~console.log('[actions.individual][onConfirmComplete] (completeChallenge) res', res)
 
@@ -140,8 +134,8 @@ function ChallengeStartActionsIndividual(props) {
       /* update `current_donation` & `current_reward` */
       const newUserData = {
         ...loggedUser,
-        current_donation: loggedUser.current_donation + challengeDetail.donation,
-        current_reward: loggedUser.current_reward + challengeDetail.reward
+        current_donation: loggedUser.current_donation + currentChallenge.challenge_detail.donation,
+        current_reward: loggedUser.current_reward + currentChallenge.challenge_detail.reward
       }
       await Storer.set('loggedUser', newUserData)
       onSetDispatch('setLoggedUser', 'loggedUser', newUserData)
@@ -149,6 +143,7 @@ function ChallengeStartActionsIndividual(props) {
       /* done loading */
       setLoading(false)
     }).catch(error => {
+      setLoading(false)
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
     })
@@ -173,7 +168,7 @@ function ChallengeStartActionsIndividual(props) {
     /*
      * Update in db
      */
-    userAPI.cancelChallenge({ challenge_accepted_id: challenge_accepted_id }).then((res) => {
+    userAPI.cancelChallenge({ challenge_accepted_id: currentChallenge._id }).then((res) => {
       //console.log('>> res', res)
 
       /* dispatch global states */
@@ -185,6 +180,7 @@ function ChallengeStartActionsIndividual(props) {
       /* done loading */
       setLoading(false)
     }).catch(error => {
+      setLoading(false)
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
     })
@@ -213,8 +209,8 @@ function ChallengeStartActionsIndividual(props) {
       console.log('postData', JSON.stringify(postData))
       console.log('token', token)
 
-      postData.append('challenge_accepted_id', challenge_accepted_id)
-      postData.append('challenge_id', challengeDetail._id)
+      postData.append('challenge_accepted_id', currentChallenge._id)
+      postData.append('challenge_id', currentChallenge.challenge_detail._id)
       postData.append('public', true)
 
       // //console.log('>>> accessToken =', accessToken)
@@ -232,13 +228,12 @@ function ChallengeStartActionsIndividual(props) {
         }
       }).then((response) => {
         const res = response.data
-        if (res.status === 'success') {
-          //console.log('[shareStory] res =', res)
-          setLoading(false)
-          setShowShareStoryModal(false)
 
-          listStory()
-        }
+        //console.log('[shareStory] res =', res)
+        setLoading(false)
+        setShowShareStoryModal(false)
+
+        listStory()
       }).catch(error => {
         setLoading(false)
         console.error(error)
@@ -271,8 +266,8 @@ function ChallengeStartActionsIndividual(props) {
     []
   )
   const snapPoints = useMemo(() => [
-    challengeDetail.type === 'discover' ? '25%' : '19%',
-    challengeDetail.type === 'discover' ? '90%' : '19%'
+    currentChallenge.challenge_detail.type === 'discover' ? '25%' : '19%',
+    currentChallenge.challenge_detail.type === 'discover' ? '90%' : '19%'
   ], [])
   const [currentSnapPoint, setCurrentSnapPoint] = useState(0)
 
@@ -369,61 +364,58 @@ function ChallengeStartActionsIndividual(props) {
       style={{ zIndex: 10000 }}
     >
 
-      <BottomSheetScrollView contentContainerStyle={{ zIndex: 10 }}>
+      <View style={{
+        // flex: 0.17,
+        height: currentChallenge.challenge_detail.type === 'discover' ? 65 : 110,
+        // backgroundColor: '#00f',
+        justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10, flexDirection: 'column', marginBottom: 10
+      }}>
+        <ChallengeBarIndividual />
+      </View>
 
+
+      {currentChallenge.challenge_detail.type == 'discover' && (<BottomSheetScrollView contentContainerStyle={{ zIndex: 10 }}>
         <View style={{
-          // flex: 0.17,
-          height: challengeDetail.type === 'discover' ? 80 : 110,
-          // backgroundColor: '#00f',
-          justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10, flexDirection: 'column', marginBottom: 10
+          flexDirection: 'row',
+          paddingLeft: 10,
+          paddingRight: 20,
+          paddingVertical: 5
         }}>
-          <ChallengeBarIndividual challenge_accepted_data={challenge_accepted_data} distFromStartToTarget={props.distFromStartToTarget} />
+          {currentSnapPoint === 0 ? (<>
+            <View style={{ flex: 0.2, justifyContent: 'center', alignItems: 'center', paddingRight: 10 }}>
+              <IconButton icon="camera" size={55} onPress={onOpenShareStory} />
+            </View>
+            <View style={{ flex: 0.8, flexDirection: 'row' }} contentContainerStyle={{ justifyContent: 'center' }}>
+              {stories.map((story, i) => (<Avatar.Image key={`story-` + i} size={70} source={{ uri: story.picture }} style={{ marginRight: 10 }} />))}
+            </View>
+          </>) : (<>
+            <View style={{ flex: 1, paddingHorizontal: 20, height: 140, flexDirection: 'column', marginBottom: 40 }}>
+              <TouchableOpacity onPress={onOpenShareStory} style={{ flex: 1, borderRadius: 6, borderWidth: 2, borderColor: '#ddd', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }}>
+                <MaterialCommunityIcons size={55} name="camera" />
+                <Text style={{ marginBottom: -6 }}>Share something on your wayy</Text>
+              </TouchableOpacity>
+            </View>
+          </>)}
         </View>
 
 
-        {challengeDetail.type == 'discover' && (<>
-          <View style={{
-            flexDirection: 'row',
-            paddingLeft: 10,
-            paddingRight: 20,
-            paddingVertical: 5
-          }}>
-            {currentSnapPoint === 0 ? (<>
-              <View style={{ flex: 0.2, justifyContent: 'center', alignItems: 'center', paddingRight: 10 }}>
-                <IconButton icon="camera" size={55} onPress={onOpenShareStory} />
-              </View>
-              <View style={{ flex: 0.8, flexDirection: 'row' }} contentContainerStyle={{ justifyContent: 'center' }}>
-                {stories.map((story, i) => (<Avatar.Image key={`story-` + i} size={70} source={{ uri: story.picture }} style={{ marginRight: 10 }} />))}
-              </View>
-            </>) : (<>
-              <View style={{ flex: 1, paddingHorizontal: 20, height: 140, flexDirection: 'column', marginBottom: 40 }}>
-                <TouchableOpacity onPress={onOpenShareStory} style={{ flex: 1, borderRadius: 6, borderWidth: 2, borderColor: '#ddd', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center' }}>
-                  <MaterialCommunityIcons size={55} name="camera" />
-                  <Text style={{ marginBottom: -6 }}>Share something on your wayy</Text>
-                </TouchableOpacity>
-              </View>
-            </>)}
-          </View>
+        {currentSnapPoint != 0 && (<View style={{ flex: 1 }}>
+          {stories.map((story, i) => (<View key={`story-` + i} style={{ flexDirection: 'row', paddingHorizontal: 15, marginBottom: 30 }}>
+            <Avatar.Image size={60} source={{ uri: story.user_detail.avatar }} style={{ marginRight: 10, width: 60 }} />
 
-
-          {currentSnapPoint != 0 && (<View style={{ flex: 1 }}>
-            {stories.map((story, i) => (<View key={`story-` + i} style={{ flexDirection: 'row', paddingHorizontal: 15, marginBottom: 30 }}>
-              <Avatar.Image size={60} source={{ uri: story.user_detail.avatar }} style={{ marginRight: 10, width: 60 }} />
-
+            <View>
               <View>
-                <View>
-                  <Text style={{ color: colors.primary }}>{story.user_detail.username}</Text>
-                </View>
-                <View style={{ marginLeft: 5 }}>
-                  <Text>{story.content}</Text>
-                </View>
-                {story.picture != null && <Image source={{ uri: story.picture }} style={{ marginTop: 10, height: imageHeight, width: imageWidth }} />}
+                <Text style={{ color: colors.primary }}>{story.user_detail.username}</Text>
               </View>
-            </View>))}
-          </View>)}
-        </>)}
+              <View style={{ marginLeft: 5 }}>
+                <Text>{story.content}</Text>
+              </View>
+              {story.picture != null && <Image source={{ uri: story.picture }} style={{ marginTop: 10, height: imageHeight, width: imageWidth }} />}
+            </View>
+          </View>))}
+        </View>)}
+      </BottomSheetScrollView>)}
 
-      </BottomSheetScrollView>
     </BottomSheet>)}
 
 

@@ -32,9 +32,38 @@ function ChallengeStartScreen({ route, navigation }) {
   const onSetDispatch = (type, key, value) => dispatch({ type: type, [key]: value })
 
 
-  const { challenge_accepted_data } = route.params
-  const challenge_accepted_id = challenge_accepted_data._id
-  const challengeDetail = challenge_accepted_data.challenge_detail
+  // const [reloaded, setReloaded] = useState(0)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      doReload()
+    }, 20000) //? reload every 20 seconds
+
+    /* cleanup the interval on complete */
+    return () => clearInterval(interval)
+  }, [])
+
+  const doReload = () => {
+    console.log('[challenge.start][doReload] CALLED ~~')
+
+    if (currentChallenge != null) {
+      userAPI.getChallengeAcceptedStatus({ challenge_accepted_id: currentChallenge._id }).then((res) => {
+        console.log('[challenge.start][reload] res =', res)
+
+        if (res.data.active !== currentChallenge.active && currentChallenge._id === currentChallenge._id) {
+          const currentChallenge_updated = {
+            ...currentChallenge,
+            active: res.data.active,
+          }
+          Storer.set('currentChallenge', currentChallenge_updated)
+          onSetDispatch('setCurrentChallenge', 'currentChallenge', currentChallenge_updated)
+        }
+      }).catch(error => {
+        setLoading(false)
+        console.error(error)
+        ToastAndroid.show('Oops', ToastAndroid.SHORT)
+      })
+    }
+  }
 
 
   /*
@@ -56,7 +85,8 @@ function ChallengeStartScreen({ route, navigation }) {
     onSetDispatch('setStartTime', 'startTime', dt)
   }
   useEffect(() => {
-    console.log('[challenge.start] started =', started, ' | startTime =', startTime, ' | currentChallenge =', currentChallenge)
+    // console.log('[challenge.start] started =', started, ' | startTime =', startTime, ' | currentChallenge =', currentChallenge)
+    console.log('[challenge.start] started =', started, ' | startTime =', startTime)
 
     if ((!started || startTime == null) && currentChallenge != null && currentChallenge.mode === 'individual') {
       startNow()
@@ -81,8 +111,8 @@ function ChallengeStartScreen({ route, navigation }) {
     // navigation.navigate('_ChallengeDetailCompleted', {
     //   key: '_ChallengeDetailCompleted',
 
-    //   challengeDetail: obj.challengeDetail,
-    //   challenge_accepted_id: obj.challenge_accepted_id,
+    //   currentChallenge.challenge_detail: obj.currentChallenge.challenge_detail,
+    //   currentChallenge._id: obj.currentChallenge._id,
     //   captured_image: obj.uri,
 
     //   distanceTravelled: obj.distanceTravelled,
@@ -110,7 +140,7 @@ function ChallengeStartScreen({ route, navigation }) {
     navigation.navigate('DashboardStack')
     // navigation.navigate('ChallengeStack', {
     //     screen: 'ChallengeDetailInfo',
-    //     params: { key: 'ChallengeDetailInfo', challengeDetail: obj }
+    //     params: { key: 'ChallengeDetailInfo', currentChallenge.challenge_detail: obj }
     // })
   }, [])
 
@@ -124,9 +154,9 @@ function ChallengeStartScreen({ route, navigation }) {
   useEffect(() => {
     onSetDispatch('setShowBottomBar', 'showBottomBar', false)
 
-    if (completed === 0 && (currentChallenge == null || challenge_accepted_data._id !== currentChallenge._id)) {
-      Storer.set('currentChallenge', challenge_accepted_data)
-      onSetDispatch('setCurrentChallenge', 'currentChallenge', challenge_accepted_data)
+    if (completed === 0 && (currentChallenge == null || currentChallenge._id !== currentChallenge._id)) {
+      Storer.set('currentChallenge', currentChallenge)
+      onSetDispatch('setCurrentChallenge', 'currentChallenge', currentChallenge)
       //console.log('set Storage var !')
     }
   }, [completed])
@@ -143,26 +173,26 @@ function ChallengeStartScreen({ route, navigation }) {
   return (
     <DefaultView>
 
-      {completed !== 4 && (<>
+      {currentChallenge != null && completed !== 4 && (<>
 
         <View style={{ flex: 0.9, flexDirection: 'row' }}>
-          {challenge_accepted_data && <ChallengeStartMap
-            challenge_accepted_data={challenge_accepted_data}
+          <ChallengeStartMap
+            // challenge_accepted_data={currentChallenge}
             showFull={true}
             onFinished={onFinished}
             onCanceled={onCanceled}
-          />}
+          />
         </View>
 
-        {challenge_accepted_data.mode === 'individual' ? (
+        {currentChallenge.mode === 'individual' ? (
           <ChallengeStartActionsIndividual
-            challenge_accepted_data={challenge_accepted_data}
+            challenge_accepted_data={currentChallenge}
             showFull={true}
           />
         )
           : (
             <ChallengeStartActionsTeam
-              challenge_accepted_data={challenge_accepted_data}
+              challenge_accepted_data={currentChallenge}
               showFull={true}
             />
           )}

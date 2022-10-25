@@ -51,9 +51,10 @@ function TargetScreenModal({ route, navigation }) {
       })
 
       setLoading(false)
-      
+
       navigation.goBack()
     }).catch(error => {
+      setLoading(false)
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
     })

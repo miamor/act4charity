@@ -29,12 +29,16 @@ function CreateTeamModal({ onClose, onSubmit }) {
 
   const findUsers = (v) => {
     setShowSuggest(true)
+
     if (v.length > 1) {
+      // setLoading(true)
+
       userAPI.findUsers({ username: v }).then((res) => {
         //console.log('>> res', res)
         setSuggestList(res.data)
+        // setLoading(false)
       }).catch(error => {
-        setLoading(false)
+        // setLoading(false)
         console.error(error)
         ToastAndroid.show('Oops', ToastAndroid.SHORT)
       })

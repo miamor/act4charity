@@ -1,6 +1,6 @@
 import React, { PropTypes, Component, useCallback } from 'react'
 import { useEffect, useState } from 'react'
-import { StyleSheet, View, ScrollView, Image, TouchableOpacity, Pressable } from 'react-native'
+import { StyleSheet, View, ScrollView, Image, TouchableOpacity, Pressable, ToastAndroid } from 'react-native'
 import { ProgressBar, Button, useTheme, Appbar, Modal, Portal, Paragraph } from 'react-native-paper'
 import { H3, Text, TextBold } from '../../components/paper/typos'
 
@@ -53,7 +53,7 @@ function ProfileScreen({ navigation }) {
     })()
   }, [token])
 
-  
+
   /*
    * Logout
    */
@@ -89,7 +89,7 @@ function ProfileScreen({ navigation }) {
         setNextLevel(i)
         setCurrentLevel(i - 1)
 
-        setLevelProgress((loggedUser.current_reward - levels_ranges[i-1].start) / (levels_ranges[i].start - levels_ranges[i-1].start))
+        setLevelProgress((loggedUser.current_reward - levels_ranges[i - 1].start) / (levels_ranges[i].start - levels_ranges[i - 1].start))
 
         return false
       }
@@ -145,23 +145,24 @@ function ProfileScreen({ navigation }) {
    */
   useEffect(() => {
     if (pickerResponse != null && pickerResponse.assets != null) {
-      //console.log('[profile] >> pickerResponse', pickerResponse)
-      handleUploadPhoto()
+      console.log('[profile] >> pickerResponse', pickerResponse)
+
+      handleUploadPhoto(pickerResponse)
     }
   }, [pickerResponse])
 
-  const handleUploadPhoto = useCallback(() => {
+  const handleUploadPhoto = (photo) => {
     // setLoading(true)
 
     // const accessToken = await Storer.get('token')
 
-    if (token != null) {
+    if (token != null && photo != null) {
       setLoading(true)
 
       let fileToUpload = {
-        uri: pickerResponse.assets[0].uri,
-        type: pickerResponse.assets[0].type,
-        name: pickerResponse.assets[0].fileName,
+        uri: photo.assets[0].uri,
+        type: photo.assets[0].type,
+        name: photo.assets[0].fileName,
       }
 
       //console.log('[handleUploadPhoto] fileToUpload =', fileToUpload)
@@ -186,29 +187,27 @@ function ProfileScreen({ navigation }) {
         const res = response.data
         //~console.log('[handleUploadPhoto] res =', res)
 
-        if (res.status === 'success') {
+        Storer.set('loggedUser', {
+          ...loggedUser,
+          avatar: res.data.avatar
+        })
 
-          Storer.set('loggedUser', {
+        dispatch({
+          type: 'setLoggedUser',
+          loggedUser: {
             ...loggedUser,
             avatar: res.data.avatar
-          })
+          }
+        })
 
-          dispatch({
-            type: 'setLoggedUser',
-            loggedUser: {
-              ...loggedUser,
-              avatar: res.data.avatar
-            }
-          })
-
-          setLoading(false)
-        }
+        setLoading(false)
       }).catch(error => {
         setLoading(false)
         console.error(error)
+        ToastAndroid.show('Oops', ToastAndroid.SHORT)
       })
     }
-  }, [token])
+  }
 
 
   return (<DefaultView>

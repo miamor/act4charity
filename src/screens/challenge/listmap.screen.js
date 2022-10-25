@@ -90,7 +90,7 @@ function ChallengeListMapScreen({ navigation }) {
    * Load
    */
   useEffect(() => {
-    console.log('[listmap] filter updated', filter)
+    // console.log('[listmap] filter updated', filter)
 
     if (!loaded && filter.user_loc != null) {
       setLoading(true)
@@ -104,14 +104,8 @@ function ChallengeListMapScreen({ navigation }) {
     setLoaded(true)
     userAPI.listChallenges({ filter: _filter, num_per_page: 100 }).then((res) => {
       // console.log('res', res)
-      if (res.status === 'success') {
-        setDataList(res.data)
-        setLoading(false)
-      } else {
-        setLoading(false)
-        console.error(error)
-        ToastAndroid.show(error, ToastAndroid.SHORT)
-      }
+      setDataList(res.data)
+      setLoading(false)
     }).catch(error => {
       setLoading(false)
       console.error(error)

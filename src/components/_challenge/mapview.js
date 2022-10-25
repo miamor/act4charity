@@ -32,11 +32,6 @@ function ChallengeStartMap(props) {
   const onSetDispatch = (type, key, value) => dispatch({ type: type, [key]: value })
 
 
-  const { challenge_accepted_data } = props
-  const challengeDetail = challenge_accepted_data.challenge_detail
-  const challenge_accepted_id = challenge_accepted_data._id
-
-
   const [loading, setLoading] = useState(false)
 
   const [captured, setCaptured] = useState(false)
@@ -95,8 +90,8 @@ function ChallengeStartMap(props) {
       /* clean up and call callback */
       const obj = {
         uri,
-        challengeDetail,
-        challenge_accepted_id,
+        challengeDetail: currentChallenge.challenge_detail,
+        challenge_accepted_id: currentChallenge._id,
         distanceTravelled: trackLoc.distanceTravelled,
         routeCoordinates: trackLoc.routeCoordinates,
         trackMemberLocationStates,
@@ -122,8 +117,8 @@ function ChallengeStartMap(props) {
     }).catch((error) => {
       const obj = {
         uri: null,
-        challengeDetail,
-        challenge_accepted_id,
+        challengeDetail: currentChallenge.challenge_detail,
+        challenge_accepted_id: currentChallenge._id,
         distanceTravelled: trackLoc.distanceTravelled,
         routeCoordinates: trackLoc.routeCoordinates,
         trackMemberLocationStates,
@@ -161,7 +156,7 @@ function ChallengeStartMap(props) {
 
     await Storer.delete('currentChallenge')
     onSetDispatch('setCurrentChallenge', 'currentChallenge', null)
-    await Storer.delete('joined')
+    await Storer.set('joined', false)
     onSetDispatch('setJoined', 'joined', false)
     await Storer.delete('startTime')
     onSetDispatch('setStartTime', 'startTime', null)
@@ -348,11 +343,11 @@ function ChallengeStartMap(props) {
         >
 
           {startCoord != null && <Marker coordinate={startCoord} />}
-          {challengeDetail.place_detail != null && <Marker coordinate={challengeDetail.place_detail.coordinates} />}
+          {currentChallenge.challenge_detail.place_detail != null && <Marker coordinate={currentChallenge.challenge_detail.place_detail.coordinates} />}
 
-          {challengeDetail.place_detail != null && startCoord != null && <MapViewDirections
+          {currentChallenge.challenge_detail.place_detail != null && startCoord != null && <MapViewDirections
             origin={startCoord}
-            destination={challengeDetail.place_detail.coordinates}
+            destination={currentChallenge.challenge_detail.place_detail.coordinates}
             apikey={GOOGLE_API_KEY} //? insert your API Key here
             strokeWidth={4}
             strokeColor="#111111"
@@ -367,7 +362,7 @@ function ChallengeStartMap(props) {
 
         </MapView>)}
       </>)
-        : (<Text>Location must be enabled to use map</Text>)}
+        : props.showFull && (<Text>Location must be enabled to use map</Text>)}
     </ViewShot>
 
   </>)

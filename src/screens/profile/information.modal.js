@@ -49,6 +49,7 @@ function InformationModal(props) {
       // navigation.goBack()
       props.setInformationModalVisibility(!props.informationModalVisibility)
     }).catch(error => {
+      setLoading(false)
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
     })
