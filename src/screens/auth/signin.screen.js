@@ -52,7 +52,7 @@ function SigninScreen({ navigation }) {
     password: Yup.string().required('Password is required'),
   })
 
-  const _onSubmit = values => {
+  const _onSubmit = (values) => {
     setLoading(true)
 
     authAPI.onAuthenticate(values).then((res) => {
@@ -62,14 +62,8 @@ function SigninScreen({ navigation }) {
         return
       }
 
-      authAPI.onAuthenticate(values).then((res) => {
-        setLoading(false)
-        navigation.navigate('Auth', res.data)
-      }).catch(error => {
-        setLoading(false)
-        // console.error(error)
-        ToastAndroid.show(error, ToastAndroid.SHORT)
-      })
+      setLoading(false)
+      navigation.navigate('Auth', res.data)
     }).catch(error => {
       setLoading(false)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)

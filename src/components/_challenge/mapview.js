@@ -20,6 +20,7 @@ import Loading from '../animations/loading'
 import * as userAPI from '../../services/userAPI'
 import { useNavigation } from '@react-navigation/core'
 import Storer from '../../utils/storer'
+import { members_colors } from '../../utils/vars'
 
 
 function ChallengeStartMap(props) {
@@ -83,21 +84,20 @@ function ChallengeStartMap(props) {
     /* so that won't capture again */
     setCaptured(true)
 
+    const obj = {
+      challengeDetail: currentChallenge.challenge_detail,
+      challenge_accepted_id: currentChallenge._id,
+      distanceTravelled: trackLoc.distanceTravelled,
+      routeCoordinates: trackLoc.routeCoordinates,
+      trackMemberLocationStates,
+      trackMemberStepStates
+    }
+
     ref_mapview.current.capture().then((uri) => {
       //console.log('>>>> captured uri', uri)
       setLoading(false)
 
       /* clean up and call callback */
-      const obj = {
-        uri,
-        challengeDetail: currentChallenge.challenge_detail,
-        challenge_accepted_id: currentChallenge._id,
-        distanceTravelled: trackLoc.distanceTravelled,
-        routeCoordinates: trackLoc.routeCoordinates,
-        trackMemberLocationStates,
-        trackMemberStepStates
-      }
-
       cleanUp()
       // props.onFinished(obj)
 
@@ -106,7 +106,7 @@ function ChallengeStartMap(props) {
 
         challengeDetail: obj.challengeDetail,
         challenge_accepted_id: obj.challenge_accepted_id,
-        captured_image: obj.uri,
+        captured_image: uri,
 
         distanceTravelled: obj.distanceTravelled,
         routeCoordinates: obj.routeCoordinates,
@@ -115,15 +115,9 @@ function ChallengeStartMap(props) {
         trackMemberStepStates: obj.trackMemberStepStates,
       })
     }).catch((error) => {
-      const obj = {
-        uri: null,
-        challengeDetail: currentChallenge.challenge_detail,
-        challenge_accepted_id: currentChallenge._id,
-        distanceTravelled: trackLoc.distanceTravelled,
-        routeCoordinates: trackLoc.routeCoordinates,
-        trackMemberLocationStates,
-        trackMemberStepStates
-      }
+      setLoading(false)
+
+      /* clean up and call callback */
       cleanUp()
       // props.onFinished(obj)
 
@@ -132,7 +126,7 @@ function ChallengeStartMap(props) {
 
         challengeDetail: obj.challengeDetail,
         challenge_accepted_id: obj.challenge_accepted_id,
-        captured_image: obj.uri,
+        captured_image: null,
 
         distanceTravelled: obj.distanceTravelled,
         routeCoordinates: obj.routeCoordinates,
@@ -156,10 +150,15 @@ function ChallengeStartMap(props) {
 
     await Storer.delete('currentChallenge')
     onSetDispatch('setCurrentChallenge', 'currentChallenge', null)
+
     await Storer.set('joined', false)
     onSetDispatch('setJoined', 'joined', false)
+
     await Storer.delete('startTime')
     onSetDispatch('setStartTime', 'startTime', null)
+
+    await Storer.delete('donation')
+    onSetDispatch('setDonation', 'donation', [0, 0])
 
     onSetDispatch('setStartTime', 'startTime', null)
     onSetDispatch('setFinished', 'finished', false)
@@ -186,12 +185,11 @@ function ChallengeStartMap(props) {
 
     onSetDispatch('setShowBottomBar', 'showBottomBar', false)
 
+    onSetDispatch('setCompleted', 'completed', 4)
 
-    await Storer.delete('started')
-
+    await Storer.set('started', false)
     //! don't do this. reset completed when start a challenge
     // onSetDispatch('setStarted', 'started', false)
-    onSetDispatch('setCompleted', 'completed', 4)
 
   }
 
@@ -357,7 +355,7 @@ function ChallengeStartMap(props) {
 
           {trackMemberLocationStates != null && Object.keys(trackMemberLocationStates).length > 0 && Object.keys(trackMemberLocationStates).map((user_id, i) => {
             if (user_id === loggedUser._id) return null
-            return (<Polyline key={`loc-state-` + i} coordinates={trackMemberLocationStates[user_id].routeCoordinates} strokeWidth={5} strokeColor="#125da3" />)
+            return (<Polyline key={`loc-state-` + i} coordinates={trackMemberLocationStates[user_id].routeCoordinates} strokeWidth={5} strokeColor={members_colors[i]} />)
           })}
 
         </MapView>)}

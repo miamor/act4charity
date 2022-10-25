@@ -3,12 +3,13 @@ import { StyleSheet, View, Image, ScrollView, ToastAndroid, PermissionsAndroid, 
 import { ProgressBar, Button, Appbar, useTheme, Badge, Portal, Modal, Paragraph, MD2Colors, MD3Colors } from 'react-native-paper'
 import { H2, H3, Text, TextBold } from '../../components/paper/typos'
 import { DefaultView } from '../../components/containers'
-import { levels_ranges, useGlobals } from '../../contexts/global'
+import { useGlobals } from '../../contexts/global'
 import Loading from '../../components/animations/loading'
 
 import * as userAPI from '../../services/userAPI'
 import haversine from 'haversine'
 import Storer from '../../utils/storer'
+import { levels_ranges } from '../../utils/vars'
 
 
 /**
@@ -179,10 +180,19 @@ function DashboardHomeScreen({ navigation }) {
     }
     // }, 1000)
   }
+  const onPressInvitation = (invitation) => {
+    const challenge_accepted = {
+      ...invitation.challenge_accepted_detail,
+      challenge_detail: invitation.challenge_detail
+    }
+
+    onPressChallenge(challenge_accepted)
+  }
+
   const goToChallengeNow = (challenge_accepted) => {
     setShowConfirmDialog(false)
 
-    console.log('[dashboard][goToChallengeNow] challenge_accepted', challenge_accepted)
+    // console.log('[dashboard][goToChallengeNow] challenge_accepted', challenge_accepted)
 
     onSetDispatch('setCurrentChallenge', 'currentChallenge', challenge_accepted)
 
@@ -350,7 +360,7 @@ function DashboardHomeScreen({ navigation }) {
               {currentChallenges.map((item, i) => {
                 if (
                   (item.user === loggedUser._id) ||
-                  (item.my_invitation_status != null && (item.my_invitation_status.accept === 0 || item.my_invitation_status.accept === 1))
+                  (item.my_invitation_status != null && item.my_invitation_status.accept === 1)
                 ) {
                   return (<TouchableOpacity key={`my-challenge-` + i}
                     onPress={() => onPressChallenge(item)}
@@ -412,7 +422,7 @@ function DashboardHomeScreen({ navigation }) {
             /> : (<View style={{}}>
 
               {pendingInvitations.map((item, i) => (<TouchableOpacity key={`my-challenge-` + i}
-                onPress={() => onPressChallenge(item)}
+                onPress={() => onPressInvitation(item)}
                 style={{
                   flexDirection: 'row',
                   marginVertical: 5,

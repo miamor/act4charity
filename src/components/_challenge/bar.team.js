@@ -22,10 +22,10 @@ function ChallengeBarTeam(props) {
    */
   const [distFromStartToTarget, setDistFromStartToTarget] = useState(null)
   useEffect(() => {
-    // console.log('[bar.individual] got hereeee', ' | started =', started, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation))
+    // console.log('[bar.team] got hereeee', ' | started =', started, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation))
 
     if (started && startTime != null && joined && completed === 0 && currentLocation != null) {
-      console.log('[bar.individual] got hereeee', ' | started =', started, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation))
+      console.log('[bar.team] got hereeee', ' | started =', started, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation))
 
       if (distFromStartToTarget === null) {
         if (currentChallenge.challenge_detail.type === 'discover') {

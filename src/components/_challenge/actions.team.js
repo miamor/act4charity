@@ -114,7 +114,7 @@ function ChallengeStartActionsTeam(props) {
 
   const loadMembersStatus = () => {
     userAPI.getChallengeInvitations({ challenge_accepted_id: currentChallenge._id }).then((res) => {
-      console.log('[actions.team][loadMembersStatus] (getChallengeInvitations) >>> membersJoinStatus', membersJoinStatus)
+      // console.log('[actions.team][loadMembersStatus] (getChallengeInvitations) >>> membersJoinStatus', membersJoinStatus)
 
       let members_joins = { ...membersJoinStatus }
       res.data.forEach((invitation) => {
@@ -126,10 +126,10 @@ function ChallengeStartActionsTeam(props) {
       })
       members_joins[currentChallenge.user] = 1
 
-      console.log('[actions.team][loadMembersStatus] (first fetch) members_joins', members_joins)
+      // console.log('[actions.team][loadMembersStatus] (first fetch) members_joins', members_joins)
       onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
 
-      console.log('[actions.team][loadMembersStatus] currentChallenge.participants_details', currentChallenge.participants_details)
+      // console.log('[actions.team][loadMembersStatus] currentChallenge.participants_details', currentChallenge.participants_details)
 
       if (loggedUser._id === currentChallenge.user) {
         hostJoin()
@@ -334,62 +334,75 @@ function ChallengeStartActionsTeam(props) {
    * Handler for each message type 
    *
    * ************************/
-  const _handleStart = useCallback((res) => {
+  const _handleStart = (res) => {
     console.log('[actions.team][_handleStart] CALLED')
     startNow()
-  }, [])
+  }//, [])
 
-  const _handleChat = useCallback((res) => {
+  const _handleChat = (res) => {
     setLoading(false)
     setMessages([...messages, res])
-  }, [messages])
+  }//, [messages])
 
-  const _handleJoin = useCallback((res) => {
+  const _handleJoin = (res) => {
     let members_joins = {
       ...membersJoinStatus,
       [res.user_id]: 1,
     }
     onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
     //console.log('[someone joined] members_joins', members_joins)
-  }, [membersJoinStatus])
+  }//, [membersJoinStatus])
 
-  const _handleDecline = useCallback((res) => {
+  const _handleDecline = (res) => {
     let members_joins = {
       ...membersJoinStatus,
       [res.user_id]: -1,
     }
     onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
     //console.log('[someone declined] members_joins', members_joins)
-  }, [membersJoinStatus])
+  }//, [membersJoinStatus])
 
-  const _handleOut = useCallback((res) => {
+  const _handleOut = (res) => {
     let members_joins = {
       ...membersJoinStatus,
       [res.user_id]: -2,
     }
     onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
     //console.log('[someone out] members_joins', members_joins)
-  }, [membersJoinStatus])
+  }//, [membersJoinStatus])
 
-  const _handleComplete = useCallback((res) => {
+  const _handleComplete = (res) => {
     onSetDispatch('setCompletedMembers', 'completedMembers', [...completedMembers, {
       user_id: res.user_id,
       username: res.username
     }])
-  }, [completedMembers])
+  }//, [completedMembers])
 
-  const _handleKill = useCallback((res) => {
+  const _handleKill = (res) => {
     onSetDispatch('setCompleted', 'completed', -1)
-  }, [])
+  }//, [])
 
-  const _handleEnd = useCallback((res) => {
+  const _handleEnd = async (res) => {
     // onSetDispatch('setTeamCompleted', 'teamCompleted', 1)
 
     /* set completed = 3 to take screenshot within `Map` view */
     onSetDispatch('setCompleted', 'completed', 3)
-  }, [completed])
 
-  const _handleLocState = useCallback((res) => {
+    /* to display in the completed screen */
+    onSetDispatch('setDonation', 'donation', [res.donation_amount, res.reward_amount])
+
+    /* update `current_donation` & `current_reward` */
+    const newUserData = {
+      ...loggedUser,
+      current_donation: loggedUser.current_donation + res.donation_amount,
+      current_reward: loggedUser.current_reward + res.reward_amount
+    }
+    await Storer.set('loggedUser', newUserData)
+    onSetDispatch('setLoggedUser', 'loggedUser', newUserData)
+
+  }//, [completed])
+
+  const _handleLocState = (res) => {
     onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', {
       ...trackMemberLocationStates,
       [res.user_id]: res.data,
@@ -399,14 +412,14 @@ function ChallengeStartActionsTeam(props) {
       ...trackMemberDistStates,
       [res.user_id]: res.data.distanceTravelled,
     })
-  }, [trackMemberLocationStates, trackMemberDistStates])
+  }//, [trackMemberLocationStates, trackMemberDistStates])
 
-  const _handleStepState = useCallback((res) => {
+  const _handleStepState = (res) => {
     onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {
       ...trackMemberStepStates,
       [res.user_id]: res.data.currentStepCount,
     })
-  }, [trackMemberStepStates])
+  }//, [trackMemberStepStates])
 
 
 
@@ -667,25 +680,59 @@ function ChallengeStartActionsTeam(props) {
    * end is equivalent to complete. 
    * The host can only end the challenge when at least 1 team member completes the challenge.
    * For challenges type `discover`:
-   *   donation of team challenge = (donation * number of members completed the challenge) + (donation / 4 * (number of members in the team but not completed the challenge))
+   *   donation of team challenge = (donation * number of members completed the challenge) + (donation / 5 * (number of members in the team but not completed the challenge))
    * If all team members completed the challenge:
    *   donation of team challenge = donation * number of members * 1.5
+   * 
+   * Same for reward
    *
    * **********************************************/
   const [showHostConfirmEnd, setHostShowConfirmEnd] = useState(false)
   const hideHostConfirmEnd = () => setHostShowConfirmEnd(false)
+  const [donationAmount, setDonationAmount] = useState(0)
+  const [rewardAmount, setRewardAmount] = useState(0)
   const onPressHostEndChallenge = () => {
     setHostShowConfirmEnd(true)
-  }
+
+    /*
+     * How many members completed ?
+     */
+    let donation_amount = 0
+    let reward_amount = 0
+    const totMembers = Object.values(membersJoinStatus).reduce((a, b) => a + b, 0) + 1
+    if (totMembers > 0 && completedMembers.length === totMembers) {
+      /* 
+       * all members completed.
+       * donations = donation * number of members * 1.5
+       */
+      donation_amount = currentChallenge.challenge_detail.donation * totMembers * 1.5
+      reward_amount = currentChallenge.challenge_detail.reward * totMembers * 1.5
+    }
+    else if (completedMembers.length > 0) {
+      /*
+       * else,
+       * donations = donation * number of members completed the challenge 
+       *           + donation / 5 * nnumber of members in the team but not completed
+       */
+      donation_amount = currentChallenge.challenge_detail.donation * completedMembers.length + (currentChallenge.challenge_detail.donation / 5) * (totMembers - completedMembers.length)
+      reward_amount = currentChallenge.challenge_detail.reward * completedMembers.length + (currentChallenge.challenge_detail.reward / 5) * (totMembers - completedMembers.length)
+    }
+
+    setDonationAmount(donation_amount)
+    setRewardAmount(reward_amount)
+}
   const onHostConfirmEnd = () => {
     if (isHost) { //? only host can perform this action
       setLoading(true)
       hideHostConfirmEnd()
 
+      /*
+       * Complete challenge. State reward & donations made
+       */
       userAPI.completeChallenge({
         challenge_accepted_id: currentChallenge._id,
-        challenge_donation: currentChallenge.challenge_detail.donation,
-        challenge_reward: currentChallenge.challenge_detail.reward,
+        challenge_donation: donation_amount,
+        challenge_reward: reward_amount,
         participants: currentChallenge.participants,
       }).then((res) => {
         //console.log('[confirmCompleteCallback] res', res)
@@ -700,6 +747,9 @@ function ChallengeStartActionsTeam(props) {
           trackMemberLocationStates: trackMemberLocationStates,
           trackMemberStepStates: trackMemberStepStates,
           challenge_accepted_id: currentChallenge._id,
+
+          donation_amount: donationAmount,
+          reward_amount: rewardAmount,
         })
       }).catch(error => {
         setLoading(false)
@@ -821,7 +871,7 @@ function ChallengeStartActionsTeam(props) {
   const hideAskImgSource = useCallback(() => setShowAskImgSource(false))
 
   const [showShareStoryModal, setShowShareStoryModal] = useState(false)
-  const callbackSubmitShareStory = useCallback((postData) => {
+  const callbackSubmitShareStory = (postData) => {
     // setLoading(true)
     // const accessToken = await Storer.get('token')
     // console.log('postData', JSON.stringify(postData))
@@ -851,7 +901,6 @@ function ChallengeStartActionsTeam(props) {
         const res = response.data
         console.log('[actions.team][shareStory] res =', res)
 
-        setLoading(false)
         setShowShareStoryModal(false)
 
         /* cast to other members via socket channel */
@@ -863,13 +912,15 @@ function ChallengeStartActionsTeam(props) {
           data: res.data.content,
           picture: res.data.picture
         })
+
+        setLoading(false)
       }).catch(error => {
         setLoading(false)
         console.error(error)
         ToastAndroid.show('Oops!', ToastAndroid.SHORT)
       })
     }
-  }, [token])
+  }
 
   const onOpenShareStory = useCallback((postData) => {
     setShowAskImgSource(true)
@@ -896,7 +947,7 @@ function ChallengeStartActionsTeam(props) {
   )
   const snapPoints = useMemo(() => [
     // currentChallenge.challenge_detail.type === 'discover' ? '13%' : '17%',
-    '22%',
+    currentChallenge.challenge_detail.type === 'walk' ? '22%' : '17%',
     '90%'], [])
   const [currentSnapPoint, setCurrentSnapPoint] = useState(0)
 
@@ -947,7 +998,7 @@ function ChallengeStartActionsTeam(props) {
 
       <View style={{
         // flex: 0.18,
-        height: 130,
+        height: currentChallenge.challenge_detail.type === 'walk' ? 130 : 100,
         // backgroundColor: '#00f',
         justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10, flexDirection: 'column', marginBottom: 10
       }}>
@@ -1024,7 +1075,7 @@ function ChallengeStartActionsTeam(props) {
 
 
         {tabIndex === 1 ? (<View style={{ paddingHorizontal: 30, paddingTop: 10 }}>
-          {membersJoinStatus != null && currentChallenge.participants_details.map((user, i) => {
+          {membersJoinStatus != null && currentChallenge.participants_details != null && currentChallenge.participants_details.map((user, i) => {
             if (loggedUser._id !== user._id && !membersJoinStatus.hasOwnProperty(user._id)) return null
             return (<View key={`us-` + i} style={{ flexDirection: 'row' }}>
               <Text>{user.username}</Text>
@@ -1175,7 +1226,7 @@ function ChallengeStartActionsTeam(props) {
             Do you want to end the challenge now ?
           </Paragraph>
           <Paragraph>
-            Total donation will be: XXX
+            Total donation will be: {donationAmount > 0 ? donationAmount : 'XXX'}
           </Paragraph>
 
           <View style={{ marginTop: 30, marginHorizontal: 20 }}>
@@ -1193,7 +1244,7 @@ function ChallengeStartActionsTeam(props) {
           </Paragraph>
 
           <Paragraph>
-            If you end the challenge, total donation will be: XXX
+            If you end the challenge, total donation will be: {donationAmount > 0 ? donationAmount : 'XXX'}
           </Paragraph>
           <Paragraph>
             Are you sure?
@@ -1249,22 +1300,23 @@ function ChallengeStartActionsTeam(props) {
       justifyContent: 'center',
       alignItems: 'center'
     }}>
-      {isHost && !started && (<Button mode="contained" onPress={onPressStartTeam} style={{ marginHorizontal: 10 }} labelStyle={{ paddingBottom: 1 }}>
-        <MaterialCommunityIcons name="close" size={14} />
+      {isHost && !started && (<Button mode="contained" onPress={onPressStartTeam} style={{ marginHorizontal: 5 }} labelStyle={{ paddingBottom: 1 }}>
+        <MaterialCommunityIcons name="clock" size={14} />
         Start now
       </Button>)}
 
-      {isHost && (<Button mode="contained" onPress={onPressHostCancelChallenge} style={{ marginHorizontal: 10 }} labelStyle={{ paddingBottom: 1 }}>
+      {isHost && (<Button mode="contained" onPress={onPressHostCancelChallenge} style={{ marginHorizontal: 5 }} labelStyle={{ paddingBottom: 1 }}>
         <MaterialCommunityIcons name="close" size={14} />
         Cancel Challenge
       </Button>)}
 
-      {isHost && started && (<Button mode="contained" onPress={onPressHostEndChallenge} style={{ marginHorizontal: 10 }} labelStyle={{ paddingBottom: 1 }}>
-        <MaterialCommunityIcons name="close" size={14} />
+      {isHost && started && completedMembers.length > 0 && (<Button mode="contained" onPress={onPressHostEndChallenge} style={{ marginHorizontal: 5 }} labelStyle={{ paddingBottom: 1 }}>
+      {/* {isHost && started && (<Button mode="contained" onPress={onPressHostEndChallenge} style={{ marginHorizontal: 5 }} labelStyle={{ paddingBottom: 1 }}> */}
+        {/* <MaterialCommunityIcons name="close" size={14} /> */}
         End Challenge
       </Button>)}
 
-      {!isHost && joined && (<Button mode="contained" onPress={onPressCancelChallenge} style={{ marginHorizontal: 10 }} labelStyle={{ paddingBottom: 1 }}>
+      {!isHost && joined && (<Button mode="contained" onPress={onPressCancelChallenge} style={{ marginHorizontal: 5 }} labelStyle={{ paddingBottom: 1 }}>
         <MaterialCommunityIcons name="close" size={14} />
         Out Challenge
       </Button>)}

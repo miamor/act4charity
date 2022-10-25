@@ -48,15 +48,20 @@ function CreateTeamModal({ onClose, onSubmit }) {
   const onSelectUser = (user) => {
     setShowSuggest(false)
     // //console.log('user.username', user.username)
-    if (selectedList.indexOf(user.username) < 0 && user.username !== loggedUser.username) {
-      setSelectedList([
-        ...selectedList,
-        user.username
-      ])
-      setSelectedIdList([
-        ...selectedIdList,
-        user._id
-      ])
+
+    if (selectedList.length < 5) {
+      if (selectedList.indexOf(user.username) < 0 && user.username !== loggedUser.username) {
+        setSelectedList([
+          ...selectedList,
+          user.username
+        ])
+        setSelectedIdList([
+          ...selectedIdList,
+          user._id
+        ])
+      }
+    } else {
+      ToastAndroid.show('You can invite up to 5 people to join a team challenge !', ToastAndroid.SHORT)
     }
   }
 

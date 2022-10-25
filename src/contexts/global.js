@@ -150,6 +150,11 @@ export const reducer = (state, action) => {
         ...state,
         joined: action.joined
       }
+    case 'setDonation':
+      return {
+        ...state,
+        donation: action.donation
+      }
     case 'setInit':
       return {
         ...state,
@@ -209,29 +214,12 @@ export const initialState = {
   started: false,
   joined: false,
   startTime: null,
+  donation: [0, 0],
 
   init: false,
   showLoader: false,
   coin: 0
 }
-
-export const levels_ranges = [
-  {
-    start: 0,
-    title: 'Bronze member',
-    image: require('../../assets/icons/medal-bronze.png')
-  },
-  {
-    start: 200,
-    title: 'Silver member',
-    image: require('../../assets/icons/medal-silver.png')
-  },
-  {
-    start: 400,
-    title: 'Gold member',
-    image: require('../../assets/icons/medal-gold.png')
-  }
-]
 
 
 /**

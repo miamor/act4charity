@@ -131,6 +131,9 @@ function ChallengeStartActionsIndividual(props) {
       /* set completed = 3 to take screenshot within `Map` view */
       onSetDispatch('setCompleted', 'completed', 3)
 
+      /* to display in the completed screen */
+      onSetDispatch('setDonation', 'donation', [currentChallenge.challenge_detail.donation, currentChallenge.challenge_detail.reward])
+
       /* update `current_donation` & `current_reward` */
       const newUserData = {
         ...loggedUser,
@@ -197,7 +200,7 @@ function ChallengeStartActionsIndividual(props) {
   const hideAskImgSource = useCallback(() => setShowAskImgSource(false))
 
   const [showShareStoryModal, setShowShareStoryModal] = useState(false)
-  const callbackSubmitShareStory = useCallback((postData) => {
+  const callbackSubmitShareStory = (postData) => {
     // setLoading(true)
     // const accessToken = await Storer.get('token')
     // console.log('postData', JSON.stringify(postData))
@@ -230,17 +233,18 @@ function ChallengeStartActionsIndividual(props) {
         const res = response.data
 
         //console.log('[shareStory] res =', res)
-        setLoading(false)
         setShowShareStoryModal(false)
 
         listStory()
+
+        setLoading(false)
       }).catch(error => {
         setLoading(false)
         console.error(error)
         // ToastAndroid.show(error, ToastAndroid.short)
       })
     }
-  }, [token])
+  }
 
   const onOpenShareStory = useCallback((postData) => {
     setShowAskImgSource(true)

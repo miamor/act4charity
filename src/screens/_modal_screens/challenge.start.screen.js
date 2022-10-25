@@ -32,24 +32,29 @@ function ChallengeStartScreen({ route, navigation }) {
   const onSetDispatch = (type, key, value) => dispatch({ type: type, [key]: value })
 
 
+  // useEffect(() => {
+  //   console.log('currentChallenge =', currentChallenge)
+  // }, [])
+
+
   // const [reloaded, setReloaded] = useState(0)
   useEffect(() => {
     const interval = setInterval(() => {
       doReload()
-    }, 20000) //? reload every 20 seconds
+    }, 60000) //? reload every 60 seconds
 
     /* cleanup the interval on complete */
     return () => clearInterval(interval)
   }, [])
 
   const doReload = () => {
-    console.log('[challenge.start][doReload] CALLED ~~')
+    // console.log('[challenge.start][doReload] CALLED ~~')
 
     if (currentChallenge != null) {
       userAPI.getChallengeAcceptedStatus({ challenge_accepted_id: currentChallenge._id }).then((res) => {
-        console.log('[challenge.start][reload] res =', res)
+        console.log('[challenge.start][doReload] res =', res)
 
-        if (res.data.active !== currentChallenge.active && currentChallenge._id === currentChallenge._id) {
+        if (res.data != null && res.data.active !== currentChallenge.active && currentChallenge._id === currentChallenge._id) {
           const currentChallenge_updated = {
             ...currentChallenge,
             active: res.data.active,
@@ -58,7 +63,6 @@ function ChallengeStartScreen({ route, navigation }) {
           onSetDispatch('setCurrentChallenge', 'currentChallenge', currentChallenge_updated)
         }
       }).catch(error => {
-        setLoading(false)
         console.error(error)
         ToastAndroid.show('Oops', ToastAndroid.SHORT)
       })
@@ -154,11 +158,11 @@ function ChallengeStartScreen({ route, navigation }) {
   useEffect(() => {
     onSetDispatch('setShowBottomBar', 'showBottomBar', false)
 
-    if (completed === 0 && (currentChallenge == null || currentChallenge._id !== currentChallenge._id)) {
-      Storer.set('currentChallenge', currentChallenge)
-      onSetDispatch('setCurrentChallenge', 'currentChallenge', currentChallenge)
-      //console.log('set Storage var !')
-    }
+    // if (completed === 0 && (currentChallenge == null || currentChallenge._id !== currentChallenge._id)) {
+    //   Storer.set('currentChallenge', currentChallenge)
+    //   onSetDispatch('setCurrentChallenge', 'currentChallenge', currentChallenge)
+    //   //console.log('set Storage var !')
+    // }
   }, [completed])
   useEffect(() => {
     if (completed === 0) {
@@ -185,16 +189,10 @@ function ChallengeStartScreen({ route, navigation }) {
         </View>
 
         {currentChallenge.mode === 'individual' ? (
-          <ChallengeStartActionsIndividual
-            challenge_accepted_data={currentChallenge}
-            showFull={true}
-          />
+          <ChallengeStartActionsIndividual showFull={true} />
         )
           : (
-            <ChallengeStartActionsTeam
-              challenge_accepted_data={currentChallenge}
-              showFull={true}
-            />
+            <ChallengeStartActionsTeam showFull={true} />
           )}
 
       </>)}

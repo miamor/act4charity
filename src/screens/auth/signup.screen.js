@@ -56,7 +56,7 @@ function SignupScreen({ navigation }) {
     password: Yup.string().required('Password is required'),
   })
 
-  const _onSubmit = values => {
+  const _onSubmit = (values) => {
     setLoading(true)
 
     authAPI.onRegister(values).then((res) => {

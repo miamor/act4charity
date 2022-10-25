@@ -4,7 +4,7 @@ import { StyleSheet, View, ScrollView, Image, TouchableOpacity, Pressable, Toast
 import { ProgressBar, Button, useTheme, Appbar, Modal, Portal, Paragraph } from 'react-native-paper'
 import { H3, Text, TextBold } from '../../components/paper/typos'
 
-import { levels_ranges, useGlobals } from '../../contexts/global'
+import { useGlobals } from '../../contexts/global'
 import { DefaultView } from '../../components/containers'
 
 import Storer from '../../utils/storer'
@@ -21,6 +21,7 @@ import NotificationsModal from './notifications.modal'
 import HelpModal from './help.modal'
 import FeedbackModal from './feedback.modal'
 import { default_loggedUser } from '../../constants/keys'
+import { levels_ranges } from '../../utils/vars'
 
 
 function ProfileScreen({ navigation }) {
