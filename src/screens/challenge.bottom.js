@@ -20,70 +20,20 @@ import Storer from '../utils/storer'
  */
 function ChallengeBottomSheet({ }) {
   const [{ currentChallenge, loggedUser, currentLocation, trackLoc, trackStep,
-    completed, started, startTime, showBottomBar }, dispatch] = useGlobals()
+    completed, started, startTime }, dispatch] = useGlobals()
   const { colors } = useTheme()
+
   const navigation = useNavigation()
 
   const onSetDispatch = (type, key, value) => dispatch({ type: type, [key]: value })
 
 
-  /*
-   * If is `individual` mode, start now.
-   * If is `team` mode, needs the host to click Start => is handled in `actions.team`
-   */
-  const startNow = async () => {
-    //~console.log('[challenge.start] startNow CALLED')
-
-    await Storer.set('started', true)
-    onSetDispatch('setStarted', 'started', true)
-
-    await Storer.set('completed', 0)
-    onSetDispatch('setCompleted', 'completed', 0)
-
-    const dt = new Date()
-    await Storer.set('startTime', dt)
-    //~console.log('[challenge.start] startTime == ', dt)
-    onSetDispatch('setStartTime', 'startTime', dt)
-  }
-  useEffect(() => {
-    //~console.log('[challenge.start] startTime', startTime)
-    if (!started && currentChallenge != null && currentChallenge.mode === 'individual') {
-      startNow()
-    }
-  }, [started, currentChallenge, startTime])
-
-
-
 
   /* **********************************************
-   *
-   * On receive updates from child components
    * 
-   * ---
-   * 
-   * Really finish challenge
+   * Open full challenge screen
    *
    * **********************************************/
-  const onFinished = useCallback((obj) => {
-    console.log('[challenge.bottom][onFinished] CALLED')
-
-    // navigation.navigate('_ChallengeDetailCompleted', {
-    //   key: '_ChallengeDetailCompleted',
-
-    //   challengeDetail: obj.challengeDetail,
-    //   challenge_accepted_id: obj.challenge_accepted_id,
-    //   captured_image: obj.uri,
-
-    //   distanceTravelled: obj.distanceTravelled,
-    //   routeCoordinates: obj.routeCoordinates,
-
-    //   trackMemberLocationStates: obj.trackMemberLocationStates,
-    //   trackMemberStepStates: obj.trackMemberStepStates,
-    // })
-  }, [])
-
-
-
   const [showFull, setShowFull] = useState(false)
   const openChallenge = () => {
     // //console.log('[challenge.bottom] currentChallenge', currentChallenge)
@@ -101,6 +51,10 @@ function ChallengeBottomSheet({ }) {
   const onMinimize = () => {
     setShowFull(false)
   }
+
+  useEffect(() => {
+    console.log('[challenge.bottom] ~~~~ currentLocation =', currentLocation)
+  }, [currentLocation])
 
 
   const { width } = Dimensions.get('window')
@@ -155,10 +109,7 @@ function ChallengeBottomSheet({ }) {
     {currentChallenge != null && completed !== 4 && (<>
 
       <View style={{ flex: 0.9, flexDirection: 'row' }}>
-        <ChallengeStartMap
-          showFull={showFull}
-          onFinished={onFinished}
-        />
+        <ChallengeStartMap showFull={showFull} />
       </View>
 
       {currentChallenge.mode === 'individual' ? (

@@ -7,6 +7,7 @@ import { Button, Surface, TouchableRipple, useTheme } from 'react-native-paper'
 import { H3, Text } from '../../components/paper/typos'
 
 import * as userAPI from '../../services/userAPI'
+import Loading from '../../components/animations/loading'
 
 
 /**
@@ -18,12 +19,14 @@ function InterestsInitialScreen({ navigation }) {
   const [{ loggedUser }, dispatch] = useGlobals()
   const { colors } = useTheme()
 
+  const [loading, setLoading] = useState(false)
+
   const [cats, setCats] = useState()
   const [selectedCats, setSelectedCats] = useState({})
 
   useEffect(() => {
     setLoading(true)
-    
+
     userAPI.listInterests({ num_per_page: 100 }).then((res) => {
       setCats(res.data)
       setLoading(false)
@@ -65,6 +68,8 @@ function InterestsInitialScreen({ navigation }) {
 
   return (
     <DefaultView>
+      {loading && <Loading />}
+
       <View style={styles.textContainer}>
         <H3 style={[styles.textHeadline, { color: colors.primary }]}>
           Categories of Interest
@@ -75,6 +80,7 @@ function InterestsInitialScreen({ navigation }) {
       </View>
 
       <View style={styles.inputContainer}>
+
         {cats && <FlatList
           data={cats}
           style={styles.list}

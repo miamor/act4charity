@@ -8,6 +8,7 @@ import Loading from '../../components/animations/loading'
 
 import * as userAPI from '../../services/userAPI'
 import CreateTeamModal from '../../components/_challenge/create.team.modal'
+import Storer from '../../utils/storer'
 
 
 /**
@@ -16,7 +17,7 @@ import CreateTeamModal from '../../components/_challenge/create.team.modal'
  * @constructor
  */
 function ChallengeDetailInfoScreen({ route, navigation }) {
-  const [{ loggedUser, currentChallenge }, dispatch] = useGlobals()
+  const [{ loggedUser, currentChallenge, trackLoc }, dispatch] = useGlobals()
   const { colors } = useTheme()
 
   const { challengeDetail } = route.params
@@ -96,7 +97,7 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
       mode: mode,
       participants: participants_id
     }
-    userAPI.startChallenge(params).then((res) => {
+    userAPI.startChallenge(params).then(async (res) => {
       // //console.log('>> res', res)
       setLoading(false)
 
@@ -104,11 +105,50 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
       onSetDispatch('setStarted', 'started', false)
       onSetDispatch('setCompleted', 'completed', 0)
 
+
+      //! in case old challenge is not cancelled
+      console.log('[detail] cleanUp CALLED')
+
+      // // Storer.set('joined', null)
+      // // onSetDispatch('setJoined', 'joined', null)
+
+      // // // Storer.delete('startTime')
+      // // onSetDispatch('setStartTime', 'startTime', null)
+
+      // // // Storer.delete('donation')
+      // // onSetDispatch('setDonation', 'donation', [0, 0])
+
+      // // onSetDispatch('setFinished', 'finished', false)
+      onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', {})
+      onSetDispatch('setTrackMemberDistStates', 'trackMemberDistStates', {})
+      onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {})
+      onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', {})
+      onSetDispatch('setCompletedMembers', 'completedMembers', [])
+      // onSetDispatch('setChatMessages', 'chatMessages', [])
+      // onSetDispatch('setPrivateSockMsgs', 'privateSockMsgs', [])
+      // onSetDispatch('setPrivateSockMsg', 'privateSockMsg', null)
+      // onSetDispatch('setProcessedPrivateSockMsgs', 'processedPrivateSockMsgs', 0)
+      // onSetDispatch('setTeamCompleted', 'teamCompleted', 0)
+      onSetDispatch('setTrackLoc', 'trackLoc', {
+        ...trackLoc,
+        routeCoordinates: [],
+        distanceTravelled: 0,
+        prevLatLng: {},
+      })
+      onSetDispatch('setTrackStep', 'trackStep', {
+        distanceTravelled: 0,
+        currentStepCount: 0
+      })
+
+
+
       const challenge_accepted_data = {
         ...res.data,
         challenge_detail: challengeDetail
       }
 
+      onSetDispatch('setShowBottomBar', 'showBottomBar', false) //? don't show bottom bar
+      Storer.set('currentChallenge', challenge_accepted_data)
       onSetDispatch('setCurrentChallenge', 'currentChallenge', challenge_accepted_data)
 
       navigation.navigate('_ChallengeDetailStart', {

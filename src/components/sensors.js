@@ -8,10 +8,14 @@ import * as Location from 'expo-location'
 import { Pedometer } from 'expo-sensors'
 import { SOCKET_URL } from '../services/APIServices'
 import io from 'socket.io-client'
+import haversine from 'haversine'
 
 
 function Sensors() {
-  const [{ loggedUser, currentChallenge, currentLocation, trackStep, trackLoc, privateSockMsg, privateSockMsgs, socket, init }, dispatch] = useGlobals()
+  const [{ loggedUser, currentChallenge, currentLocation, trackStep, trackLoc, privateSockMsg, privateSockMsgs, socket, init, started }, dispatch] = useGlobals()
+
+  const onSetDispatch = (type, key, value) => dispatch({ type: type, [key]: value })
+
 
   // useEffect(() => {
   //   const interval = setInterval(() => {
@@ -30,16 +34,10 @@ function Sensors() {
         autoConnect: true,
         withCredentials: false,
       })
-      dispatch({
-        type: 'setSocket',
-        socket: socket_
-      })
+      onSetDispatch('setSocket', 'socket', socket_)
 
 
-      dispatch({
-        type: 'setInit',
-        socket: true
-      })
+      onSetDispatch('setInit', 'init', true)
 
       requestPermissions()
       // requestPedometerPermission()
@@ -50,26 +48,6 @@ function Sensors() {
       }
     }
   }, [init])
-  // useEffect(() => {
-  //   if (initLoc === false) {
-  //     setInitLoc(true)
-
-  //     requestLocationPermission()
-  //     return () => {
-  //       unsubscribeLocation()
-  //     }
-  //   }
-  // }, [initLoc])
-  // useEffect(() => {
-  //   if (initStep === false) {
-  //     setInitStep(true)
-
-  //     requestPedometerPermission()
-  //     return () => {
-  //       unsubscribePedometer()
-  //     }
-  //   }
-  // }, [initStep])
 
 
 
@@ -93,10 +71,7 @@ function Sensors() {
 
   const rcvSocket = useCallback((obj) => {
     if (socket != null) {
-      dispatch({
-        type: 'setPrivateSockMsg',
-        privateSockMsg: obj
-      })
+      onSetDispatch('setPrivateSockMsg', 'privateSockMsg', obj)
     }
   }, [privateSockMsg, socket, currentChallenge])
 
@@ -134,12 +109,11 @@ function Sensors() {
       subscribeLocation()
     } else {
       PermissionsAndroid.requestMultiple([
-        // PermissionsAndroid.PERMISSIONS.CAMERA,
-        // PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
-        // PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
         // PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-        // PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        // PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         PermissionsAndroid.PERMISSIONS.ACTIVITY_RECOGNITION
       ]).then((result) => {
@@ -185,7 +159,8 @@ function Sensors() {
    * Process retrieved lng lat 
    */
   const processPosition = (position) => {
-    // //console.log('[sensors][detail processPosition] position', position)
+    console.log('[sensors][detail processPosition] position', position)
+
     setLocationStatus(1)
     // setLoading(false)
 
@@ -195,12 +170,9 @@ function Sensors() {
 
     //console.log('[sensors] dispatch setCurrentLocation ', JSON.stringify({ latitude: currentLatitude, longitude: currentLongitude }))
 
-    dispatch({
-      type: 'setCurrentLocation',
-      currentLocation: {
-        latitude: currentLatitude,
-        longitude: currentLongitude,
-      },
+    onSetDispatch('setCurrentLocation', 'currentLocation', {
+      latitude: currentLatitude,
+      longitude: currentLongitude,
     })
   }
 
@@ -226,12 +198,9 @@ function Sensors() {
 
       //console.log('[sensors] dispatch setTrackStep ', result)
 
-      dispatch({
-        type: 'setTrackStep',
-        trackStep: {
-          ...trackStep,
-          currentStepCount: result.steps
-        },
+      onSetDispatch('setTrackStep', 'trackStep', {
+        ...trackStep,
+        currentStepCount: result.steps
       })
     })
   }

@@ -29,3 +29,22 @@ export const secToTime = (d) => {
   // var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
   // return hDisplay + mDisplay + sDisplay;
 }
+
+
+export const diffTime = (end, start) => {
+  var diffMs = (end.getTime() - start.getTime()) //? milliseconds between now & Christmas
+  // var diffMs = (new Date() - start) //? milliseconds between now & Christmas
+
+  var diffDays = Math.floor(diffMs / 86400000) //? days
+  var diffHrs = Math.floor((diffMs % 86400000) / 3600000) //? hours
+  var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000) //? minutes
+  var diffSecs = Math.round(((diffMs % 86400000) % 3600000 % 60000) / 1000) //? seconds
+
+  var str = ''
+  if (diffDays > 0) str += diffDays + ' days, '
+  if (diffHrs > 0) str += diffHrs + 'h'
+  if (diffMins > 0) str += diffDays + 'm'
+  if (diffSecs > 0) str += diffSecs + 's'
+
+  return str
+}

@@ -13,6 +13,7 @@ import MapView, { Marker, enableLatestRenderer, PROVIDER_GOOGLE } from 'react-na
 
 import * as userAPI from '../../services/userAPI'
 import Storer from '../../utils/storer'
+import Loading from '../../components/animations/loading'
 
 
 /**
@@ -27,7 +28,10 @@ function ChallengeCompletedScreen({ route, navigation }) {
   const onSetDispatch = (type, key, value) => dispatch({ type: type, [key]: value })
 
 
-  const { challengeDetail, captured_image, distanceTravelled, routeCoordinates, challenge_accepted_id } = route.params
+  const { challengeDetail, captured_image, distanceTravelled, routeCoordinates, challenge_accepted_id, donation_amount, participants_names } = route.params
+
+
+  const [loading, setLoading] = useState(false)
 
 
   useEffect(() => {
@@ -69,7 +73,9 @@ function ChallengeCompletedScreen({ route, navigation }) {
 
 
   const onShareToFeed = () => {
+    setLoading(true)
     ToastAndroid.show('Shared to your feed !', ToastAndroid.SHORT)
+
     // navigation.goBack()
     navigation.navigate('DashboardStack')
   }
@@ -85,6 +91,7 @@ function ChallengeCompletedScreen({ route, navigation }) {
         <Appbar.Content title="Challenge Completed" color={colors.primary} />
       </Appbar.Header>
 
+      {loading && <Loading />}
 
       {showForm && (<Portal>
         <Modal visible={showForm} onDismiss={hideForm} contentContainerStyle={{ zIndex: 1000, backgroundColor: '#fff', padding: 20, marginHorizontal: 20 }}>
@@ -129,7 +136,8 @@ function ChallengeCompletedScreen({ route, navigation }) {
             You've completed this challenge
           </Paragraph>
           <Paragraph style={{textAlign: 'center', marginTop:6}}>
-            An amount of <TextBold>${challengeDetail.donation}</TextBold> has been donated to <TextBold>{challengeDetail.charity_detail.name}</TextBold> under your name <TextBold>{loggedUser.firstname}</TextBold>
+            {/* An amount of <TextBold>${donation_amount}</TextBold> has been donated to <TextBold>{challengeDetail.charity_detail.name}</TextBold> under your name <TextBold>{loggedUser.firstname}</TextBold> */}
+            An amount of <TextBold>${donation_amount}</TextBold> has been donated to <TextBold>{challengeDetail.charity_detail.name}</TextBold> under your name <TextBold>{participants_names.join(', ')}</TextBold>
           </Paragraph>
           <Paragraph>
             <Text>by </Text>

@@ -134,7 +134,7 @@ const Main: () => Node = () => {
           : (<>
             <Sensors />
             <MainStackNavigation />
-            {!showSpash && currentChallenge != null && showBottomBar && (<ChallengeBottomSheet />)}
+            {isReady && !showSpash && currentChallenge != null && showBottomBar && (<ChallengeBottomSheet />)}
           </>)}
 
       {/* {!isReady ? (<SplashModal onFinishSpash={() => //console.log('onFinishSpash')} />)

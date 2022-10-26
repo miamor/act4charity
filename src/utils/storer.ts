@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const Storer = {
   set: async (key: string, content: any): Promise<void> => {
+    // console.log('[Storer] set CALLED !!')
     return await AsyncStorage.setItem(key, JSON.stringify(content))
   },
   get: async (key: string): Promise<any> => {
@@ -10,6 +11,7 @@ const Storer = {
       .catch(() => null)
   },
   delete: async (key: string): Promise<void> => {
+    // console.log('[Storer] delete CALLED !!')
     return await AsyncStorage.removeItem(key)
   },
 }

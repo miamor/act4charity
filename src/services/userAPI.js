@@ -205,3 +205,19 @@ export const listStory = (postData) => {
     data: postData,
   })
 }
+
+export const sendChat = (postData) => {
+  return APIServices().makeAuthRequest({
+    url: '/user/challenges/send_chat',
+    method: 'POST',
+    data: postData,
+  })
+}
+
+export const listChat = (postData) => {
+  return APIServices().makeAuthRequest({
+    url: '/user/challenges/list_chat',
+    method: 'POST',
+    data: postData,
+  })
+}

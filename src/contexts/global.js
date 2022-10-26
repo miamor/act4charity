@@ -70,6 +70,11 @@ export const reducer = (state, action) => {
         ...state,
         currentRegion: action.currentRegion,
       }
+    case 'setTrackMemberStartStates':
+      return {
+        ...state,
+        trackMemberStartStates: action.trackMemberStartStates,
+      }
     case 'setTrackMemberLocationStates':
       return {
         ...state,
@@ -198,6 +203,7 @@ export const initialState = {
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   },
+  trackMemberStartStates: {},
   trackMemberLocationStates: {},
   trackMemberDistStates: {},
   trackMemberStepStates: {},
@@ -212,7 +218,7 @@ export const initialState = {
   teamCompleted: 0,
   finished: false,
   started: false,
-  joined: false,
+  joined: null,
   startTime: null,
   donation: [0, 0],
 

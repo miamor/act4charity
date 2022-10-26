@@ -2,13 +2,14 @@ import React, { PropTypes, Component } from 'react'
 import { useEffect, useState } from 'react'
 import { StyleSheet, ScrollView, View, Image, ToastAndroid, Dimensions } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
-import { ProgressBar, Appbar, useTheme, Button } from 'react-native-paper'
+import { ProgressBar, Appbar, useTheme, Button, Badge, MD3Colors } from 'react-native-paper'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { DefaultView } from '../../components/containers'
 import { useGlobals } from '../../contexts/global'
 import { H2, H3, Text, TextBold } from '../../components/paper/typos'
 import * as userAPI from '../../services/userAPI'
 import Loading from '../../components/animations/loading'
+import { diffTime, msToTime, secToTime } from '../../utils/timer'
 
 
 function RewardScreen() {
@@ -36,6 +37,8 @@ function RewardScreen() {
   const [completedChallenges, setCompletedChallenges] = useState()
   const loadCompletedChallenge = () => {
     userAPI.getCompletedChallenge({ num_per_page: 100 }).then((res) => {
+      console.log('[reward][loadCompletedChallenge] res', res)
+
       setCompletedChallenges(res.data)
       setLoading(false)
     }).catch(error => {
@@ -96,19 +99,36 @@ function RewardScreen() {
               // justifyContent: 'space-between',
               // alignItems: 'center',
             }}>
-            <Image
-              style={{ height: 46, width: 46, marginTop: -1 }}
-              source={item.challenge_detail.type == 'walk' ? require('../../../assets/icons/walking.png') : require('../../../assets/icons/discover.png')}
-            />
+            <View>
+              <Image
+                style={{ height: 46, width: 46, marginTop: -1 }}
+                source={item.challenge_detail.type == 'walk' ? require('../../../assets/icons/walking.png') : require('../../../assets/icons/discover.png')}
+              />
+              <Badge style={{
+                paddingHorizontal: 6, 
+                position: 'absolute', 
+                left: 0, top: 36,
+                fontSize: 8, lineHeight: 9, height: 14,
+                backgroundColor: item.mode === 'individual' ? MD3Colors.primary40 : MD3Colors.primary25
+              }}>{item.mode}</Badge>
+            </View>
 
             <View style={{ flex: 1, flexDirection: 'column', marginLeft: 6 }}>
-              <Text style={{ color: colors.primary, lineHeight: 21, marginBottom: 8 }} variant="titleMedium">{item.challenge_detail.name}</Text>
-              <Text style={{ color: '#d2d2d2', fontSize: 14, lineHeight: 15 }} variant="bodyMedium">
-                {item.challenge_detail.sponsor_detail.name}
+              <Text style={{ color: colors.primary, lineHeight: 21, marginBottom: 3 }} variant="titleMedium">{item.challenge_detail.name}</Text>
+
+              {item.time_started != null && item.time_completed != null && item.time_started.length > 0 && item.time_completed.length > 0 && (<Text style={{ color: '#c5c5c5', fontSize: 14, lineHeight: 18 }} variant="bodyMedium">
+                completed in {diffTime(new Date(item.time_completed), new Date(item.time_started))}
+              </Text>)}
+
+              <Text style={{ color: '#c5c5c5', fontSize: 14, lineHeight: 18 }} variant="bodyMedium">
+                Donated to <Text style={{color: '#888', fontSize: 14, lineHeight: 18}}>{item.challenge_detail.charity_detail.name}</Text>
+              </Text>
+              <Text style={{ color: '#c5c5c5', fontSize: 14, lineHeight: 18 }} variant="bodyMedium">
+                by <Text style={{color: '#888', fontSize: 14, lineHeight: 18}}>{item.challenge_detail.sponsor_detail.name}</Text>
               </Text>
             </View>
 
-            <Text>${item.challenge_detail.donation}</Text>
+            <Text>${item.donation != null ? item.donation : item.challenge_detail.donation}</Text>
           </View>))}
         </ScrollView>
       </View>

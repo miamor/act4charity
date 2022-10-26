@@ -111,6 +111,7 @@ function ChallengeStartActionsIndividual(props) {
    */
   const onConfirmComplete = () => {
     console.log('[actions.individual][onConfirmComplete] CALLED !!!!!!!!!!!!')
+
     setLoading(true)
     // setCompleted(1.5)
     // onSetDispatch('setCompleted', 'completed', 1.5)
@@ -270,8 +271,10 @@ function ChallengeStartActionsIndividual(props) {
     []
   )
   const snapPoints = useMemo(() => [
-    currentChallenge.challenge_detail.type === 'discover' ? '25%' : '19%',
-    currentChallenge.challenge_detail.type === 'discover' ? '90%' : '19%'
+    // currentChallenge.challenge_detail.type === 'discover' ? '25%' : '19%',
+    // currentChallenge.challenge_detail.type === 'discover' ? '90%' : '19%'
+    currentChallenge.challenge_detail.type === 'discover' ? 210 : 170,
+    currentChallenge.challenge_detail.type === 'discover' ? '90%' : 170
   ], [])
   const [currentSnapPoint, setCurrentSnapPoint] = useState(0)
 
@@ -370,7 +373,7 @@ function ChallengeStartActionsIndividual(props) {
 
       <View style={{
         // flex: 0.17,
-        height: currentChallenge.challenge_detail.type === 'discover' ? 65 : 110,
+        height: currentChallenge.challenge_detail.type === 'discover' ? 85 : 130,
         // backgroundColor: '#00f',
         justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10, flexDirection: 'column', marginBottom: 10
       }}>

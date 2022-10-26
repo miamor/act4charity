@@ -91,6 +91,16 @@ function DashboardHomeScreen({ navigation }) {
   }, [currentChallenges, pendingInvitations])
 
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadCurrentChallenges()
+      loadPendingInvitations()
+    }, 60000) //? reload every 60sec
+
+    /* cleanup the interval on complete */
+    return () => clearInterval(interval)
+  }, [])
+
 
   /*
    * Calculate distance between two points
@@ -189,11 +199,54 @@ function DashboardHomeScreen({ navigation }) {
     onPressChallenge(challenge_accepted)
   }
 
-  const goToChallengeNow = (challenge_accepted) => {
+  const goToChallengeNow = async (challenge_accepted) => {
+    setLoading(true)
+
     setShowConfirmDialog(false)
 
     // console.log('[dashboard][goToChallengeNow] challenge_accepted', challenge_accepted)
 
+
+    //! has to reset started to false. this will be set to true depends on join mode
+    onSetDispatch('setStarted', 'started', false)
+    onSetDispatch('setCompleted', 'completed', 0)
+
+
+    //! in case old challenge is not cancelled
+    if (currentChallenge != null && challenge_accepted._id !== currentChallenge._id) {
+      console.log('[dashboard] cleanUp CALLED')
+
+      // Storer.set('joined', null)
+      // onSetDispatch('setJoined', 'joined', null)
+
+      // Storer.delete('donation')
+      // onSetDispatch('setDonation', 'donation', [0, 0])
+
+      // onSetDispatch('setFinished', 'finished', false)
+      onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', {})
+      onSetDispatch('setTrackMemberDistStates', 'trackMemberDistStates', {})
+      onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {})
+      onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', {})
+      onSetDispatch('setCompletedMembers', 'completedMembers', [])
+      onSetDispatch('setChatMessages', 'chatMessages', [])
+      onSetDispatch('setPrivateSockMsgs', 'privateSockMsgs', [])
+      onSetDispatch('setPrivateSockMsg', 'privateSockMsg', null)
+      onSetDispatch('setProcessedPrivateSockMsgs', 'processedPrivateSockMsgs', 0)
+      onSetDispatch('setTeamCompleted', 'teamCompleted', 0)
+      onSetDispatch('setTrackLoc', 'trackLoc', {
+        ...trackLoc,
+        routeCoordinates: [],
+        distanceTravelled: 0,
+        prevLatLng: {},
+      })
+      onSetDispatch('setTrackStep', 'trackStep', {
+        distanceTravelled: 0,
+        currentStepCount: 0
+      })
+    }
+
+    onSetDispatch('setShowBottomBar', 'showBottomBar', false) //? don't show bottom bar
+    Storer.set('currentChallenge', challenge_accepted)
     onSetDispatch('setCurrentChallenge', 'currentChallenge', challenge_accepted)
 
     navigation.navigate('_ChallengeDetailStart', {
@@ -201,13 +254,9 @@ function DashboardHomeScreen({ navigation }) {
       // challenge_accepted_data: challenge_accepted,
     })
 
-    //! has to reset started to false. this will be set to true depends on join mode
-    onSetDispatch('setStarted', 'started', false)
-    onSetDispatch('setCompleted', 'completed', 0)
 
     // Storer.set('currentChallenge', challenge_accepted)
     // onSetDispatch('setCurrentChallenge', 'currentChallenge', challenge_accepted)
-    // onSetDispatch('setShowBottomBar', 'showBottomBar', false)
     setLoading(false)
   }
 

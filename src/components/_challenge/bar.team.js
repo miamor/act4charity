@@ -24,10 +24,10 @@ function ChallengeBarTeam(props) {
   useEffect(() => {
     // console.log('[bar.team] got hereeee', ' | started =', started, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation))
 
-    if (started && startTime != null && joined && completed === 0 && currentLocation != null) {
-      console.log('[bar.team] got hereeee', ' | started =', started, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation))
+    if (started && startTime != null && joined === currentChallenge._id && completed === 0 && currentLocation != null) {
+      // console.log('[bar.team] got hereeee', ' | started =', started, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation))
 
-      if (distFromStartToTarget === null) {
+      if (distFromStartToTarget == null) {
         if (currentChallenge.challenge_detail.type === 'discover') {
           const dist_from_start_to_target = haversine(currentLocation, currentChallenge.challenge_detail.place_detail.coordinates) || 0
           setDistFromStartToTarget(dist_from_start_to_target)
@@ -52,17 +52,17 @@ function ChallengeBarTeam(props) {
    * **********************************************/
   const [distToTarget, setDistToTarget] = useState(-1)
   const checkComplete = () => {
-    //~console.log('[challenge.start][checkComplete] currentLocation', currentLocation, ' | trackLoc.distanceTravelled =', trackLoc.distanceTravelled, ' | currentChallenge.challenge_detail.distance =', currentChallenge.challenge_detail.distance)
-    console.log('[challenge.start][checkComplete] CALLED')
+    //~console.log('[bar.team][checkComplete] currentLocation', currentLocation, ' | trackLoc.distanceTravelled =', trackLoc.distanceTravelled, ' | currentChallenge.challenge_detail.distance =', currentChallenge.challenge_detail.distance)
+    // console.log('[bar.team][checkComplete] CALLED')
 
     if (currentChallenge.challenge_detail.type === 'walk') {
       /*
        * For walk challenge, in team mode, complete is when total distance that members walked reached required distance.
        */
       const totDist = Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0)
-      if (totDist >= currentChallenge.challenge_detail.distance) { //? identify as completed
+      if (totDist >= currentChallenge.challenge_detail.distance - 0.1) { //? identify as completed
         // if (totDist > 0.01) { //? identify as completed
-        //console.log('[checkComplete] completed !')
+        //console.log('[bar.team][checkComplete] completed !')
         // setCompleted(1)
         onSetDispatch('setCompleted', 'completed', 1)
       }
@@ -144,7 +144,7 @@ function ChallengeBarTeam(props) {
   return (<>
     {started ? (<>
 
-      {currentChallenge.challenge_detail.type === 'walk' && <View style={{ marginTop: 3, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+      {currentChallenge.challenge_detail.type === 'walk' && <View style={{ marginTop: 10, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
         <TextBold style={{ fontSize: 30, lineHeight: 30 }}>
           {time != null ? secToTime(time) : '--:--:--'}
         </TextBold>
@@ -152,12 +152,12 @@ function ChallengeBarTeam(props) {
       </View>}
 
 
-      <View style={{ marginTop: currentChallenge.challenge_detail.type === 'walk' ? 5 : -5, flexDirection: 'row' }}>
+      <View style={{ marginTop: currentChallenge.challenge_detail.type === 'walk' ? 10 : -5, flexDirection: 'row' }}>
 
         {currentChallenge.challenge_detail.type === 'walk' && (<View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
           <View style={{ backgroundColor: 'transparent', alignItems: 'center' }}>
             <PercentageCircle radius={30} percent={Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0) / currentChallenge.challenge_detail.distance} color={MD3Colors.primary10}>
-              <TextBold style={{ fontSize: 26, lineHeight: 50 }}>
+              <TextBold style={{ fontSize: 24, lineHeight: 50 }}>
                 {Object.values(trackMemberDistStates).length === 0 ? 0
                   : Math.round(Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0) * 10) / 10}
               </TextBold>
@@ -172,7 +172,7 @@ function ChallengeBarTeam(props) {
         {currentChallenge.challenge_detail.type === 'discover' && (<View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
           <View style={{ backgroundColor: 'transparent', alignItems: 'center' }}>
             <PercentageCircle radius={30} percent={distToTarget > -1 && distFromStartToTarget != null ? distToTarget / distFromStartToTarget : 0} color={MD3Colors.primary10}>
-              <TextBold style={{ fontSize: 26, lineHeight: 50 }}>
+              <TextBold style={{ fontSize: 24, lineHeight: 50 }}>
                 {distToTarget > -1 ? Math.round((distToTarget) * 10) / 10 : '--'}
               </TextBold>
             </PercentageCircle>
@@ -184,14 +184,16 @@ function ChallengeBarTeam(props) {
 
         {currentChallenge.challenge_detail.type === 'walk' && (<View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
           <View style={{ backgroundColor: 'transparent', alignItems: 'center' }}>
-            <PercentageCircle radius={30} percent={100} color={MD3Colors.primary20}>
-              <TextBold style={{ fontSize: 26, lineHeight: 50 }}>
+            {/* <PercentageCircle radius={30} percent={100} color={MD3Colors.primary20}> */}
+            <View>
+              <TextBold style={{ fontSize: 24, lineHeight: 50 }}>
                 {Object.values(trackMemberStepStates).length === 0 ? 0
                   : Object.values(trackMemberStepStates).reduce((a, b) => a + b, 0)}
 
                 {trackStep.currentStepCount}
               </TextBold>
-            </PercentageCircle>
+            </View>
+            {/* </PercentageCircle> */}
             <Badge style={{ position: 'absolute', zIndex: 1, top: 0 }}>
               {trackStep.currentStepCount}
             </Badge>
@@ -214,7 +216,10 @@ function ChallengeBarTeam(props) {
 }
 
 const styles = StyleSheet.create({
-  subtxt: { fontSize: 13, color: '#999' }
+  subtxt: {
+    fontSize: 13, color: '#999',
+    lineHeight: 19
+  }
 })
 
 export default ChallengeBarTeam

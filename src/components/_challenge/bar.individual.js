@@ -22,10 +22,10 @@ function ChallengeBarIndividual(props) {
    */
   const [distFromStartToTarget, setDistFromStartToTarget] = useState(null)
   useEffect(() => {
-    console.log('[bar.individual] got hereeee', ' | started =', started, ' | startTime =', startTime, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation))
+    // console.log('[bar.individual] got hereeee', ' | started =', started, ' | startTime =', startTime, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation), ' | trackLoc', trackLoc)
 
     if (started && startTime != null && completed === 0 && currentLocation != null) {
-      if (distFromStartToTarget === null) {
+      if (distFromStartToTarget == null) {
         if (currentChallenge.challenge_detail.type === 'discover') {
           const dist_from_start_to_target = haversine(currentLocation, currentChallenge.challenge_detail.place_detail.coordinates) || 0
           setDistFromStartToTarget(dist_from_start_to_target)
@@ -50,14 +50,14 @@ function ChallengeBarIndividual(props) {
    * **********************************************/
   const [distToTarget, setDistToTarget] = useState(-1)
   const checkComplete = () => {
-    //~console.log('[challenge.start][checkComplete] currentLocation', currentLocation, ' | trackLoc.distanceTravelled =', trackLoc.distanceTravelled, ' | currentChallenge.challenge_detail.distance =', currentChallenge.challenge_detail.distance)
+    // console.log('[bar.individual][checkComplete] currentLocation', currentLocation, ' | trackLoc.distanceTravelled =', trackLoc.distanceTravelled, ' | currentChallenge.challenge_detail.distance =', currentChallenge.challenge_detail.distance)
 
     if (currentChallenge.challenge_detail.type === 'walk') {
       /*
        * Walk challenge
        */
 
-      if (trackLoc.distanceTravelled >= currentChallenge.challenge_detail.distance) { //? identify as completed
+      if (trackLoc.distanceTravelled >= currentChallenge.challenge_detail.distance - 0.02) { //? identify as completed
         // if (trackLoc.distanceTravelled > 0.01) { //? identify as completed
         //console.log('[checkComplete] completed !')
         // setCompleted(1)
@@ -140,6 +140,10 @@ function ChallengeBarIndividual(props) {
 
   return (<>
 
+    {/* <View style={{ backgroundColor: '#0f0' }}>
+      <Text>{JSON.stringify(startTime)}</Text>
+    </View> */}
+
     {currentChallenge.challenge_detail.type === 'walk' && (<View style={{ marginTop: 5, marginBottom: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
       <TextBold style={{ fontSize: 30, lineHeight: 30 }}>
         {time != null ? secToTime(time) : '--:--:--'}
@@ -148,12 +152,12 @@ function ChallengeBarIndividual(props) {
     </View>)}
 
 
-    <View style={{ marginTop: currentChallenge.challenge_detail.type === 'walk' ? 5 : -5, flexDirection: 'row' }}>
+    <View style={{ marginTop: currentChallenge.challenge_detail.type === 'walk' ? 5 : 0, flexDirection: 'row' }}>
 
       {currentChallenge.challenge_detail.type === 'walk' && (<View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
         <View style={{ backgroundColor: 'transparent', alignItems: 'center' }}>
           <PercentageCircle radius={30} percent={Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0) / currentChallenge.challenge_detail.distance} color={MD3Colors.primary10}>
-            <TextBold style={{ fontSize: 26, lineHeight: 50 }}>
+            <TextBold style={{ fontSize: 24, lineHeight: 50 }}>
               {Math.round(trackLoc.distanceTravelled * 10) / 10}
             </TextBold>
           </PercentageCircle>
@@ -164,7 +168,7 @@ function ChallengeBarIndividual(props) {
       {currentChallenge.challenge_detail.type === 'discover' && (<View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
         <View style={{ backgroundColor: 'transparent', alignItems: 'center' }}>
           <PercentageCircle radius={30} percent={distToTarget > -1 && distFromStartToTarget != null ? distToTarget / distFromStartToTarget : 0} color={MD3Colors.primary10}>
-            <TextBold style={{ fontSize: 26, lineHeight: 50 }}>
+            <TextBold style={{ fontSize: 24, lineHeight: 50 }}>
               {distToTarget > -1 ? Math.round((distToTarget) * 10) / 10 : '--'}
             </TextBold>
           </PercentageCircle>
@@ -176,16 +180,18 @@ function ChallengeBarIndividual(props) {
 
       {currentChallenge.challenge_detail.type === 'walk' && (<View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
         <View style={{ backgroundColor: 'transparent', alignItems: 'center' }}>
-          <PercentageCircle radius={30} percent={100} color={MD3Colors.primary20}>
-            <TextBold style={{ fontSize: 26, lineHeight: 50 }}>
+          {/* <PercentageCircle radius={30} percent={100} color={MD3Colors.primary20}> */}
+          <View>
+            <TextBold style={{ fontSize: 24, lineHeight: 50 }}>
               {trackStep.currentStepCount}
             </TextBold>
-          </PercentageCircle>
+            {/* </PercentageCircle> */}
+          </View>
           <Text style={styles.subtxt}>steps</Text>
         </View>
       </View>)}
 
-      {currentChallenge.challenge_detail.type === 'discover' && (<View style={{ flexDirection: 'column', flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 4 }}>
+      {currentChallenge.challenge_detail.type === 'discover' && (<View style={{ flexDirection: 'column', flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: -5 }}>
         <TextBold style={{ fontSize: 30, lineHeight: 30 }}>
           {time != null ? secToTime(time) : '--:--:--'}
         </TextBold>
@@ -197,7 +203,10 @@ function ChallengeBarIndividual(props) {
 }
 
 const styles = StyleSheet.create({
-  subtxt: { fontSize: 13, color: '#999' }
+  subtxt: {
+    fontSize: 13, color: '#999',
+    lineHeight: 19
+  }
 })
 
 export default ChallengeBarIndividual
