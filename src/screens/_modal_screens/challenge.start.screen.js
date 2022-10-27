@@ -75,7 +75,7 @@ function ChallengeStartScreen({ route, navigation }) {
 
         <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
           <Paragraph style={{ alignItems: 'center', textAlign: 'center' }}>
-            {completed === 4 ? 'You\'ve completed the challenge' : 'No challenge selected'}
+            {(completed === 4 && currentChallenge == null) ? 'You\'ve completed the challenge' : 'No challenge selected'}
           </Paragraph>
 
           <View style={{ marginTop: 30, justifyContent: 'center', alignItems: 'center' }}>

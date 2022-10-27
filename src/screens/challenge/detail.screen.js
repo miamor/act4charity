@@ -119,6 +119,7 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
       // // onSetDispatch('setDonation', 'donation', [0, 0])
 
       // // onSetDispatch('setFinished', 'finished', false)
+      onSetDispatch('setTrackMemberStartStates', 'trackMemberStartStates', {})
       onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', {})
       onSetDispatch('setTrackMemberDistStates', 'trackMemberDistStates', {})
       onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {})

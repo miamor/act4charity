@@ -1,13 +1,13 @@
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
-import { StyleSheet, ToastAndroid, PermissionsAndroid, View, Animated, TouchableOpacity, ScrollView, Dimensions, Image } from 'react-native'
+import { StyleSheet, ToastAndroid, PermissionsAndroid, View, Animated, TouchableOpacity, ScrollView, Dimensions, Image, TouchableHighlight } from 'react-native'
 import { Button, useTheme, IconButton, MD3Colors, Avatar, Paragraph, Dialog, Portal, Modal } from 'react-native-paper'
 import { TextBold, Text, H2, H3 } from '../paper/typos'
 import { DefaultView } from '../containers'
 import { useGlobals } from '../../contexts/global'
 
 import * as Location from 'expo-location'
-import MapView, { Marker, Polyline, AnimatedRegion, enableLatestRenderer, PROVIDER_GOOGLE } from 'react-native-maps'
+import MapView, { Callout, Marker, Polyline, AnimatedRegion, enableLatestRenderer, PROVIDER_GOOGLE } from 'react-native-maps'
 import MapViewDirections from 'react-native-maps-directions'
 import { GOOGLE_API_KEY } from '../../constants/keys'
 // import MapViewNavigation, { NavigationModes, TravelModeBox, TravelIcons, Geocoder, TravelModes, DirectionsListView, ManeuverView, DurationDistanceView } from 'react-native-maps-navigation'
@@ -24,7 +24,8 @@ import { members_colors } from '../../utils/vars'
 
 
 function ChallengeStartMap(props) {
-  const [{ currentChallenge, loggedUser, currentLocation, trackLoc, currentRegion, trackStep, trackMemberStartStates, trackMemberLocationStates, trackMemberDistStates, trackMemberStepStates,
+  const [{ currentChallenge, loggedUser, currentLocation, trackLoc, currentRegion, trackStep,
+    trackMemberStartStates, trackMemberLocationStates, trackMemberDistStates, trackMemberStepStates, membersJoinStatus,
     completed, teamCompleted, started, startTime, finished, donation, joined
   }, dispatch] = useGlobals()
   const { colors } = useTheme()
@@ -43,7 +44,8 @@ function ChallengeStartMap(props) {
      * canceled
      */
     if (completed === -1) {
-      //~console.log('[mapview] completed = -1 !!!! Canceled !!!!')
+      // console.log('['('[' + loggedUser.username + '] [mapview] completed = -1 !!!! Canceled !!!!')
+
       cleanUp()
       // props.onCanceled(challengeDetail)
       navigation.navigate('DashboardStack')
@@ -66,22 +68,23 @@ function ChallengeStartMap(props) {
   // }, [])
 
   useEffect(() => {
+    // console.log('[' + loggedUser.username + '] [mapview] (start or update) started =', started, ' | startTime =', startTime)
+
     /*
      * For individual challenge, start now
      */
-    // console.log('[mapview] started =', started, ' | startTime =', startTime)
     if (currentChallenge != null && currentChallenge.mode === 'individual' && (!started || startTime == null)) {
       startNow()
     }
 
     /*
-     * only when not detected completed is the tracking enabled
+     * only when not detected completed should the tracking be enabled
      */
-      update()
+    update()
   }, [started, startTime, completed, currentLocation])
 
   const update = () => {
-    // console.log('[mapview] started', started, ' | startTime', startTime, ' | currentLocation', currentLocation, ' | completed =', completed)
+    // console.log('[' + loggedUser.username + '] [mapview][update] CALLED')
 
     if (currentLocation != null) {
       if (started && completed === 0) {
@@ -109,7 +112,7 @@ function ChallengeStartMap(props) {
    *
    * **********************************************/
   const startNow = async () => {
-    console.log('[mapview] startNow CALLED | currentChallenge.time_started =', currentChallenge.time_started)
+    // console.log('['('[' + loggedUser.username + '] [mapview] startNow CALLED | currentChallenge.time_started =', currentChallenge.time_started)
 
     Storer.set('started', true)
     onSetDispatch('setStarted', 'started', true)
@@ -118,9 +121,16 @@ function ChallengeStartMap(props) {
     onSetDispatch('setCompleted', 'completed', 0)
 
     const dt = (currentChallenge.time_started != null) ? new Date(currentChallenge.time_started) : new Date()
-    // console.log('[mapview] startTime == ', dt)
+    // console.log('['+loggedUser.username+'] [mapview] startTime == ', dt)
     Storer.set('startTime', dt)
     onSetDispatch('setStartTime', 'startTime', dt)
+
+    if (currentChallenge.time_started == null) {
+      onSetDispatch('setCurrentChallenge', 'currentChallenge', {
+        ...currentChallenge,
+        time_started: JSON.stringify(new Date())
+      })
+    }
   }
 
 
@@ -135,7 +145,7 @@ function ChallengeStartMap(props) {
     if (currentChallenge.mode === 'team') {
       const interval = setInterval(() => {
         doReload()
-      }, 60000) //? reload every 60 seconds
+      }, 120000) //? reload every 120 seconds
 
       /* cleanup the interval on complete */
       return () => clearInterval(interval)
@@ -143,19 +153,20 @@ function ChallengeStartMap(props) {
   }, [])
 
   const doReload = () => {
-    // console.log('[challenge.start][doReload] CALLED ~~')
+    // console.log('['+loggedUser.username+'] [challenge.start][doReload] CALLED ~~')
 
     if (currentChallenge != null) {
       userAPI.getChallengeAcceptedStatus({ challenge_accepted_id: currentChallenge._id }).then((res) => {
-        console.log('[challenge.start][doReload] res =', res)
+        // console.log('['('[' + loggedUser.username + '] [mapview][doReload] res =', res)
 
         if (res.data != null && res.data.active !== currentChallenge.active && currentChallenge._id === currentChallenge._id) {
           const currentChallenge_updated = {
             ...currentChallenge,
             active: res.data.active,
           }
-          Storer.set('currentChallenge', currentChallenge_updated)
-          onSetDispatch('setCurrentChallenge', 'currentChallenge', currentChallenge_updated)
+          // Storer.set('currentChallenge', currentChallenge_updated)
+          // onSetDispatch('setCurrentChallenge', 'currentChallenge', currentChallenge_updated)
+          onSetDispatch('setCompleted', 'completed', res.data.active)
         }
       }).catch(error => {
         console.error(error)
@@ -173,12 +184,19 @@ function ChallengeStartMap(props) {
    * **********************************************/
   const ref_mapview = useRef()
   const takeScreenshot = () => {
-    console.log('[mapview] takeScreenshot CALLED | donation =', donation)
+    // console.log('['('[' + loggedUser.username + '] [mapview] takeScreenshot CALLED | donation =', donation)
 
     /* so that won't capture again */
     setCaptured(true)
 
-    const participants_names = currentChallenge.participants_details.map(user => user.firstname)
+    const participants_names = currentChallenge.participants_details.map(user => {
+      if (membersJoinStatus.hasOwnProperty(user._id) && membersJoinStatus[user._id] > 0) {
+        return user.firstname
+      }
+      else {
+        return null
+      }
+    }).filter(v => v)
 
     const obj = {
       challengeDetail: currentChallenge.challenge_detail,
@@ -192,10 +210,10 @@ function ChallengeStartMap(props) {
       reward_amount: donation[1],
 
       participants_names: participants_names,
-  }
+    }
 
     ref_mapview.current.capture().then((uri) => {
-      //console.log('>>>> captured uri', uri)
+      //console.log('['+loggedUser.username+'] >>>> captured uri', uri)
       setLoading(false)
 
       /* clean up and call callback */
@@ -255,7 +273,7 @@ function ChallengeStartMap(props) {
    *
    * **********************************************/
   const cleanUp = async () => {
-    console.log('[mapview] cleanUp CALLED')
+    // console.log('['('[' + loggedUser.username + '] [mapview] cleanUp CALLED')
 
     await Storer.delete('currentChallenge')
     onSetDispatch('setCurrentChallenge', 'currentChallenge', null)
@@ -270,6 +288,7 @@ function ChallengeStartMap(props) {
     // onSetDispatch('setDonation', 'donation', [0, 0])
 
     // onSetDispatch('setFinished', 'finished', false)
+    onSetDispatch('setTrackMemberStartStates', 'trackMemberStartStates', {})
     onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', {})
     onSetDispatch('setTrackMemberDistStates', 'trackMemberDistStates', {})
     onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {})
@@ -323,14 +342,14 @@ function ChallengeStartMap(props) {
   const processPosition = async (position) => {
     setLoading(false)
 
-    //console.log('[mapview] processPosition CALLED ', position)
+    // console.log('[' + loggedUser.username + '] [mapview] processPosition CALLED ', position)
 
     onSetDispatch('setCurrentRegion', 'currentRegion', {
       ...currentRegion,
       latitude: position.latitude,
       longitude: position.longitude,
     })
-    
+
     updateTrackState(position)
 
     // props.onUpdateLocation(position)
@@ -355,7 +374,7 @@ function ChallengeStartMap(props) {
    * Update track state
    */
   const updateTrackState = (newCoordinate) => {
-    console.log('[mapview][updateTrackState] CALLED')
+    // console.log('[' + loggedUser.username + '] [mapview][updateTrackState] CALLED')
 
     //? update user's position and user's route
     const { coordinate, routeCoordinates, distanceTravelled } = trackLoc
@@ -368,8 +387,8 @@ function ChallengeStartMap(props) {
       prevLatLng: newCoordinate,
     }
 
-    // console.log('[mapview][updateTrackState] dispatch setTrackLoc ', JSON.stringify(track_loc_state))
-    //console.log('[mapview][updateTrackState] dispatch setTrackLoc ')
+    // console.log('['+loggedUser.username+'] [mapview][updateTrackState] dispatch setTrackLoc ', JSON.stringify(track_loc_state))
+    //console.log('['+loggedUser.username+'] [mapview][updateTrackState] dispatch setTrackLoc ')
     onSetDispatch('setTrackLoc', 'trackLoc', track_loc_state)
   }
 
@@ -382,8 +401,8 @@ function ChallengeStartMap(props) {
   // const markerRef = React.useRef()
 
   // useEffect(() => {
-  //   console.log('[mapview] trackLoc', JSON.stringify(trackLoc))
-  // }, [trackLoc])
+  //   // console.log('['('[' + loggedUser.username + '] [mapview] trackMemberLocationStates', JSON.stringify(trackMemberLocationStates))
+  // }, [trackMemberLocationStates])
 
 
   return (<>
@@ -416,14 +435,32 @@ function ChallengeStartMap(props) {
           rotateEnabled={true}
         >
 
-          {startCoord != null && <Marker coordinate={startCoord} />}
+          {startCoord != null && (<Marker coordinate={startCoord}>
+            <Callout tooltip>
+              <TouchableHighlight style={styles.customPopupView}>
+                <Text style={styles.calloutTxt}>You</Text>
+              </TouchableHighlight>
+            </Callout>
+          </Marker>)}
 
-          {joined === currentChallenge._id && trackMemberStartStates != null && Object.keys(trackMemberStartStates).length > 0 && Object.keys(trackMemberStartStates).map((user_id, i) => {
-            if (user_id === loggedUser._id) return null
-            return (<Marker key={`user-marker-`+i} coordinate={trackMemberStartStates[user_id]} />)
+          {joined === currentChallenge._id && trackMemberStartStates != null && Object.keys(trackMemberStartStates).length > 0 && Object.keys(trackMemberStartStates).map((username, i) => {
+            if (username === loggedUser.username) return null
+            return (<Marker key={`user-marker-` + i} coordinate={trackMemberStartStates[username]}>
+              <Callout tooltip>
+                <TouchableHighlight style={styles.customPopupView}>
+                  <Text style={styles.calloutTxt}>{username}</Text>
+                </TouchableHighlight>
+              </Callout>
+            </Marker>)
           })}
 
-          {currentChallenge.challenge_detail.place_detail != null && <Marker coordinate={currentChallenge.challenge_detail.place_detail.coordinates} />}
+          {currentChallenge.challenge_detail.place_detail != null && (<Marker coordinate={currentChallenge.challenge_detail.place_detail.coordinates}>
+            <Callout tooltip>
+              <TouchableHighlight style={styles.customPopupView}>
+                <Text style={styles.calloutTxt}>Destination</Text>
+              </TouchableHighlight>
+            </Callout>
+          </Marker>)}
 
           {currentChallenge.challenge_detail.place_detail != null && startCoord != null && <MapViewDirections
             origin={startCoord}
@@ -433,11 +470,11 @@ function ChallengeStartMap(props) {
             strokeColor="#111111"
           />}
 
-          <Polyline coordinates={trackLoc.routeCoordinates} strokeWidth={5} strokeColor="#f54245" />
+          <Polyline coordinates={trackLoc.routeCoordinates} strokeWidth={5} strokeColor={members_colors[currentChallenge.participants.indexOf(loggedUser._id)]} />
 
           {joined === currentChallenge._id && trackMemberLocationStates != null && Object.keys(trackMemberLocationStates).length > 0 && Object.keys(trackMemberLocationStates).map((user_id, i) => {
             if (user_id === loggedUser._id) return null
-            return (<Polyline key={`loc-state-` + i} coordinates={trackMemberLocationStates[user_id].routeCoordinates} strokeWidth={5} strokeColor={members_colors[i]} />)
+            return (<Polyline key={`loc-state-` + i} coordinates={trackMemberLocationStates[user_id].routeCoordinates} strokeWidth={5} strokeColor={members_colors[currentChallenge.participants.indexOf(user_id)]} />)
           })}
 
         </MapView>)}
@@ -452,6 +489,20 @@ const styles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFillObject,
   },
+  customPopupView: {
+    zIndex: 1000,
+    backgroundColor: '#fff',
+    borderColor: '#999',
+    shadowColor: '#777',
+    elevation: 4,
+    borderWidth: 1,
+    // paddingHorizontal: 10
+  },
+  calloutTxt: {
+    fontSize: 13,
+    lineHeight: 18,
+    // paddingHorizontal: 5,
+  }
 })
 
 export default ChallengeStartMap

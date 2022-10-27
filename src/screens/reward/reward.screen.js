@@ -37,8 +37,7 @@ function RewardScreen() {
   const [completedChallenges, setCompletedChallenges] = useState()
   const loadCompletedChallenge = () => {
     userAPI.getCompletedChallenge({ num_per_page: 100 }).then((res) => {
-      console.log('[reward][loadCompletedChallenge] res', res)
-
+      // console.log('[reward][loadCompletedChallenge] res', res)
       setCompletedChallenges(res.data)
       setLoading(false)
     }).catch(error => {

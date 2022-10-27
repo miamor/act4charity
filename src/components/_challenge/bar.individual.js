@@ -156,7 +156,7 @@ function ChallengeBarIndividual(props) {
 
       {currentChallenge.challenge_detail.type === 'walk' && (<View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
         <View style={{ backgroundColor: 'transparent', alignItems: 'center' }}>
-          <PercentageCircle radius={30} percent={Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0) / currentChallenge.challenge_detail.distance} color={MD3Colors.primary10}>
+          <PercentageCircle radius={30} percent={100 * Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0) / currentChallenge.challenge_detail.distance} color={MD3Colors.primary10}>
             <TextBold style={{ fontSize: 24, lineHeight: 50 }}>
               {Math.round(trackLoc.distanceTravelled * 10) / 10}
             </TextBold>
@@ -167,7 +167,7 @@ function ChallengeBarIndividual(props) {
 
       {currentChallenge.challenge_detail.type === 'discover' && (<View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
         <View style={{ backgroundColor: 'transparent', alignItems: 'center' }}>
-          <PercentageCircle radius={30} percent={distToTarget > -1 && distFromStartToTarget != null ? distToTarget / distFromStartToTarget : 0} color={MD3Colors.primary10}>
+          <PercentageCircle radius={30} percent={distToTarget > -1 && distFromStartToTarget != null ? 100 * distToTarget / distFromStartToTarget : 0} color={MD3Colors.primary10}>
             <TextBold style={{ fontSize: 24, lineHeight: 50 }}>
               {distToTarget > -1 ? Math.round((distToTarget) * 10) / 10 : '--'}
             </TextBold>

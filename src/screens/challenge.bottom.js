@@ -52,9 +52,9 @@ function ChallengeBottomSheet({ }) {
     setShowFull(false)
   }
 
-  useEffect(() => {
-    console.log('[challenge.bottom] ~~~~ currentLocation =', currentLocation)
-  }, [currentLocation])
+  // useEffect(() => {
+  //   console.log('[challenge.bottom] ~~~~ currentLocation =', currentLocation)
+  // }, [currentLocation])
 
 
   const { width } = Dimensions.get('window')

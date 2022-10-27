@@ -110,7 +110,7 @@ function ChallengeStartActionsIndividual(props) {
    * Confirm complete 
    */
   const onConfirmComplete = () => {
-    console.log('[actions.individual][onConfirmComplete] CALLED !!!!!!!!!!!!')
+    // console.log('['('[actions.individual][onConfirmComplete] CALLED !!!!!!!!!!!!')
 
     setLoading(true)
     // setCompleted(1.5)
@@ -128,10 +128,6 @@ function ChallengeStartActionsIndividual(props) {
     }).then(async (res) => {
       //~console.log('[actions.individual][onConfirmComplete] (completeChallenge) res', res)
 
-      /* dispatch global states */
-      /* set completed = 3 to take screenshot within `Map` view */
-      onSetDispatch('setCompleted', 'completed', 3)
-
       /* to display in the completed screen */
       onSetDispatch('setDonation', 'donation', [currentChallenge.challenge_detail.donation, currentChallenge.challenge_detail.reward])
 
@@ -143,6 +139,10 @@ function ChallengeStartActionsIndividual(props) {
       }
       await Storer.set('loggedUser', newUserData)
       onSetDispatch('setLoggedUser', 'loggedUser', newUserData)
+
+      /* dispatch global states */
+      /* set completed = 3 to take screenshot within `Map` view */
+      onSetDispatch('setCompleted', 'completed', 3)
 
       /* done loading */
       setLoading(false)
@@ -210,8 +210,8 @@ function ChallengeStartActionsIndividual(props) {
     if (token != null) {
       setLoading(true)
 
-      console.log('postData', JSON.stringify(postData))
-      console.log('token', token)
+      // console.log('['('postData', JSON.stringify(postData))
+      // console.log('['('token', token)
 
       postData.append('challenge_accepted_id', currentChallenge._id)
       postData.append('challenge_id', currentChallenge.challenge_detail._id)

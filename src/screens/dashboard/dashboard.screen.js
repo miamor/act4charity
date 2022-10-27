@@ -206,14 +206,15 @@ function DashboardHomeScreen({ navigation }) {
 
     // console.log('[dashboard][goToChallengeNow] challenge_accepted', challenge_accepted)
 
-
-    //! has to reset started to false. this will be set to true depends on join mode
-    onSetDispatch('setStarted', 'started', false)
     onSetDispatch('setCompleted', 'completed', 0)
-
 
     //! in case old challenge is not cancelled
     if (currentChallenge != null && challenge_accepted._id !== currentChallenge._id) {
+
+      //! has to reset started to false. this will be set to true depends on join mode
+      onSetDispatch('setStarted', 'started', false)
+
+
       console.log('[dashboard] cleanUp CALLED')
 
       // Storer.set('joined', null)
@@ -223,6 +224,7 @@ function DashboardHomeScreen({ navigation }) {
       // onSetDispatch('setDonation', 'donation', [0, 0])
 
       // onSetDispatch('setFinished', 'finished', false)
+      onSetDispatch('setTrackMemberStartStates', 'trackMemberStartStates', {})
       onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', {})
       onSetDispatch('setTrackMemberDistStates', 'trackMemberDistStates', {})
       onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {})

@@ -60,7 +60,7 @@ const _makeAuthRequest = createRequest => async (args) => {
 }
 
 export const REACT_APP_API_URL = 'https://act4charity.monster' //'http://149.28.157.194:5005'
-export const SOCKET_URL = 'http://149.28.157.194:5007' //'https://socking.act4charity.monster' //
+// export const SOCKET_URL = 'http://149.28.157.194:5007' //'https://socking.act4charity.monster' //
 
 
 export const APIServices = () => {

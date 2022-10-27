@@ -5,7 +5,6 @@ import { Appbar, Button, useTheme, IconButton, ProgressBar, MD3Colors, Avatar, P
 import { TextBold, Text, H2, H3 } from '../paper/typos'
 import { DefaultView } from '../containers'
 import { useGlobals } from '../../contexts/global'
-import { useInterval } from '../../hooks/use-interval'
 
 import Loading from '../animations/loading'
 import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet'
@@ -18,14 +17,13 @@ import ChallengeBarTeam from './bar.team'
 import axios from 'axios'
 import TakePicture from './take-picture'
 import { REACT_APP_API_URL } from '../../services/APIServices'
-import { members_colors } from '../../utils/vars'
 
 
 function ChallengeStartActionsTeam(props) {
   const [{ currentChallenge, loggedUser,
     currentLocation, currentRegion, trackLoc, trackStep,
     socket, privateSockMsg, privateSockMsgs, trackMemberStartStates, trackMemberLocationStates, trackMemberDistStates, trackMemberStepStates, membersJoinStatus, completedMembers, chatMessages, processedPrivateSockMsgs,
-    started, startTime, completed, joined
+    started, completed, joined
   }, dispatch] = useGlobals()
   const { colors } = useTheme()
   const navigation = useNavigation()
@@ -36,9 +34,11 @@ function ChallengeStartActionsTeam(props) {
   const [loading, setLoading] = useState(true)
 
 
-  /*
-   * Load token to use for uploadng pic
-   */
+  // useEffect(() => {
+  //   console.log('['+loggedUser.username+'] [actions.team] currentChallenge.participants >>>', currentChallenge.participants)
+  // }, [])
+
+
   const [token, setToken] = useState()
   useEffect(() => {
     (async () => {
@@ -50,9 +50,6 @@ function ChallengeStartActionsTeam(props) {
   }, [token])
 
 
-  /*
-   * Watch completed to callback
-   */
   useEffect(() => {
     //console.log('['+loggedUser.username+'] [actions.team.func] currentLocation', currentLocation, ' | completed =', completed)
 
@@ -62,6 +59,30 @@ function ChallengeStartActionsTeam(props) {
   }, [completed])
 
 
+  /*
+   * to display chat messages
+   */
+  const [messages, setMessages] = useState([])
+  useEffect(() => {
+    /*
+     * Host joined first so there will be no messages before.
+     * Load messages is only for members when they join.
+     */
+    if (joined === currentChallenge._id) {
+      listChat()
+    }
+  }, [joined])
+
+  const [sentFirstLoc, setSentFirstLoc] = useState(false)
+  useEffect(() => {
+    if (joined === currentChallenge._id) {
+      /* send position to socket channel */
+      if (currentLocation != null && sentFirstLoc === false) {
+        submitUserStartState(currentLocation)
+        setSentFirstLoc(true)
+      }
+    }
+  }, [joined, currentLocation])
 
 
   /* ************************
@@ -70,7 +91,31 @@ function ChallengeStartActionsTeam(props) {
    *
    * ************************/
   const [isHost, setIsHost] = useState(false)
+  const hostJoin = async () => {
+    console.log('[' + loggedUser.username + '] [actions.team] hostJoin CALLED')
+    // //console.log('['+loggedUser.username+'] [team.func] >>> membersJoinStatus', membersJoinStatus)
 
+    if (joined !== currentChallenge._id) {
+      /* dispatch and store so that not join again */
+      onSetDispatch('setJoined', 'joined', currentChallenge._id)
+      await Storer.set('joined', currentChallenge._id)
+
+      console.log('[' + loggedUser.username + '] [actions.team][hostJoin] >>> Im host. I joined')
+
+      // loadMembersStatus()
+
+      //? host joined for the first time
+      const msg = {
+        room_id: currentChallenge._id,
+        action: 'join',
+        user_id: loggedUser._id,
+        username: loggedUser.username,
+        data: loggedUser.username + ' joined'
+      }
+      socket.emit('cast_private', msg)
+      // _handleJoin(msg) //? no need
+    }
+  }
 
   /* ************************
    *
@@ -82,22 +127,24 @@ function ChallengeStartActionsTeam(props) {
       setIsHost(true)
     }
   }, [])
-
   const [loadedMembersStatus, setLoadedMembersStatus] = useState(false)
   useEffect(() => {
-    if (props.showFull) {
-      if (currentChallenge != null && loadedMembersStatus === false) {
-        loadMembersStatus()
-        setLoadedMembersStatus(true)
-      }
+    if (currentChallenge != null && loadedMembersStatus === false) {
+      loadMembersStatus()
+      setLoadedMembersStatus(true)
     }
   }, [currentChallenge, started, joined])
 
+  // useEffect(() => {
+  //   console.log('['+loggedUser.username+'] [actions.team] ~~~ membersJoinStatus', membersJoinStatus)
+  //   console.log('['+loggedUser.username+'] [actions.team] currentChallenge.participants_details', currentChallenge.participants_details)
+  // }, [membersJoinStatus])
+
   const loadMembersStatus = () => {
-    // console.log('[' + loggedUser.username + '] [actions.team][loadMembersStatus] CALLED ~~~')
+    console.log('[' + loggedUser.username + '] [actions.team][loadMembersStatus] CALLED ~~~')
 
     userAPI.getChallengeInvitations({ challenge_accepted_id: currentChallenge._id }).then((res) => {
-      // console.log('[' + loggedUser.username + '] [actions.team][loadMembersStatus] (getChallengeInvitations) >>> membersJoinStatus', membersJoinStatus)
+      console.log('[' + loggedUser.username + '] [actions.team][loadMembersStatus] (getChallengeInvitations) >>> membersJoinStatus', membersJoinStatus)
 
       let members_joins = { ...membersJoinStatus }
       res.data.forEach((invitation) => {
@@ -128,9 +175,6 @@ function ChallengeStartActionsTeam(props) {
   }
 
 
-
-
-
   /* **********************************************
    * 
    * Team communicate
@@ -145,57 +189,18 @@ function ChallengeStartActionsTeam(props) {
    *
    * **********************************************/
   const [chatMessage, setChatMessage] = useState('')
-  const [sentFirstLoc, setSentFirstLoc] = useState(false)
+  // const [trackMemberLocationStates, setTrackMemberLocationStates] = useState({})
+  // const [trackMemberStepStates, setTrackMemberStepStates] = useState({})
+  // const [trackMemberDistStates, setTrackMemberDistStates] = useState({})
+  // const [completedMembers, setCompletedMembers] = useState([])
+  // const [trackTeamTime, setTrackTeamTime] = useState(0)
 
-  /* ************************
-   * 
-   * Host joined
-   *
-   * ************************/
-  const hostJoin = async () => {
-    // console.log('[' + loggedUser.username + '] [actions.team] hostJoin CALLED')
-    // //console.log('['+loggedUser.username+'] [team.func] >>> membersJoinStatus', membersJoinStatus)
-
-    if (joined !== currentChallenge._id) {
-      /* dispatch and store so that not join again */
-      onSetDispatch('setJoined', 'joined', currentChallenge._id)
-      await Storer.set('joined', currentChallenge._id)
-
-      // console.log('[' + loggedUser.username + '] [actions.team][hostJoin] >>> Im host. I joined')
-
-      //? host joined for the first time
-      const msg = {
-        tbl: 'actions',
-        room_id: currentChallenge._id,
-        action: 'join',
-        username: loggedUser.username,
-        user_id: loggedUser._id,
-        data: loggedUser.username + ' joined'
-      }
-      // _handleJoin(msg) //? no need
-      sendSockMsg(msg)
-
-      /*
-       * On join, send first position
-       */
-      submitUserState(currentLocation, 'start')
-      setSentFirstLoc(true)
-    }
-  }
-
-
-  /* ************************
-   * 
-   * Check to start
-   * 
-   * ---
-   * 
-   * If record in db does not have `time_started` => challenge not started by host yet. Wait till the host clicks Start the challenge
-   * If record in db has `time_started` => challenge started. Start the challenge use the `time_started` field (so that the timer keeps counting instead of resetting)
-   *
-   * ************************/
+  /* 
+   * This function is triggered when the host started the challenge.
+   * This function starts on each member's screen
+   */
   const startNow = async () => {
-    // console.log('[' + loggedUser.username + '] [actions.team][startNow] CALLED')
+    console.log('[' + loggedUser.username + '] [actions.team][startNow] CALLED')
 
     await Storer.set('started', true)
     onSetDispatch('setStarted', 'started', true)
@@ -207,97 +212,20 @@ function ChallengeStartActionsTeam(props) {
     // console.log('['+loggedUser.username+'] [mapview] startTime == ', dt)
     Storer.set('startTime', dt)
     onSetDispatch('setStartTime', 'startTime', dt)
-
-    if (currentChallenge.time_started == null) {
-      onSetDispatch('setCurrentChallenge', 'currentChallenge', {
-        ...currentChallenge,
-        time_started: JSON.stringify(new Date())
-      })
-    }
   }
 
   useEffect(() => {
-    //? start by the `time_started` field
-    // console.log('[' + loggedUser.username + '] [actions.team] ************************* currentChallenge.time_started', currentChallenge.time_started)
-    if (currentChallenge.time_started != null && currentChallenge.time_started.length > 0 && (!started || startTime == null) && joined === currentChallenge._id) {
+    if (currentChallenge.time_started != null && currentChallenge.time_started.length > 0 && !started) {
       startNow()
     }
-    //? else, wait for the host to start
   }, [])
 
-
-
-
-
-
-  /* ************************
-   *
-   * Load, send (fake) sock msg
-   * 
-   * ---
-   * 
-   * If `lastChatMsgTime` is set, load from lastChatMsgTime only
-   * Else, load all
-   *
-   * ************************/
-  const [lastChatMsgTime, setLastChatMsgTime] = useState()
-  const [lastActionMsgTime, setLastActionMsgTime] = useState()
-  const [messages, setMessages] = useState([])
-  const [pauseInterval, setPauseInterval] = useState(false)
-
   /*
-   * Load first
+   * state to identify if everyone within the team completed the chalenge
    */
-  useEffect(() => {
-    if (joined === currentChallenge._id) {
-      /*
-       * for `actions`, load even in minimized mode
-       */
-      listSockActionsMsg()
+  const [teamCompleted, setTeamCompleted] = useState(0)
 
-      /*
-       * for chat & states, load in full mode only
-       */
-      if (props.showFull) {
-        listSockChatMsg()
-        listSockStatesMsg()
-      }
-    }
-  }, [joined, currentChallenge])
 
-  /*
-   * Update `chat` msg every X seconds
-   */
-  useInterval(() => {
-    // console.log('[' + loggedUser.username + '] [actions.team]  | completed', completed, '  |  completedMembers', completedMembers)
-    if (!pauseInterval && props.showFull && joined === currentChallenge._id) {
-      listSockChatMsg()
-    }
-  }, 6000)
-
-  /*
-   * Load from `actions` tbl every X seconds
-   */
-  useInterval(() => {
-    if (!pauseInterval && props.showFull) {
-      listSockActionsMsg()
-    }
-  }, 8000)
-
-  /*
-   * Load from `states` tbl every X seconds
-   */
-  //! load when update my track instead
-  // useInterval(() => {
-  //   if (!pauseInterval && props.showFull) {
-  //     listSockStatesMsg()
-  //   }
-  // }, 10000)
-  /* 
-   * Update my track data
-   * ----
-   * Only if I joined this challenge
-   */
   //! update by change send too much data. 
   // /*
   //  * On update of trackLoc, send new loc to socket channel
@@ -305,9 +233,10 @@ function ChallengeStartActionsTeam(props) {
   // useEffect(() => {
   //   if (started && joined) {
   //     //console.log('['+loggedUser.username+'] [team.func] *** trackLoc', trackLoc)
-  //     submitUserState(trackLoc, 'loc')
+  //     submitUserLocState(trackLoc)
   //   }
   // }, [trackLoc])
+
   // /*
   //  * On update of trackStep, send new step to socket channel
   //  */
@@ -316,253 +245,151 @@ function ChallengeStartActionsTeam(props) {
   //     submitUserStepState(trackStep)
   //   }
   // }, [trackStep])
-  //! send by interval (every X sec) instead
-  useInterval(() => {
-    if (!pauseInterval && props.showFull && started && startTime != null && joined === currentChallenge._id && completed === 0) {
-      // console.log('[' + loggedUser.username + '] [actions.team]  Should send `update_track_state` here')
-      submitUserState(trackLoc, 'loc')
-      submitUserState(trackStep, 'step')
-      listSockStatesMsg()
-    }
-  }, 10000)
+  //! send by interval (every 5 sec) instead
+  // const [isIntSet, setIsIntSet] = useState(false)
+  // useEffect(() => {
+  //   if (isIntSet === false) {
+  //     setIsIntSet(true)
+  //     const interval = setInterval(() => {
+  //       if (started && joined === currentChallenge._id) {
+  //         submitUserLocState(trackLoc)
+  //         submitUserStepState(trackStep)
+  //       }
+  //     }, 5000) //? update every 5 sec
+  //   }
 
-
-  /* 
-   * List socket msg of action `chat` only
-   */
-  const listSockChatMsg = () => {
-    // console.log('[' + loggedUser.username + '] [actions.team][listSockMsg] CALLED.   lastChatMsgTime =', lastChatMsgTime)
-
-    userAPI.listSockMsg({ tbl: 'chat', challenge_accepted_id: currentChallenge._id, time: lastChatMsgTime }).then((res) => {
-      // console.log('[' + loggedUser.username + '] [actions.team][listSockChatMsg]   lastChatMsgTime =', lastChatMsgTime, ' | res.data', res.data.length)
-
-      if (res.data.length > 0) {
-        if (lastChatMsgTime == null) {
-          /*
-           * if first time load, simply render everything
-           */
-          setMessages(res.data)
-        }
-        else if (lastMsgSentTime == null) {
-          /*
-           * if `lastMsgSentTime` is not set, meaning no message was sent between last load and this load,
-           * can safely append everything to the `messages` state
-           */
-          setMessages((currentMessages) => ([...res.data, ...currentMessages]))
-        }
-        else {
-          /*
-           * if `lastMsgSentTime` is set and > than the `time` of the ealiest msg in this batch, we need to loop over whole array and ignore the message sent by this user 
-           */
-          const earliestMsg = res.data[res.data.length - 1]
-          // console.log('[' + loggedUser.username + '] [actions.team][listSockMsg] lastMsgSentTime != null  |  lastMsgSentTime =', lastMsgSentTime, ' | earliestMsg.time =', earliestMsg.time, '  |  lastMsgSentTime.getTime() =', lastMsgSentTime.getTime(), ' | earliestMsg.time.getTime() =', new Date(earliestMsg.time).getTime())
-
-          if (lastMsgSentTime.getTime() >= new Date(earliestMsg.time).getTime()) {
-            res.data.reverse().forEach((item) => {
-              if (item.user_id !== loggedUser._id) {
-                _handleChat(item)
-              }
-            })
-          }
-          else {
-            setMessages((currentMessages) => ([...res.data, ...currentMessages]))
-          }
-        }
-        setLastChatMsgTime(res.data[0].time)
-      }
-
-      // setLoading(false)
-    }).catch(error => {
-      setLoading(false)
-      console.error(error)
-      ToastAndroid.show('Oops', ToastAndroid.SHORT)
-    })
-  }
-
-  /* 
-   * List socket msg of actions
-   */
-  const listSockActionsMsg = () => {
-    // console.log('[' + loggedUser.username + '] [actions.team][listSockMsg] CALLED.   lastChatMsgTime =', lastChatMsgTime)
-
-    userAPI.listSockMsg({ tbl: 'actions', challenge_accepted_id: currentChallenge._id, time: lastActionMsgTime }).then((res) => {
-      // console.log('[' + loggedUser.username + '] [actions.team][listSockActionsMsg]   lastActionMsgTime =', lastActionMsgTime, ' | res.data', res.data.length)
-
-      if (res.data.length > 0) {
-        res.data.forEach((item) => { //? backend returns in ascending order, no need to reverse like chat
-          /*
-           * When a user called an action,  the handler is triggered for him at the time sending action.
-           * No need to handle here anymore
-           */
-          if (item.user_id !== loggedUser._id) {
-            msgHandlers(item)
-          }
-        })
-        setLastActionMsgTime(res.data[res.data.length - 1].time) //? last time is time of last msg
-      }
-    }).catch(error => {
-      setLoading(false)
-      console.error(error)
-      ToastAndroid.show('Oops', ToastAndroid.SHORT)
-    })
-  }
-
-  /* 
-   * List socket msg of action `update_track_state`
-   */
-  const listSockStatesMsg = () => {
-    // console.log('[' + loggedUser.username + '] [actions.team][listSockMsg] CALLED.   lastChatMsgTime =', lastChatMsgTime)
-
-    userAPI.listSockMsg({ tbl: 'states', challenge_accepted_id: currentChallenge._id }).then((res) => {
-      // console.log('[' + loggedUser.username + '] [actions.team][listSockStatesMsg] CALLED  | res.data', res.data.length)
-
-      if (res.data.length > 0) {
-        res.data.forEach((item) => {
-          if (item.user_id !== loggedUser._id) {
-            msgHandlers(item)
-          }
-        })
-      }
-    }).catch(error => {
-      setLoading(false)
-      console.error(error)
-      ToastAndroid.show('Oops', ToastAndroid.SHORT)
-    })
-  }
-
-  /* 
-   * Send socket msg
-   */
-  const [lastMsgSentTime, setLastMsgSentTime] = useState()
-  const sendSockMsg = async (msg) => {
-    // setLoading(true)
-    msg.time = new Date(Date.now())
-    userAPI.sendSockMsg(msg)
-    // listSockChatMsg()
-
-    if (msg.action === 'chat') {
-      setLastMsgSentTime(msg.time)
-    }
-
-  }
+  //   /* cleanup the interval on complete */
+  //   return () => clearInterval(interval)
+  // }, [started, joined])
 
 
 
   /* ************************
    *
-   * Msg handlers
+   * Listen to new updates via socket channel (by checking dispatched variable privateSockMsgs)
+   * 
+   * -------
+   * 
+   * Update my screen when receiving new messages / states / ...
    *
    * ************************/
-  const msgHandlers = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team] >>>>>>>>>> res ', res)
+  useEffect(() => {
+    console.log('[' + loggedUser.username + '] [team.func] >>>>>>>>>> privateSockMsg ', privateSockMsg)
 
-    // /*
-    //  * //! for signals other than chat, add to messages just for debug
-    //  * for action `chat`, `_handleChat` already append data to messages so no need.
-    //  */
-    // if (res.action !== 'chat') {
-    //   _handleChat(res)
-    // }
+    // privateSockMsgs.forEach((res, i) => {
+    //   // //console.log('['+loggedUser.username+'] > res', res)
+    if (privateSockMsg != null && privateSockMsg.user_id !== loggedUser._id) {
+      const res = privateSockMsg
+      // onSetDispatch('setPrivateSockMsg', 'privateSockMsg', null)
+      // onSetDispatch('setProcessedPrivateSockMsgs', 'processedPrivateSockMsgs', processedPrivateSockMsgs + 1)
 
-
-    if (res.action === 'start') {
       /*
-       * host start 
-       * ---
-       * start tracking
+       * //! for signals other than chat, add to messages just for debug
+       * for action `chat`, `_handleChat` already append data to messages so no need.
        */
-      _handleStart(res)
-    }
+      if (res.action !== 'chat') {
+        _handleChat(res)
+      }
 
-    else if (res.action === 'join') {
-      /*
-       * someone accepted (joined)
-       * ---
-       * update membersJoinStatus
-       */
-      _handleJoin(res)
-    }
 
-    else if (res.action === 'decline') {
-      /*
-       * someone declined
-       * ---
-       * update membersJoinStatus
-       */
-      _handleDecline(res)
-    }
+      if (res.action === 'start') {
+        /*
+         * host start 
+         * ---
+         * start tracking
+         */
+        _handleStart(res)
+      }
 
-    else if (res.action === 'out') {
-      /*
-       * someone out
-       * ---
-       * update membersJoinStatus
-       */
-      _handleOut(res)
-    }
+      else if (res.action === 'join') {
+        /*
+         * someone accepted (joined)
+         * ---
+         * update membersJoinStatus
+         */
+        _handleJoin(res)
+      }
 
-    else if (res.action === 'complete') {
-      /*
-       * someone complete
-       * ---
-       * update completeMembers
-       */
-      _handleComplete(res)
-    }
+      else if (res.action === 'decline') {
+        /*
+         * someone declined
+         * ---
+         * update membersJoinStatus
+         */
+        _handleDecline(res)
+      }
 
-    else if (res.action === 'kill') {
-      /*
-       * host kill (cancel team challenge and discard all records)
-       * ---
-       * 
-       */
-      _handleKill(res)
-    }
+      else if (res.action === 'out') {
+        /*
+         * someone out
+         * ---
+         * update membersJoinStatus
+         */
+        _handleOut(res)
+      }
 
-    else if (res.action === 'end') {
-      /*
-       * host end the challenge (complete team challenge)
-       * ---
-       * end is equivalent to complete. 
-       * The host can only end the challenge when at least 1 team member completes the challenge.
-       * For challenges type `discover`:
-       *   donation of team challenge = (donation * number of members completed the challenge) + (donation / 4 * (number of members in the team but not completed the challenge))
-       * If all team members completed the challenge:
-       *   donation of team challenge = donation * number of members * 1.5
-       */
-      _handleEnd(res)
-    }
+      else if (res.action === 'complete') {
+        /*
+         * someone complete
+         * ---
+         * update completeMembers
+         */
+        _handleComplete(res)
+      }
 
-    // else if (res.action === 'chat') { //? chat is quite separate
-    //   /*
-    //    * someone send chat message
-    //    */
-    //   _handleChat(res)
-    // }
+      else if (res.action === 'kill') {
+        /*
+         * host kill (cancel team challenge and discard all records)
+         * ---
+         * 
+         */
+        _handleKill(res)
+      }
 
-    else if (res.action === 'update_track_state') {
-      if (res.state_type === 'start') {
+      else if (res.action === 'end') {
+        /*
+         * host end the challenge (complete team challenge)
+         * ---
+         * end is equivalent to complete. 
+         * The host can only end the challenge when at least 1 team member completes the challenge.
+         * For challenges type `discover`:
+         *   donation of team challenge = (donation * number of members completed the challenge) + (donation / 4 * (number of members in the team but not completed the challenge))
+         * If all team members completed the challenge:
+         *   donation of team challenge = donation * number of members * 1.5
+         */
+        _handleEnd(res)
+      }
+
+      else if (res.action === 'chat') {
+        /*
+         * someone send chat message
+         */
+        _handleChat(res)
+      }
+
+      else if (res.action === 'start_state') {
         /*
          * receive first position of a member
          */
         _handleStartState(res)
       }
-      else if (res.state_type === 'loc') {
+
+      else if (res.action === 'loc_state') {
         /*
          * receive location update
          */
         _handleLocState(res)
       }
 
-      else if (res.state_type === 'step') {
+      else if (res.action === 'step_state') {
         /*
          * receive step update
          */
         _handleStepState(res)
       }
     }
-
-  }
+    // })
+  }, [privateSockMsg])
 
   /* ************************
    *
@@ -570,122 +397,130 @@ function ChallengeStartActionsTeam(props) {
    *
    * ************************/
   const _handleStart = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleStart] CALLED')
-    if (!started || startTime == null) {
-      startNow()
-    }
+    console.log('[' + loggedUser.username + '] [actions.team][_handleStart] CALLED')
+    startNow()
   }//, [])
 
   const _handleChat = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleChat] CALLED  | messages =', messages.length)
     // setLoading(false)
-    // setMessages([...messages, res])
-    setMessages((currentMessages) => ([res, ...currentMessages]));
+    setMessages([...messages, res])
   }//, [messages])
 
   const _handleJoin = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleJoin] CALLED  | membersJoinStatus =', membersJoinStatus)
-    if (!membersJoinStatus.hasOwnProperty(res.user_id) || membersJoinStatus[res.user_id] !== 1) {
-      let members_joins = {
-        ...membersJoinStatus,
-        [res.user_id]: 1,
-      }
-      onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
-      //console.log('['+loggedUser.username+'] [someone joined] members_joins', members_joins)
+    console.log('[' + loggedUser.username + '] [actions.team][_handleJoin] CALLED')
+    let members_joins = {
+      ...membersJoinStatus,
+      [res.user_id]: 1,
     }
+    onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
+    //console.log('['+loggedUser.username+'] [someone joined] members_joins', members_joins)
   }//, [membersJoinStatus])
 
   const _handleDecline = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleDecline] CALLED')
-    if (!membersJoinStatus.hasOwnProperty(res.user_id) || membersJoinStatus[res.user_id] !== -1) {
-      let members_joins = {
-        ...membersJoinStatus,
-        [res.user_id]: -1,
-      }
-      onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
-      //console.log('['+loggedUser.username+'] [someone declined] members_joins', members_joins)
+    console.log('[' + loggedUser.username + '] [actions.team][_handleDecline] CALLED')
+    let members_joins = {
+      ...membersJoinStatus,
+      [res.user_id]: -1,
     }
+    onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
+    //console.log('['+loggedUser.username+'] [someone declined] members_joins', members_joins)
   }//, [membersJoinStatus])
 
   const _handleOut = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleOut] CALLED')
-    if (!membersJoinStatus.hasOwnProperty(res.user_id) || membersJoinStatus[res.user_id] !== -2) {
-      let members_joins = {
-        ...membersJoinStatus,
-        [res.user_id]: -2,
-      }
-      onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
-      //console.log('['+loggedUser.username+'] [someone out] members_joins', members_joins)
+    console.log('[' + loggedUser.username + '] [actions.team][_handleOut] CALLED')
+    let members_joins = {
+      ...membersJoinStatus,
+      [res.user_id]: -2,
     }
+    onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
+    //console.log('['+loggedUser.username+'] [someone out] members_joins', members_joins)
   }//, [membersJoinStatus])
 
   const _handleComplete = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleComplete] CALLED  | ******************** completedMembers =', completedMembers)
-    if (!completedMembers.includes(res.user_id)) {
-      onSetDispatch('setCompletedMembers', 'completedMembers', [...completedMembers, res.user_id])
-    }
+    console.log('[' + loggedUser.username + '] [actions.team][_handleComplete] CALLED')
+    onSetDispatch('setCompletedMembers', 'completedMembers', [...completedMembers, {
+      user_id: res.user_id,
+      username: res.username
+    }])
   }//, [completedMembers])
 
   const _handleKill = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleKill] CALLED')
-    if (completed !== -1) {
-      onSetDispatch('setCompleted', 'completed', -1)
-    }
+    console.log('[' + loggedUser.username + '] [actions.team][_handleKill] CALLED')
+    onSetDispatch('setCompleted', 'completed', -1)
   }//, [])
 
   const _handleEnd = async (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleEnd] CALLED')
+    console.log('[' + loggedUser.username + '] [actions.team][_handleEnd] CALLED')
     // onSetDispatch('setTeamCompleted', 'teamCompleted', 1)
 
-    if (completed < 3) {
-      /* to display in the completed screen */
-      onSetDispatch('setDonation', 'donation', [res.donation_amount, res.reward_amount])
+    /* to display in the completed screen */
+    onSetDispatch('setDonation', 'donation', [res.donation_amount, res.reward_amount])
 
-      /* update `current_donation` & `current_reward` */
-      const newUserData = {
-        ...loggedUser,
-        current_donation: loggedUser.current_donation + res.donation_amount,
-        current_reward: loggedUser.current_reward + res.reward_amount
-      }
-      await Storer.set('loggedUser', newUserData)
-      onSetDispatch('setLoggedUser', 'loggedUser', newUserData)
-
-      /* set completed = 3 to take screenshot within `Map` view */
-      onSetDispatch('setCompleted', 'completed', 3)
+    /* update `current_donation` & `current_reward` */
+    const newUserData = {
+      ...loggedUser,
+      current_donation: loggedUser.current_donation + res.donation_amount,
+      current_reward: loggedUser.current_reward + res.reward_amount
     }
+    await Storer.set('loggedUser', newUserData)
+    onSetDispatch('setLoggedUser', 'loggedUser', newUserData)
+
+    /* set completed = 3 to take screenshot within `Map` view */
+    onSetDispatch('setCompleted', 'completed', 3)
+
   }//, [completed])
 
   const _handleStartState = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleStartState] CALLED')
+    console.log('[' + loggedUser.username + '] [actions.team][_handleStartState] CALLED')
     onSetDispatch('setTrackMemberStartStates', 'trackMemberStartStates', {
       ...trackMemberStartStates,
-      [res.username]: res.data,
+      [res.user_id]: res.data,
     })
   }//, [trackMemberStartStates])
 
   const _handleLocState = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleLocState] CALLED')
+    console.log('[' + loggedUser.username + '] [actions.team][_handleLocState] CALLED')
     onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', {
       ...trackMemberLocationStates,
-      [res.user_id]: {
-        ...res.data,
-        username: res.username
-      },
+      [res.user_id]: res.data,
     })
 
     onSetDispatch('setTrackMemberDistStates', 'trackMemberDistStates', {
       ...trackMemberDistStates,
-      [res.username]: res.data.distanceTravelled,
+      [res.user_id]: res.data.distanceTravelled,
     })
   }//, [trackMemberLocationStates, trackMemberDistStates])
 
   const _handleStepState = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleStepState] CALLED')
+    console.log('[' + loggedUser.username + '] [actions.team][_handleStepState] CALLED')
     onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {
       ...trackMemberStepStates,
-      [res.username]: res.data.currentStepCount,
+      [res.user_id]: res.data.currentStepCount,
     })
   }//, [trackMemberStepStates])
+
+
+
+  /* ************************
+   *
+   * List chat messages
+   *
+   * ************************/
+  const listChat = () => {
+    console.log('[' + loggedUser.username + '] [actions.team][listChat] CALLED')
+    userAPI.listChat({ challenge_accepted_id: currentChallenge._id }).then((res) => {
+      // console.log('['+loggedUser.username+'] [actions.team][listChat] res', res)
+
+      setMessages(res.data)
+
+      /* done loading */
+      setLoading(false)
+    }).catch(error => {
+      setLoading(false)
+      console.error(error)
+      ToastAndroid.show('Oops', ToastAndroid.SHORT)
+    })
+  }
 
 
 
@@ -707,7 +542,7 @@ function ChallengeStartActionsTeam(props) {
       userAPI.acceptInvitation({ challenge_accepted_id: currentChallenge._id }).then((res) => {
         // console.log('['+loggedUser.username+'] [acceptInvitation] res', res)
 
-        // console.log('[' + loggedUser.username + '] [actions.team][onJoin] joined !!')
+        console.log('[' + loggedUser.username + '] [actions.team][onJoin] joined !!')
 
         if (res) {
           /* dispatch and store so that not join again */
@@ -718,24 +553,18 @@ function ChallengeStartActionsTeam(props) {
            * join the room 
            */
           const msg = {
-            tbl: 'actions',
             room_id: currentChallenge._id,
             action: 'join',
-            username: loggedUser.username,
             user_id: loggedUser._id,
+            username: loggedUser.username,
             data: loggedUser.username + ' joined'
           }
+          socket.emit('cast_private', msg)
           _handleJoin(msg)
-          sendSockMsg(msg)
+
+          listChat()
 
           // loadMembersStatus() //! use socket to update
-
-          /*
-           * On join, send first position
-           */
-          submitUserState(currentLocation, 'start')
-          setSentFirstLoc(true)
-
 
           /* done loading */
           setLoading(false)
@@ -749,6 +578,8 @@ function ChallengeStartActionsTeam(props) {
       })
 
     } else { //? or else, just join the chat ? well, no need to rejoin
+      // socket.emit('join', { room_id: currentChallenge._id, user_id: loggedUser._id, username: loggedUser.username, data: loggedUser.username + ' joined' })
+
       onSetDispatch('setJoined', 'joined', currentChallenge._id)
       setLoading(false)
     }
@@ -776,18 +607,17 @@ function ChallengeStartActionsTeam(props) {
       userAPI.declineInvitation({ challenge_accepted_id: currentChallenge._id }).then((res) => {
         // console.log('['+loggedUser.username+'] [declineInvitation] res', res)
 
-        // console.log('[' + loggedUser.username + '] [actions.team][onDecline] declined')
+        console.log('[' + loggedUser.username + '] [actions.team][onDecline] declined')
 
         const msg = {
-          tbl: 'actions',
           room_id: currentChallenge._id,
           action: 'decline',
-          username: loggedUser.username,
           user_id: loggedUser._id,
+          username: loggedUser.username,
           data: loggedUser.username + ' declined'
         }
+        socket.emit('cast_private', msg)
         // _handleDecline(res) //? no need
-        sendSockMsg(msg)
 
         onSetDispatch('setCompleted', 'completed', -1)
 
@@ -805,27 +635,17 @@ function ChallengeStartActionsTeam(props) {
   }
 
 
-
   /* ************************
    *
-   * Host click Start the challenge
-   * 
-   * ---
-   * 
+   * The host click Start the challenge. 
    * Start for the whole team.
    * Team challenge can only be started once at least one person (other than host) accepted the invitation and joined the challenge
    *
    * ************************/
   const [showWarningCantStart, setShowWarningCantStart] = useState(false)
-  const hideWarningCantStart = () => {
-    setShowWarningCantStart(false)
-    setPauseInterval(false)
-  }
+  const hideWarningCantStart = () => setShowWarningCantStart(false)
   const [showHostConfirmStartTeam, setShowHostConfirmStartTeam] = useState(false)
-  const hideConfirmStartTeam = () => {
-    setShowHostConfirmStartTeam(false)
-    setPauseInterval(false)
-  }
+  const hideConfirmStartTeam = () => setShowHostConfirmStartTeam(false)
   const onPressStartTeam = () => {
     //? if totStt > 0 => at least one member accepted.
     // console.log('['+loggedUser.username+'] [actions.team][onPressStartTeam] membersJoinStatus', membersJoinStatus)
@@ -833,10 +653,8 @@ function ChallengeStartActionsTeam(props) {
     const totStt = Object.values(membersJoinStatus).reduce((a, b) => a + b, 0)
     if (totStt <= 1) { //! change to 1
       setShowWarningCantStart(true)
-      setPauseInterval(true)
     } else {
       setShowHostConfirmStartTeam(true)
-      setPauseInterval(true)
     }
   }
   const onConfirmStartTeam = () => {
@@ -847,15 +665,14 @@ function ChallengeStartActionsTeam(props) {
       //console.log('['+loggedUser.username+'] [startTeamChallenge] res', res)
 
       const msg = {
-        tbl: 'actions',
         room_id: currentChallenge._id,
         action: 'start',
-        username: loggedUser.username,
         user_id: loggedUser._id,
+        username: loggedUser.username,
         data: 'Host started the challenge'
       }
+      socket.emit('cast_private', msg)
       _handleStart(msg)
-      sendSockMsg(msg)
 
       /* done loading */
       setLoading(false)
@@ -878,16 +695,15 @@ function ChallengeStartActionsTeam(props) {
       //console.log('['+loggedUser.username+'] [submitChatMessage] CALLED', chatMessage)
 
       const msg = {
-        // tbl: 'chat', //? by default is `chat`, no need to declare
         room_id: currentChallenge._id,
         action: 'chat',
-        username: loggedUser.username,
         user_id: loggedUser._id,
+        username: loggedUser.username,
         data: chatMessage
       }
       setChatMessage('')
+      socket.emit('cast_private', msg)
       _handleChat(msg)
-      sendSockMsg(msg)
 
       /* add to db */
       userAPI.sendChat({
@@ -903,130 +719,45 @@ function ChallengeStartActionsTeam(props) {
     }
   }
 
-
   /* ************************
    *
-   * Take picture and send via socket channel
+   * Send user stats (loc states and steps state etc.)
    *
    * ************************/
-  const [showAskImgSource, setShowAskImgSource] = useState(true)
-  const hideAskImgSource = useCallback(() => {
-    setShowAskImgSource(false)
-    setPauseInterval(false)
-  })
-
-  const [showShareStoryModal, setShowShareStoryModal] = useState(false)
-  const callbackSubmitShareStory = (postData) => {
-    // setLoading(true)
-    // const accessToken = await Storer.get('token')
-    // console.log('['+loggedUser.username+'] postData', JSON.stringify(postData))
-    // console.log('['+loggedUser.username+'] accessToken', accessToken)
-
-    if (token != null) {
-      setLoading(true)
-
-      postData.append('challenge_accepted_id', currentChallenge._id)
-      postData.append('challenge_id', currentChallenge.challenge_detail._id)
-      postData.append('public', false)
-      postData.append('sock', true)
-
-      axios({
-        method: 'POST',
-        url: REACT_APP_API_URL + '/user/challenges/share_story',
-        data: postData,
-        headers: {
-          'Authorization': token,
-          'Accept': 'application/json',
-          'Content-Type': 'multipart/form-data'
-        }
-      }).then((response) => {
-        const res = response.data
-        // console.log('['+loggedUser.username+'] [actions.team][shareStory] res =', res)
-
-        setShowShareStoryModal(false)
-        setPauseInterval(false)
-
-        /* cast to other members via socket channel */
-        const msg = {
-          // tbl: 'chat', //? by default is `chat`, no need to declare
-          room_id: currentChallenge._id,
-          action: 'chat',
-          username: loggedUser.username,
-          user_id: loggedUser._id,
-          data: res.data.content,
-          picture: res.data.picture,
-        }
-        _handleChat(msg)
-        sendSockMsg(msg)
-
-        setLoading(false)
-      }).catch(error => {
-        setLoading(false)
-        console.error(error)
-        ToastAndroid.show('Oops!', ToastAndroid.SHORT)
-      })
-    }
-  }
-
-  const onOpenShareStory = useCallback((postData) => {
-    setShowAskImgSource(true)
-    setShowShareStoryModal(true)
-    setPauseInterval(true)
-  }, [])
-
-  const onCloseShareStory = useCallback((postData) => {
-    setShowShareStoryModal(false)
-    setPauseInterval(false)
-  }, [])
-
-
-
-  /* ************************
-   *
-   * Send user states (loc states and steps state etc.)
-   *
-   * ************************/
-  const submitUserState = (myTrackState, state_type) => {
+  const submitUserStartState = (myTrackState) => {
     const msg = {
-      tbl: 'states',
       room_id: currentChallenge._id,
-      action: 'update_track_state',
-      state_type: state_type,
-      username: loggedUser.username,
+      action: 'start_state',
       user_id: loggedUser._id,
-      data: myTrackState,
+      username: loggedUser.username,
+      data: myTrackState
     }
-
-    //! actually no need to handle oneself track states, as mapview use trackLoc and trackState to visualize the user's state
-    // if (msg.state_type === 'start') {
-    //   _handleStartState(msg)
-    // }
-    // else if (msg.state_type === 'loc') {
-    //   _handleLocState(msg)
-    // }
-    // else if (msg.state_type === 'step') {
-    //   _handleStepState(msg)
-    // }
-
-    sendSockMsg(msg)
+    socket.emit('cast_private', msg)
+    _handleStartState(msg)
+  }
+  const submitUserLocState = (myTrackState) => {
+    const msg = {
+      room_id: currentChallenge._id,
+      action: 'loc_state',
+      user_id: loggedUser._id,
+      username: loggedUser.username,
+      data: myTrackState
+    }
+    socket.emit('cast_private', msg)
+    _handleLocState(msg)
+  }
+  const submitUserStepState = (myTrackState) => {
+    const msg = {
+      room_id: currentChallenge._id,
+      action: 'step_state',
+      user_id: loggedUser._id,
+      username: loggedUser.username,
+      data: myTrackState
+    }
+    socket.emit('cast_private', msg)
+    _handleStepState(msg)
   }
 
-
-
-
-
-
-
-
-  /* **********************************************
-   * 
-   * Checking things for team challenge
-   *
-   * ----------------------
-   * 
-   * All check stuff here
-   *
-   * **********************************************/
 
   /* ****************
    * 
@@ -1034,16 +765,12 @@ function ChallengeStartActionsTeam(props) {
    * 
    * ****************/
   const [showAnnounceTeamCompleted, setShowAnnounceTeamCompleted] = useState(false)
-  const hideAnnounceTeamCompleted = () => {
-    setShowAnnounceTeamCompleted(false)
-    setPauseInterval(false)
-  }
+  const hideAnnounceTeamCompleted = () => setShowAnnounceTeamCompleted(false)
   useEffect(() => {
     if (membersJoinStatus != null) {
       const totMembers = Object.values(membersJoinStatus).reduce((a, b) => a + b, 0) + 1
       if (totMembers > 0 && completedMembers.length === totMembers) {
         setShowAnnounceTeamCompleted(true)
-        setPauseInterval(true)
       }
     }
   }, [membersJoinStatus, completedMembers])
@@ -1052,10 +779,9 @@ function ChallengeStartActionsTeam(props) {
 
   /* **********************************************
    *
-   * Individual completion
-   * 
+   * Complete ?!
    * ---
-   * 
+   * Individual completion !
    * When the system detects that the user completed the challenge,
    * show a button for the user to announce
    * ---
@@ -1067,29 +793,12 @@ function ChallengeStartActionsTeam(props) {
   const hideConfirmComplete = () => {
     setShowConfirmComplete(false)
     onSetDispatch('setCompleted', 'completed', 1.5)
-    setPauseInterval(false)
   }
   const onComplete = () => {
     // setLoading(true)
     // setCompleted(1)
     onSetDispatch('setCompleted', 'completed', 1)
     setShowConfirmComplete(true)
-    setPauseInterval(true)
-
-    /*
-     * cast to other members via socket channel
-     * only needed for discover challenge
-     */
-    const msg = {
-      tbl: 'actions',
-      room_id: currentChallenge._id,
-      action: 'complete',
-      username: loggedUser.username,
-      user_id: loggedUser._id,
-      data: loggedUser.username + ' completed this challenge',
-    }
-    _handleComplete(msg)
-    sendSockMsg(msg)
   }
   const onConfirmComplete = () => {
     hideConfirmComplete()
@@ -1119,15 +828,11 @@ function ChallengeStartActionsTeam(props) {
    *
    * **********************************************/
   const [showHostConfirmEnd, setHostShowConfirmEnd] = useState(false)
-  const hideHostConfirmEnd = () => {
-    setHostShowConfirmEnd(false)
-    setPauseInterval(false)
-  }
+  const hideHostConfirmEnd = () => setHostShowConfirmEnd(false)
   const [donationAmount, setDonationAmount] = useState(0)
   const [rewardAmount, setRewardAmount] = useState(0)
   const onPressHostEndChallenge = () => {
     setHostShowConfirmEnd(true)
-    setPauseInterval(true)
 
     /*
      * How many members completed ?
@@ -1180,11 +885,10 @@ function ChallengeStartActionsTeam(props) {
         //console.log('['+loggedUser.username+'] [confirmCompleteCallback] res', res)
 
         const msg = {
-          tbl: 'actions',
           room_id: currentChallenge._id,
           action: 'end',
-          username: loggedUser.username,
           user_id: loggedUser._id,
+          username: loggedUser.username,
           data: loggedUser.username + ' ended this challenge',
 
           trackMemberStartStates: trackMemberStartStates,
@@ -1195,8 +899,8 @@ function ChallengeStartActionsTeam(props) {
           donation_amount: donationAmount,
           reward_amount: rewardAmount,
         }
+        socket.emit('cast_private', msg)
         _handleEnd(msg)
-        sendSockMsg(msg)
       }).catch(error => {
         setLoading(false)
         console.error(error)
@@ -1219,10 +923,7 @@ function ChallengeStartActionsTeam(props) {
   const onPressCancelChallenge = () => {
     setShowConfirmCancel(true)
   }
-  const hideConfirmCancel = () => {
-    setShowConfirmCancel(false)
-    setPauseInterval(false)
-  }
+  const hideConfirmCancel = () => setShowConfirmCancel(false)
   const onConfirmCancel = () => {
     setLoading(true)
     hideConfirmCancel()
@@ -1240,15 +941,14 @@ function ChallengeStartActionsTeam(props) {
 
         /* cast to other members via socket channel */
         const msg = {
-          tbl: 'actions',
           room_id: currentChallenge._id,
           action: 'out',
-          username: loggedUser.username,
           user_id: loggedUser._id,
+          username: loggedUser.username,
           data: loggedUser.username + ' withdrawn from this challenge',
         }
+        socket.emit('cast_private', msg)
         // _handleOut(msg) //? no need
-        sendSockMsg(msg)
 
         // /* out this screen */
         // navigation.navigate('ChallengeStack', { screen: 'ChallengeListMapDiscover' })
@@ -1277,12 +977,8 @@ function ChallengeStartActionsTeam(props) {
   const [showHostConfirmCancel, setHostShowConfirmCancel] = useState(false)
   const onPressHostCancelChallenge = () => {
     setHostShowConfirmCancel(true)
-    setPauseInterval(true)
   }
-  const hideHostConfirmCancel = () => {
-    setHostShowConfirmCancel(false)
-    setPauseInterval(false)
-  }
+  const hideHostConfirmCancel = () => setHostShowConfirmCancel(false)
   const onHostConfirmCancel = () => {
     setLoading(true)
     hideHostConfirmCancel()
@@ -1298,15 +994,14 @@ function ChallengeStartActionsTeam(props) {
 
         /* cast to other members via socket channel */
         const msg = {
-          tbl: 'actions',
           room_id: currentChallenge._id,
           action: 'kill',
-          username: loggedUser.username,
           user_id: loggedUser._id,
+          username: loggedUser.username,
           data: 'Host canceled this challenge',
         }
+        socket.emit('cast_private', msg)
         _handleKill(msg)
-        sendSockMsg(msg)
 
         /* done loading */
         setLoading(false)
@@ -1319,6 +1014,78 @@ function ChallengeStartActionsTeam(props) {
   }
 
 
+
+
+  /* **********************************************
+   *
+   * Take picture and send via socket channel
+   *
+   * **********************************************/
+  const [showAskImgSource, setShowAskImgSource] = useState(true)
+  const hideAskImgSource = useCallback(() => setShowAskImgSource(false))
+
+  const [showShareStoryModal, setShowShareStoryModal] = useState(false)
+  const callbackSubmitShareStory = (postData) => {
+    // setLoading(true)
+    // const accessToken = await Storer.get('token')
+    // console.log('['+loggedUser.username+'] postData', JSON.stringify(postData))
+    // console.log('['+loggedUser.username+'] accessToken', accessToken)
+
+    if (token != null) {
+      setLoading(true)
+
+      postData.append('challenge_accepted_id', currentChallenge._id)
+      postData.append('challenge_id', currentChallenge.challenge_detail._id)
+      postData.append('public', false)
+
+      // //console.log('['+loggedUser.username+'] >>> accessToken =', accessToken)
+      // //console.log('['+loggedUser.username+'] >>> ', REACT_APP_API_URL + '/user/challenges/share_story')
+      // //console.log('['+loggedUser.username+'] >>> postData =', JSON.stringify(postData))
+
+      axios({
+        method: 'POST',
+        url: REACT_APP_API_URL + '/user/challenges/share_story',
+        data: postData,
+        headers: {
+          'Authorization': token,
+          'Accept': 'application/json',
+          'Content-Type': 'multipart/form-data'
+        }
+      }).then((response) => {
+        const res = response.data
+        // console.log('['+loggedUser.username+'] [actions.team][shareStory] res =', res)
+
+        setShowShareStoryModal(false)
+
+        /* cast to other members via socket channel */
+        const msg = {
+          room_id: currentChallenge._id,
+          action: 'chat',
+          user_id: loggedUser._id,
+          username: loggedUser.username,
+          data: res.data.content,
+          picture: res.data.picture
+        }
+        socket.emit('cast_private', msg)
+        _handleChat(msg)
+
+        setLoading(false)
+      }).catch(error => {
+        setLoading(false)
+        console.error(error)
+        ToastAndroid.show('Oops!', ToastAndroid.SHORT)
+      })
+    }
+  }
+
+  const onOpenShareStory = useCallback((postData) => {
+    setShowAskImgSource(true)
+    setShowShareStoryModal(true)
+  }, [])
+
+  const onCloseShareStory = useCallback((postData) => {
+    setShowShareStoryModal(false)
+  }, [])
 
 
 
@@ -1361,19 +1128,18 @@ function ChallengeStartActionsTeam(props) {
   ), [])
 
 
+  const dimensions = Dimensions.get('window')
+  const imageHeight = Math.round(dimensions.width * 9 / 16)
+  const imageWidth = dimensions.width - 180
+
 
   /* **********************************************
    *
-   * Simple Tab view
+   * Tab view
    *
    * **********************************************/
   const [tabIndex, setTabIndex] = useState(0)
   const [onFocus, setOnFocus] = useState(false)
-
-
-  const dimensions = Dimensions.get('window')
-  const imageHeight = Math.round(dimensions.width * 9 / 16)
-  const imageWidth = dimensions.width - 180
 
 
 
@@ -1394,10 +1160,6 @@ function ChallengeStartActionsTeam(props) {
         // backgroundColor: '#00f',
         justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10, flexDirection: 'column', marginBottom: 10
       }}>
-        {/* {started && startTime != null && joined === currentChallenge._id ? (
-          <ChallengeBarTeam />
-        )
-          : (<Text style={{ textAlign: 'center', lineHeight: 23, marginVertical: 6, marginHorizontal: 20 }}>Recorder will start counting once the host starts the challenge</Text>)} */}
         <ChallengeBarTeam />
       </View>
 
@@ -1427,17 +1189,6 @@ function ChallengeStartActionsTeam(props) {
             Members
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setTabIndex(2)}
-          style={{
-            paddingHorizontal: 10,
-            paddingVertical: 5,
-            borderBottomWidth: 2,
-            borderBottomColor: tabIndex === 2 ? colors.primary : 'transparent',
-          }}>
-          <Text style={[tabIndex === 2 && { color: colors.primary, fontWeight: 'bold' }]}>
-            Logs
-          </Text>
-        </TouchableOpacity>
       </View>
 
 
@@ -1447,17 +1198,14 @@ function ChallengeStartActionsTeam(props) {
             <View style={{ flex: 1 }}>
               <BottomSheetScrollView contentContainerStyle={{ paddingHorizontal: 20, }}>
                 {messages.map((res, i) => {
-                  if ((res.data != null && res.data.length > 0) || (res.picture != null && res.picture.length > 0)) {
+                  if ((res.data != null && res.data.length > 0) || (res.picture != null && res.picture.length > 0) || (res.content != null && res.content.length > 0)) {
                     return (<View key={`res-` + i} style={{ flexDirection: 'row', marginVertical: 6 }}>
-                      <Text style={{
-                        marginRight: 6, lineHeight: 24,
-                        color: members_colors[currentChallenge.participants.indexOf(res.user_id)]
-                      }}>
-                        {res.username}
-                      </Text>
+                      <TextBold style={{ marginRight: 10, lineHeight: 24 }}>
+                        {res.data != null ? res.username : res.user_detail.username}
+                      </TextBold>
                       <View style={{ flex: 1, flexDirection: 'column' }}>
                         <Text style={{ lineHeight: 24 }}>
-                          {res.data}
+                          {res.data != null ? res.data : res.content}
                         </Text>
                         {res.picture != null && <Image source={{ uri: res.picture }} style={{ marginTop: 5, height: imageHeight, width: imageWidth }} />}
                       </View>
@@ -1492,48 +1240,20 @@ function ChallengeStartActionsTeam(props) {
           {membersJoinStatus != null && currentChallenge.participants_details != null && currentChallenge.participants_details.map((user, i) => {
             if (loggedUser._id !== user._id && !membersJoinStatus.hasOwnProperty(user._id)) return null
             return (<View key={`us-` + i} style={{ flexDirection: 'row' }}>
-              <Text style={{ color: members_colors[currentChallenge.participants.indexOf(user._id)] }}>{user.username}</Text>
+              <Text>{user.username}</Text>
               <Text style={{ marginLeft: 10, color: '#999', fontSize: 13, marginTop: 3 }}>
                 {/* {loggedUser._id === user._id ? 1 : membersJoinStatus[user._id]} */}
                 {user._id === currentChallenge.user ? 'Host'
                   : membersJoinStatus.hasOwnProperty(user._id) && membersJoinStatus[user._id] === 1 ? 'Joined'
                     : membersJoinStatus.hasOwnProperty(user._id) && membersJoinStatus[user._id] === -1 ? 'Declined'
-                      : membersJoinStatus.hasOwnProperty(user._id) && membersJoinStatus[user._id] === -2 ? 'Withdrawn'
-                        : membersJoinStatus.hasOwnProperty(user._id) && membersJoinStatus[user._id] === 0 ? 'Pending'
-                          : ''}
-              </Text>
-              <Text style={{ marginLeft: 10, color: '#999', fontSize: 13, marginTop: 3 }}>
-                {completedMembers.includes(user._id) && 'Completed'}
+                      : membersJoinStatus.hasOwnProperty(user._id) && membersJoinStatus[user._id] === 0 ? 'Pending'
+                        : ''}
               </Text>
             </View>)
           })}
         </View>)
           : (<></>)}
 
-
-        {tabIndex === 2 ? (<View style={{ paddingHorizontal: 30, paddingTop: 10 }}>
-
-          <View style={{ flexDirection: 'row' }}>
-            <Text style={{ color: members_colors[currentChallenge.participants.indexOf(loggedUser._id)] }}>
-              I ({loggedUser.username})
-            </Text>
-            <Text style={{ marginLeft: 10, color: '#999', fontSize: 13, marginTop: 3 }}>
-              travelled {Math.round(trackLoc.distanceTravelled * 10) / 10} km
-            </Text>
-          </View>
-
-          {joined === currentChallenge._id && trackMemberLocationStates != null && Object.keys(trackMemberLocationStates).length > 0 && Object.keys(trackMemberLocationStates).map((user_id, i) => (<View key={`us-` + i} style={{ flexDirection: 'row' }}>
-            <Text style={{ color: members_colors[currentChallenge.participants.indexOf(user_id)] }}>
-              {trackMemberLocationStates[user_id].username}
-            </Text>
-
-            <Text style={{ marginLeft: 10, color: '#999', fontSize: 13, marginTop: 3 }}>
-              travelled {Math.round(trackMemberLocationStates[user_id].distanceTravelled * 10) / 10} km
-            </Text>
-          </View>))}
-
-        </View>)
-          : (<></>)}
 
       </View>
 
@@ -1542,7 +1262,7 @@ function ChallengeStartActionsTeam(props) {
 
 
     {joined === currentChallenge._id && showShareStoryModal && (<View style={{ zIndex: 12, position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}>
-      <TakePicture showShareStoryModal={showShareStoryModal} showAskImgSource={showAskImgSource} hideAskImgSource={hideAskImgSource} onCloseShareStory={onCloseShareStory} callbackSubmitShareStory={callbackSubmitShareStory} />
+      <TakePicture showAskImgSource={showAskImgSource} hideAskImgSource={hideAskImgSource} onCloseShareStory={onCloseShareStory} callbackSubmitShareStory={callbackSubmitShareStory} />
     </View>)}
 
 
@@ -1764,13 +1484,7 @@ function ChallengeStartActionsTeam(props) {
       </Button>)}
 
 
-      {!isHost && joined !== currentChallenge._id && (<View style={{
-        backgroundColor: '#fff',
-        borderColor: '#a2a2a22f',
-        shadowColor: '#777',
-        elevation: 4,
-        borderWidth: 1, borderRadius: 10, paddingHorizontal: 15, paddingVertical: 10
-      }}>
+      {!isHost && joined !== currentChallenge._id && (<View style={{ backgroundColor: '#fff', borderColor: '#aaa', borderWidth: 1, borderRadius: 10, paddingHorizontal: 15, paddingVertical: 10 }}>
         <Paragraph>
           Accepting the invitation will share your location to your teammates.
         </Paragraph>

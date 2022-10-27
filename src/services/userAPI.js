@@ -221,3 +221,19 @@ export const listChat = (postData) => {
     data: postData,
   })
 }
+
+export const sendSockMsg = (postData) => {
+  return APIServices().makeAuthRequest({
+    url: '/user/challenges/send_sockmsg',
+    method: 'POST',
+    data: postData,
+  })
+}
+
+export const listSockMsg = (postData) => {
+  return APIServices().makeAuthRequest({
+    url: '/user/challenges/list_sockmsg',
+    method: 'POST',
+    data: postData,
+  })
+}

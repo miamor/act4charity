@@ -76,6 +76,24 @@ function ProfileScreen({ navigation }) {
       type: 'setCurrentChallenge',
       currentChallenge: null,
     })
+
+    Storer.delete('started')
+    dispatch({
+      type: 'setStarted',
+      started: null,
+    })
+
+    Storer.delete('startTime')
+    dispatch({
+      type: 'setStartTime',
+      startTime: null,
+    })
+
+    Storer.delete('joined')
+    dispatch({
+      type: 'setJoined',
+      joined: null,
+    })
   }
 
 
@@ -146,8 +164,7 @@ function ProfileScreen({ navigation }) {
    */
   useEffect(() => {
     if (pickerResponse != null && pickerResponse.assets != null) {
-      console.log('[profile] >> pickerResponse', pickerResponse)
-
+      // console.log('[profile] >> pickerResponse', pickerResponse)
       handleUploadPhoto(pickerResponse)
     }
   }, [pickerResponse])

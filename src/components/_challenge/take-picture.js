@@ -123,10 +123,10 @@ function TakePicture(props) {
 
       <View style={{ flex: 0.4, paddingHorizontal: 30, paddingVertical: 20, backgroundColor: '#fff', flexDirection: 'column' }}>
 
-        <View style={{ flex: 0.9 }}>
+        <View style={{ flex: 0.95 }}>
           <TextInput
-            style={{ flex: 1, }}
-            mode="outlined"
+            // style={{ flex: 1, }}
+            // mode="outlined"
             placeholder="Share something..."
             placeholderTextColor="#C9C5CA"
             multiline={true}

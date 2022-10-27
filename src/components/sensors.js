@@ -6,8 +6,8 @@ import { useIsDark } from '../hooks/use-theme'
 
 import * as Location from 'expo-location'
 import { Pedometer } from 'expo-sensors'
-import { SOCKET_URL } from '../services/APIServices'
-import io from 'socket.io-client'
+// import { SOCKET_URL } from '../services/APIServices'
+// import io from 'socket.io-client'
 import haversine from 'haversine'
 
 
@@ -19,24 +19,22 @@ function Sensors() {
 
   // useEffect(() => {
   //   const interval = setInterval(() => {
-  //     //console.log('[sensors] called')
+  //     //console.log('['+loggedUser.username+'] [sensors] called')
   //   }, 10000)
   //   return () => clearInterval(interval)
   // }, [])
 
 
-  const [initLoc, setInitLoc] = useState(false)
-  const [initStep, setInitStep] = useState(false)
+  // const [initLoc, setInitLoc] = useState(false)
+  // const [initStep, setInitStep] = useState(false)
   useEffect(() => {
     if (init === false) {
-      const socket_ = io.connect(SOCKET_URL, {
-        transports: ['websocket'],
-        autoConnect: true,
-        withCredentials: false,
-      })
-      onSetDispatch('setSocket', 'socket', socket_)
-
-
+      // const socket_ = io.connect(SOCKET_URL, {
+      //   transports: ['websocket'],
+      //   autoConnect: true,
+      //   withCredentials: false,
+      // })
+      // onSetDispatch('setSocket', 'socket', socket_)
       onSetDispatch('setInit', 'init', true)
 
       requestPermissions()
@@ -78,7 +76,7 @@ function Sensors() {
 
   // useEffect(() => {
   //   if (privateSockMsg != null) {
-  //     //console.log('[sensors] *************  privateSockMsg', privateSockMsg)
+  //     //console.log('['+loggedUser.username+'] [sensors] *************  privateSockMsg', privateSockMsg)
 
   //     dispatch({
   //       type: 'setPrivateSockMsgs',
@@ -103,7 +101,7 @@ function Sensors() {
    * Request user's permission to retrieve location
    */
   const requestPermissions = async () => {
-    //console.log('[sensors][requestLocationPermission] CALLED')
+    //console.log('['+loggedUser.username+'] [sensors][requestLocationPermission] CALLED')
     if (Platform.OS === 'ios') {
       // getOneTimeLocation()
       subscribeLocation()
@@ -147,7 +145,11 @@ function Sensors() {
    */
   let _subscriptionLocation = null
   const subscribeLocation = () => {
-    _subscriptionLocation = Location.watchPositionAsync({}, (position) => {
+    _subscriptionLocation = Location.watchPositionAsync({
+      // accuracy: Location.Accuracy.High,
+      distanceInterval: 30, //? update only when distance changes 30m
+      timeInterval: 10000, //? update every 10 seconds
+    }, (position) => {
       processPosition(position)
     })
   }
@@ -159,7 +161,7 @@ function Sensors() {
    * Process retrieved lng lat 
    */
   const processPosition = (position) => {
-    console.log('[sensors][detail processPosition] position', position)
+    console.log('['+loggedUser.username+'] [sensors][detail processPosition] position', position)
 
     setLocationStatus(1)
     // setLoading(false)
@@ -168,7 +170,7 @@ function Sensors() {
     const currentLongitude = parseFloat(JSON.stringify(position.coords.longitude))
     const currentLatitude = parseFloat(JSON.stringify(position.coords.latitude))
 
-    //console.log('[sensors] dispatch setCurrentLocation ', JSON.stringify({ latitude: currentLatitude, longitude: currentLongitude }))
+    //console.log('['+loggedUser.username+'] [sensors] dispatch setCurrentLocation ', JSON.stringify({ latitude: currentLatitude, longitude: currentLongitude }))
 
     onSetDispatch('setCurrentLocation', 'currentLocation', {
       latitude: currentLatitude,
@@ -191,17 +193,19 @@ function Sensors() {
    */
   let _subscriptionPedometer = null
   const subscribePedometer = () => {
-    //console.log('[sensors][subscribePedometer] >>> CALLED')
+    //console.log('['+loggedUser.username+'] [sensors][subscribePedometer] >>> CALLED')
 
     _subscriptionPedometer = Pedometer.watchStepCount(result => {
       setStepCounterStatus(1)
 
-      //console.log('[sensors] dispatch setTrackStep ', result)
+      //console.log('['+loggedUser.username+'] [sensors] dispatch setTrackStep ', result)
 
+      // if (result.steps - trackStep.currentStepCount > 3) {
       onSetDispatch('setTrackStep', 'trackStep', {
         ...trackStep,
         currentStepCount: result.steps
       })
+      // }
     })
   }
   const unsubscribePedometer = () => {

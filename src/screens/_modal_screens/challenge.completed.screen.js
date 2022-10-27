@@ -34,11 +34,11 @@ function ChallengeCompletedScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false)
 
 
-  useEffect(() => {
-    // //console.log('[challenge.completed] challengeDetail', challengeDetail)
-    // //console.log('[challenge.completed] route.params', route.params)
-    console.log('[challenge.completed] captured_image', captured_image)
-  }, [])
+  // useEffect(() => {
+  //   // //console.log('[challenge.completed] challengeDetail', challengeDetail)
+  //   // //console.log('[challenge.completed] route.params', route.params)
+  //   console.log('[challenge.completed] captured_image', captured_image)
+  // }, [])
 
 
   /*
