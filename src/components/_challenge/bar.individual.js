@@ -29,7 +29,7 @@ function ChallengeBarIndividual(props) {
 
     // let _newTime = new Date(Date.now())
 
-    if (started && startTime != null && currentChallenge != null && joined === currentChallenge._id && currentLocation != null) {
+    if (started && startTime != null && currentChallenge != null && currentLocation != null) {
 
       if (distFromStartToTarget == null) {
         if (currentChallenge.challenge_detail.type === 'discover') {
