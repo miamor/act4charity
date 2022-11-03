@@ -19,6 +19,7 @@ import ProfileStackNavigation from './profile-stack'
 import TargetScreenModal from '../screens/_modal_screens/target.screen'
 import ChallengeStartScreen from '../screens/_modal_screens/challenge.start.screen'
 import ChallengeCompletedScreen from '../screens/_modal_screens/challenge.completed.screen'
+import UserWallScreen from '../screens/user-wall.screen'
 
 // import * as Location from 'expo-location'
 // import { Pedometer } from 'expo-sensors'
@@ -186,6 +187,13 @@ function MainStackNavigation() {
         <Sta.Screen
           name="_ChallengeDetailStart"
           component={ChallengeStartScreen}
+          options={{
+          }}
+        />
+
+        <Sta.Screen
+          name="_UserWall"
+          component={UserWallScreen}
           options={{
           }}
         />

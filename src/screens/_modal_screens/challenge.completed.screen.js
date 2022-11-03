@@ -1,7 +1,7 @@
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, ToastAndroid, PermissionsAndroid, View, Animated, TouchableOpacity, ScrollView, Image, Dimensions } from 'react-native'
-import { Appbar, Button, useTheme, Paragraph, Dialog, Portal, TextInput } from 'react-native-paper'
+import { Appbar, Button, useTheme, Paragraph, Dialog, Portal, TextInput, Modal } from 'react-native-paper'
 import { TextBold, Text, H2, H3 } from '../../components/paper/typos'
 import { DefaultView } from '../../components/containers'
 import { useGlobals } from '../../contexts/global'
@@ -14,6 +14,9 @@ import MapView, { Marker, enableLatestRenderer, PROVIDER_GOOGLE } from 'react-na
 import * as userAPI from '../../services/userAPI'
 import Storer from '../../utils/storer'
 import Loading from '../../components/animations/loading'
+
+import axios from 'axios'
+import { REACT_APP_API_URL } from '../../services/APIServices'
 
 
 /**
@@ -37,8 +40,22 @@ function ChallengeCompletedScreen({ route, navigation }) {
   // useEffect(() => {
   //   // //console.log('[challenge.completed] challengeDetail', challengeDetail)
   //   // //console.log('[challenge.completed] route.params', route.params)
-  //   console.log('[challenge.completed] captured_image', captured_image)
+  //   // console.log('[challenge.completed] captured_image', captured_image)
+  //   navigation.addListener('beforeRemove', (e) => {
+  //     onSetDispatch('setCompleted', 'completed', 4)
+  //   })
   // }, [])
+
+
+  const [token, setToken] = useState()
+  useEffect(() => {
+    (async () => {
+      if (token == null) {
+        const _token = await Storer.get('token')
+        setToken(_token)
+      }
+    })()
+  }, [token])
 
 
   /*
@@ -54,30 +71,72 @@ function ChallengeCompletedScreen({ route, navigation }) {
     setShowForm(false)
     setLoading(true)
 
-    // let fileToUpload = {
-    //   uri: captured_image,
-    //   type: 'image/jpg',
-    //   name: pickerResponse.assets[0].fileName,
-    // }
+    let fileToUpload = {
+      uri: captured_image,
+      type: 'image/jpg',
+      name: 'completed_' + challenge_accepted_id,
+    }
 
-    // let data = new FormData()
-    // data.append('files', fileToUpload)
-    // data.append('content', statusText)
+    let postData = new FormData()
+    postData.append('files', fileToUpload)
+    postData.append('content', statusText)
 
     // userAPI.shareFeed({
     //   challenge_accepted_id: challenge_accepted_id,
     //   challenge_id: challengeDetail._id,
     //   content: statusText
     // })
+
+
+    console.log('postData', JSON.stringify(postData))
+    // console.log('('token', token)
+
+    postData.append('challenge_accepted_id', challenge_accepted_id)
+    postData.append('challenge_id', challengeDetail._id)
+    postData.append('public', true)
+
+    // //console.log('>>> accessToken =', accessToken)
+    // //console.log('>>> ', REACT_APP_API_URL + '/user/challenges/share_story')
+    // //console.log('>>> postData =', JSON.stringify(postData))
+
+    axios({
+      method: 'POST',
+      url: REACT_APP_API_URL + '/user/feeds/share',
+      data: postData,
+      headers: {
+        'Authorization': token,
+        'Accept': 'application/json',
+        'Content-Type': 'multipart/form-data'
+      }
+    }).then((response) => {
+      // console.log('[challenge.completed] response', response)
+
+      const res = response.data
+
+      setShowForm(false)
+
+      navigation.navigate('DashboardStack')
+
+      setLoading(false)
+    }).catch(error => {
+      setLoading(false)
+      console.error(error)
+      ToastAndroid.show('Oops', ToastAndroid.SHORT)
+      navigation.navigate('DashboardStack')
+    })
+
   }
 
 
   const onShareToFeed = () => {
-    setLoading(true)
-    ToastAndroid.show('Shared to your feed !', ToastAndroid.SHORT)
+    console.log('[onShareToFeed] CALLED')
+    // setLoading(true)
+    // ToastAndroid.show('Shared to your feed !', ToastAndroid.SHORT)
+
+    setShowForm(true)
 
     // navigation.goBack()
-    navigation.navigate('DashboardStack')
+    // navigation.navigate('DashboardStack')
   }
 
 
@@ -98,12 +157,12 @@ function ChallengeCompletedScreen({ route, navigation }) {
           <H3 style={{ marginBottom: 18, paddingBottom: 12, borderBottomColor: '#f0f0f0', borderBottomWidth: 1 }}>Are you sure to cancel?</H3>
 
           <TextInput
-            style={{ height: 120 }}
+            // style={{ height: 120 }}
             mode="outlined"
             placeholder="Say something..."
             placeholderTextColor="#C9C5CA"
             multiline={true}
-            value={statusText}
+            // value={statusText}
             onChangeText={value => setStatusText(value)}
           />
 
@@ -121,7 +180,9 @@ function ChallengeCompletedScreen({ route, navigation }) {
           <Image source={captured_image != null ? { uri: captured_image } : require('../../../assets/icons/logo.png')} style={{ flex: 1, width: dimensions.width - 20, height: 200 }} />
 
           <View style={{ flex: 0.2, marginTop: -25, justifyContent: 'center', alignItems: 'center', flexDirection: 'row' }}>
-            <Button mode="contained" labelStyle={{ paddingBottom: 1 }} onPress={onShareToFeed}>Share to my Feed</Button>
+            <Button mode="contained" style={{ zIndex: 100 }} labelStyle={{  }} onPress={onShareToFeed}>
+              Share to my Feed
+            </Button>
             <Button style={{ backgroundColor: '#fff', borderRadius: 30, marginTop: -5 }} labelStyle={{ width: 30, height: 40, justifyContent: 'center', alignItems: 'center', paddingTop: 8 }}>
               <MaterialCommunityIcons name="share" size={22} />
             </Button>
@@ -135,7 +196,7 @@ function ChallengeCompletedScreen({ route, navigation }) {
           <Paragraph>
             You've completed this challenge
           </Paragraph>
-          <Paragraph style={{textAlign: 'center', marginTop:6}}>
+          <Paragraph style={{ textAlign: 'center', marginTop: 6 }}>
             {/* An amount of <TextBold>${donation_amount}</TextBold> has been donated to <TextBold>{challengeDetail.charity_detail.name}</TextBold> under your name <TextBold>{loggedUser.firstname}</TextBold> */}
             An amount of <TextBold>${donation_amount}</TextBold> has been donated to <TextBold>{challengeDetail.charity_detail.name}</TextBold> under your name <TextBold>{participants_names.join(', ')}</TextBold>
           </Paragraph>

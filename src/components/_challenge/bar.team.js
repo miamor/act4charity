@@ -22,11 +22,17 @@ function ChallengeBarTeam(props) {
    * Only when the challenge is started and not completed.
    */
   const [distFromStartToTarget, setDistFromStartToTarget] = useState(null)
+  // let _timeLastCheck = new Date(Date.now())
+  // const [timeLastCheck, setTimeLastCheck] = useState(new Date(Date.now()))
+  // const [checked, setChecked] = useState(false)
   useEffect(() => {
     // console.log('['+loggedUser.username+'] [bar.team] got hereeee', ' | started =', started, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation))
 
-    if (started && startTime != null && joined === currentChallenge._id && currentLocation != null) {
-      // console.log('['+loggedUser.username+'] [bar.team] got hereeee', ' | started =', started, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation))
+    // let _newTime = new Date(Date.now())
+
+    // console.log('['+loggedUser.username+'] [bar.team] timeLastCheck =', timeLastCheck, ' | _newTime =', _newTime)
+
+    if (started && startTime != null && currentChallenge != null && joined === currentChallenge._id && currentLocation != null) {
 
       if (distFromStartToTarget == null) {
         if (currentChallenge.challenge_detail.type === 'discover') {
@@ -37,17 +43,34 @@ function ChallengeBarTeam(props) {
         }
       }
 
+      // if (checked === false || _newTime.getTime() - timeLastCheck.getTime() > 10000) { //! only recheck every X seconds
+      // _timeLastCheck = _newTime
+
+      console.log('[' + loggedUser.username + '] [bar.team] got hereeee', ' | started =', started, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation))
+
       if (completed === 0) {
+        // setTimeLastCheck(_newTime)
+        // if (checked === false) setChecked(true)
         checkComplete()
       } else if (completed > 0) {
         setDistToTarget(0)
       }
+      // }
     }
     // else if (completed === 5) {
     //   navigation.navigate('ChallengeStack', { screen: 'ChallengeListMap' })
     // }
-  }, [trackLoc, started, joined, startTime, completed])
+  }, [started, joined, startTime, completed, trackLoc, trackMemberDistStates])
 
+  // useInterval(() => {
+  //   if (started && startTime != null && completed === 0 && currentLocation != null) {
+  //     if (completed === 0) {
+  //       checkComplete()
+  //     } else if (completed > 0) {
+  //       setDistToTarget(0)
+  //     }
+  //   }
+  // }, 40000)
 
 
   /* **********************************************
@@ -58,7 +81,7 @@ function ChallengeBarTeam(props) {
    * **********************************************/
   const [distToTarget, setDistToTarget] = useState(-1)
   const checkComplete = () => {
-    //~console.log('['+loggedUser.username+'] [bar.team][checkComplete] currentLocation', currentLocation, ' | trackLoc.distanceTravelled =', trackLoc.distanceTravelled, ' | currentChallenge.challenge_detail.distance =', currentChallenge.challenge_detail.distance)
+    console.log('[' + loggedUser.username + '] [bar.team][checkComplete] currentLocation', currentLocation, ' | trackLoc.distanceTravelled =', trackLoc.distanceTravelled, ' | currentChallenge.challenge_detail.distance =', currentChallenge.challenge_detail.distance)
     // console.log('['+loggedUser.username+'] [bar.team][checkComplete] CALLED')
 
     if (currentChallenge.challenge_detail.type === 'walk') {
@@ -66,6 +89,8 @@ function ChallengeBarTeam(props) {
        * For walk challenge, in team mode, complete is when total distance that members walked reached required distance.
        */
       const totDist = Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0)
+      console.log('[' + loggedUser.username + '] [bar.team][checkComplete] totDist =', totDist, ' | currentChallenge.challenge_detail.distance =', currentChallenge.challenge_detail.distance)
+
       if (totDist >= currentChallenge.challenge_detail.distance - 0.01) { //? identify as completed
         // if (totDist > 0.01) { //? identify as completed
         //console.log('['+loggedUser.username+'] [bar.team][checkComplete] completed !')
@@ -89,7 +114,7 @@ function ChallengeBarTeam(props) {
 
         setDistToTarget(dist_to_target)
 
-        console.log('['+loggedUser.username+'] >>> dist_to_target', dist_to_target)
+        console.log('[' + loggedUser.username + '] >>> dist_to_target', dist_to_target)
 
         if (dist_to_target < 0.02) { //? identify as arrived
           // setCompleted(1)
@@ -108,7 +133,7 @@ function ChallengeBarTeam(props) {
    * **********************************************/
   const [time, setTime] = useState()
   // useEffect(() => {
-  //   //~console.log('['+loggedUser.username+'] [bar.team] startTime', startTime)
+  //   console.log('['+loggedUser.username+'] [bar.team] startTime', startTime)
   //   const interval = setInterval(() => {
   //     setTime(lastTimerCount => {
   //       if (lastTimerCount == null) {
@@ -146,6 +171,7 @@ function ChallengeBarTeam(props) {
   //   return () => clearInterval(interval)
   // }, [started, startTime])
   useInterval(() => {
+    // console.log('trackMemberStepStates', trackMemberStepStates)
     setTime(lastTimerCount => {
       if (lastTimerCount == null) {
         if (startTime != null) {
@@ -178,7 +204,7 @@ function ChallengeBarTeam(props) {
 
         {currentChallenge.challenge_detail.type === 'walk' && (<View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
           <View style={{ backgroundColor: 'transparent', alignItems: 'center' }}>
-            <PercentageCircle radius={30} percent={100 * Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0) / currentChallenge.challenge_detail.distance} color={MD3Colors.primary10}>
+            <PercentageCircle radius={30} percent={Math.min(100, 100 * Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0) / (currentChallenge.challenge_detail.distance - 0.01))} color={MD3Colors.primary10}>
               <TextBold style={{ fontSize: 24, lineHeight: 50 }}>
                 {Object.values(trackMemberDistStates).length === 0 ? 0
                   : Math.round(Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0) * 10) / 10}
@@ -193,7 +219,7 @@ function ChallengeBarTeam(props) {
 
         {currentChallenge.challenge_detail.type === 'discover' && (<View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
           <View style={{ backgroundColor: 'transparent', alignItems: 'center' }}>
-            <PercentageCircle radius={30} percent={distToTarget > -1 && distFromStartToTarget != null ? 100 * distToTarget / distFromStartToTarget : 0} color={MD3Colors.primary10}>
+            <PercentageCircle radius={30} percent={(distToTarget > -1 && distFromStartToTarget != null) ? 100 * distToTarget / distFromStartToTarget : 0} color={MD3Colors.primary10}>
               <TextBold style={{ fontSize: 24, lineHeight: 50 }}>
                 {distToTarget > -1 ? Math.round((distToTarget) * 10) / 10 : '--'}
               </TextBold>
@@ -211,8 +237,6 @@ function ChallengeBarTeam(props) {
               <TextBold style={{ fontSize: 24, lineHeight: 50 }}>
                 {Object.values(trackMemberStepStates).length === 0 ? 0
                   : Object.values(trackMemberStepStates).reduce((a, b) => a + b, 0)}
-
-                {trackStep.currentStepCount}
               </TextBold>
             </View>
             {/* </PercentageCircle> */}

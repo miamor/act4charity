@@ -67,7 +67,9 @@ function ChallengeStartScreen({ route, navigation }) {
             <ChallengeStartActionsTeam showFull={true} />
           )}
 
-      </>) : (<>
+      </>) 
+      : (completed > 3) ? (<Loading />)
+      : (<>
         <Appbar.Header statusBarHeight={0}>
           <Appbar.BackAction onPress={() => navigation.goBack()} />
           <Appbar.Content title="Challenge Map" color={colors.primary} />

@@ -132,6 +132,14 @@ export const findUsers = (postData) => {
   })
 }
 
+export const getUserInfo = (postData) => {
+  return APIServices().makeAuthRequest({
+    url: '/user/users/detail',
+    method: 'POST',
+    data: postData,
+  })
+}
+
 export const startTeamChallenge = (postData) => {
   return APIServices().makeAuthRequest({
     url: '/user/challenges/start_team',
@@ -193,6 +201,14 @@ export const getCompletedChallenge = (postData) => {
 export const getPendingInvitations = (postData) => {
   return APIServices().makeAuthRequest({
     url: '/user/me_challenges/invitations_to_me',
+    method: 'POST',
+    data: postData,
+  })
+}
+
+export const getTopMembers = (postData) => {
+  return APIServices().makeAuthRequest({
+    url: '/user/users/top',
     method: 'POST',
     data: postData,
   })

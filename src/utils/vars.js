@@ -1,10 +1,12 @@
 export const levels_ranges = [
   {
+    // 0 - 100 (reward / 100)
     start: 0,
     title: 'Bronze member',
     image: require('../../assets/icons/medal-bronze.png')
   },
   {
+    index: 1,
     start: 200,
     title: 'Silver member',
     image: require('../../assets/icons/medal-silver.png')

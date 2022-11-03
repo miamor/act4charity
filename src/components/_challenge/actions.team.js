@@ -54,7 +54,7 @@ function ChallengeStartActionsTeam(props) {
    * Watch completed to callback
    */
   useEffect(() => {
-    //console.log('['+loggedUser.username+'] [actions.team.func] currentLocation', currentLocation, ' | completed =', completed)
+    // console.log('[' + loggedUser.username + '] [actions.team] currentLocation', currentLocation, ' | completed =', completed)
 
     if (completed === 1) {
       onComplete()
@@ -77,21 +77,29 @@ function ChallengeStartActionsTeam(props) {
    * load all members and members status (accepted / declined / out)
    *
    * ************************/
+  const [loadedMembersStatus, setLoadedMembersStatus] = useState(false)
   useEffect(() => {
     if (loggedUser._id === currentChallenge.user) {
       setIsHost(true)
     }
-  }, [])
 
-  const [loadedMembersStatus, setLoadedMembersStatus] = useState(false)
-  useEffect(() => {
     if (props.showFull) {
       if (currentChallenge != null && loadedMembersStatus === false) {
         loadMembersStatus()
         setLoadedMembersStatus(true)
       }
     }
-  }, [currentChallenge, started, joined])
+
+  }, [])
+
+  // useEffect(() => {
+  //   if (props.showFull) {
+  //     if (currentChallenge != null && loadedMembersStatus === false) {
+  //       loadMembersStatus()
+  //       setLoadedMembersStatus(true)
+  //     }
+  //   }
+  // }, [currentChallenge, started, joined])
 
   const loadMembersStatus = () => {
     // console.log('[' + loggedUser.username + '] [actions.team][loadMembersStatus] CALLED ~~~')
@@ -304,7 +312,7 @@ function ChallengeStartActionsTeam(props) {
   //  */
   // useEffect(() => {
   //   if (started && joined) {
-  //     //console.log('['+loggedUser.username+'] [team.func] *** trackLoc', trackLoc)
+  //     console.log('['+loggedUser.username+'] [team.func] *** trackLoc', trackLoc)
   //     submitUserState(trackLoc, 'loc')
   //   }
   // }, [trackLoc])
@@ -320,11 +328,16 @@ function ChallengeStartActionsTeam(props) {
   useInterval(() => {
     if (!pauseInterval && props.showFull && started && startTime != null && joined === currentChallenge._id && completed === 0) {
       // console.log('[' + loggedUser.username + '] [actions.team]  Should send `update_track_state` here')
-      submitUserState(trackLoc, 'loc')
-      submitUserState(trackStep, 'step')
       listSockStatesMsg()
     }
   }, 10000)
+
+  useEffect(() => {
+    submitUserState(trackLoc, 'loc')
+  }, [trackLoc])
+  useEffect(() => {
+    submitUserState(trackStep, 'step')
+  }, [trackStep])
 
 
   /* 
@@ -354,21 +367,28 @@ function ChallengeStartActionsTeam(props) {
           /*
            * if `lastMsgSentTime` is set and > than the `time` of the ealiest msg in this batch, we need to loop over whole array and ignore the message sent by this user 
            */
-          const earliestMsg = res.data[res.data.length - 1]
-          // console.log('[' + loggedUser.username + '] [actions.team][listSockMsg] lastMsgSentTime != null  |  lastMsgSentTime =', lastMsgSentTime, ' | earliestMsg.time =', earliestMsg.time, '  |  lastMsgSentTime.getTime() =', lastMsgSentTime.getTime(), ' | earliestMsg.time.getTime() =', new Date(earliestMsg.time).getTime())
+          // const earliestMsg = res.data[res.data.length - 1]
+          // const latestMsg = res.data[0]
+          // console.log('[' + loggedUser.username + '] [actions.team][listSockMsg]  lastMsgSentTime =', lastMsgSentTime, ' | earliestMsg.time =', earliestMsg.time, ' | latestMsg.time =', latestMsg.time, '  |  lastMsgSentTime.getTime() =', lastMsgSentTime.getTime(), ' | earliestMsg.time.getTime() =', new Date(earliestMsg.time).getTime(), ' | latestMsg.time.getTime() =', new Date(latestMsg.time).getTime())
 
-          if (lastMsgSentTime.getTime() >= new Date(earliestMsg.time).getTime()) {
+          console.log('lastChatMsgTime', lastChatMsgTime.getTime())
+
+          // if (lastMsgSentTime.getTime() >= new Date(earliestMsg.time).getTime()) {
+          // if (lastMsgSentTime.getTime() >= lastChatMsgTime.getTime()) {
+            console.log('['+loggedUser.username+'] [actions.team] I sent something in between')
             res.data.reverse().forEach((item) => {
               if (item.user_id !== loggedUser._id) {
+                console.log('['+loggedUser.username+'] [actions.team] item.user_id =', item.user_id, ' | loggedUser._id =', loggedUser._id)
                 _handleChat(item)
               }
             })
-          }
-          else {
-            setMessages((currentMessages) => ([...res.data, ...currentMessages]))
-          }
+          // }
+          // else {
+          //   setMessages((currentMessages) => ([...res.data, ...currentMessages]))
+          // }
         }
-        setLastChatMsgTime(res.data[0].time)
+        setLastChatMsgTime(new Date(res.data[0].time))
+        setLastMsgSentTime(null)
       }
 
       // setLoading(false)
@@ -417,11 +437,13 @@ function ChallengeStartActionsTeam(props) {
       // console.log('[' + loggedUser.username + '] [actions.team][listSockStatesMsg] CALLED  | res.data', res.data.length)
 
       if (res.data.length > 0) {
-        res.data.forEach((item) => {
-          if (item.user_id !== loggedUser._id) {
-            msgHandlers(item)
-          }
-        })
+        // res.data.forEach((item) => {
+        //   // if (item.user_id !== loggedUser._id) { //! need to update even with me
+        //     // msgHandlers(item)
+        //     stateHandlers(item)
+        //   // }
+        // })
+        stateHandlers(res.data)
       }
     }).catch(error => {
       setLoading(false)
@@ -540,29 +562,30 @@ function ChallengeStartActionsTeam(props) {
     //   _handleChat(res)
     // }
 
-    else if (res.action === 'update_track_state') {
-      if (res.state_type === 'start') {
-        /*
-         * receive first position of a member
-         */
-        _handleStartState(res)
-      }
-      else if (res.state_type === 'loc') {
-        /*
-         * receive location update
-         */
-        _handleLocState(res)
-      }
+    //! don't handle by each item. too lag
+    // if (res.action === 'update_track_state') {
+    //   if (res.state_type === 'start') {
+    //     /*
+    //      * receive first position of a member
+    //      */
+    //     _handleStartState(res)
+    //   }
+    //   else if (res.state_type === 'loc') {
+    //     /*
+    //      * receive location update
+    //      */
+    //     _handleLocState(res)
+    //   }
 
-      else if (res.state_type === 'step') {
-        /*
-         * receive step update
-         */
-        _handleStepState(res)
-      }
-    }
-
+    //   else if (res.state_type === 'step') {
+    //     /*
+    //      * receive step update
+    //      */
+    //     _handleStepState(res)
+    //   }
+    // }
   }
+
 
   /* ************************
    *
@@ -591,7 +614,7 @@ function ChallengeStartActionsTeam(props) {
         [res.user_id]: 1,
       }
       onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
-      //console.log('['+loggedUser.username+'] [someone joined] members_joins', members_joins)
+      console.log('[' + loggedUser.username + '] [someone joined] members_joins', members_joins)
     }
   }//, [membersJoinStatus])
 
@@ -603,7 +626,7 @@ function ChallengeStartActionsTeam(props) {
         [res.user_id]: -1,
       }
       onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
-      //console.log('['+loggedUser.username+'] [someone declined] members_joins', members_joins)
+      console.log('[' + loggedUser.username + '] [someone declined] members_joins', members_joins)
     }
   }//, [membersJoinStatus])
 
@@ -615,7 +638,7 @@ function ChallengeStartActionsTeam(props) {
         [res.user_id]: -2,
       }
       onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', members_joins)
-      //console.log('['+loggedUser.username+'] [someone out] members_joins', members_joins)
+      console.log('[' + loggedUser.username + '] [someone out] members_joins', members_joins)
     }
   }//, [membersJoinStatus])
 
@@ -655,37 +678,100 @@ function ChallengeStartActionsTeam(props) {
     }
   }//, [completed])
 
-  const _handleStartState = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleStartState] CALLED')
-    onSetDispatch('setTrackMemberStartStates', 'trackMemberStartStates', {
-      ...trackMemberStartStates,
-      [res.username]: res.data,
-    })
-  }//, [trackMemberStartStates])
 
-  const _handleLocState = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleLocState] CALLED')
-    onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', {
-      ...trackMemberLocationStates,
-      [res.user_id]: {
-        ...res.data,
-        username: res.username
-      },
+
+  const stateHandlers = async (data) => {
+    let _trackMemberStartStates = { ...trackMemberStartStates }
+    let _trackMemberLocationStates = { ...trackMemberLocationStates }
+    let _trackMemberStepStates = { ...trackMemberStepStates }
+    let _trackMemberDistStates = { ...trackMemberDistStates }
+
+    let _distStates_changed = false
+    let _stepStates_changed = false
+
+    console.log('[stateHandlers] CALLED')
+
+    await data.forEach(res => {
+      if (res.state_type === 'start') {
+        _trackMemberStartStates = {
+          ..._trackMemberStartStates,
+          [res.username]: res.data,
+        }
+      }
+
+      else if (res.state_type === 'loc') {
+        if (!_trackMemberDistStates.hasOwnProperty(res.username) || _trackMemberDistStates[res.username] !== res.data.distanceTravelled) {
+          _distStates_changed = true
+
+          _trackMemberLocationStates = {
+            ..._trackMemberLocationStates,
+            [res.user_id]: {
+              ...res.data,
+              username: res.username
+            },
+          }
+          _trackMemberDistStates = {
+            ..._trackMemberDistStates,
+            [res.username]: res.data.distanceTravelled,
+          }
+        }
+      }
+
+      else if (res.state_type === 'step') {
+        if (!_trackMemberStepStates.hasOwnProperty(res.username) || _trackMemberStepStates[res.username] !== res.data.currentStepCount) {
+          _stepStates_changed = true
+
+          _trackMemberStepStates = {
+            ..._trackMemberStepStates,
+            [res.username]: res.data.currentStepCount,
+          }
+        }
+      }
     })
 
-    onSetDispatch('setTrackMemberDistStates', 'trackMemberDistStates', {
-      ...trackMemberDistStates,
-      [res.username]: res.data.distanceTravelled,
-    })
-  }//, [trackMemberLocationStates, trackMemberDistStates])
+    if (Object.keys(_trackMemberStartStates).length !== Object.keys(trackMemberStartStates).length) {
+      onSetDispatch('setTrackMemberStartStates', 'trackMemberStartStates', _trackMemberStartStates)
+    }
+    if (_distStates_changed === true) {
+      onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', _trackMemberLocationStates)
+      onSetDispatch('setTrackMemberDistStates', 'trackMemberDistStates', _trackMemberDistStates)
+    }
+    if (_stepStates_changed === true) {
+      onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', _trackMemberStepStates)
+    }
+  }
 
-  const _handleStepState = (res) => {
-    // console.log('[' + loggedUser.username + '] [actions.team][_handleStepState] CALLED')
-    onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {
-      ...trackMemberStepStates,
-      [res.username]: res.data.currentStepCount,
-    })
-  }//, [trackMemberStepStates])
+  // const _handleStartState = (res) => {
+  //   // console.log('[' + loggedUser.username + '] [actions.team][_handleStartState] CALLED')
+  //   onSetDispatch('setTrackMemberStartStates', 'trackMemberStartStates', {
+  //     ...trackMemberStartStates,
+  //     [res.username]: res.data,
+  //   })
+  // }//, [trackMemberStartStates])
+
+  // const _handleLocState = (res) => {
+  //   // console.log('[' + loggedUser.username + '] [actions.team][_handleLocState] CALLED')
+  //   onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', {
+  //     ...trackMemberLocationStates,
+  //     [res.user_id]: {
+  //       ...res.data,
+  //       username: res.username
+  //     },
+  //   })
+
+  //   onSetDispatch('setTrackMemberDistStates', 'trackMemberDistStates', {
+  //     ...trackMemberDistStates,
+  //     [res.user_id]: res.data.distanceTravelled,
+  //   })
+  // }//, [trackMemberLocationStates, trackMemberDistStates])
+
+  // const _handleStepState = (res) => {
+  //   // console.log('[' + loggedUser.username + '] [actions.team][_handleStepState] CALLED')
+  //   onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {
+  //     ...trackMemberStepStates,
+  //     [res.user_id]: res.data.currentStepCount,
+  //   })
+  // }//, [trackMemberStepStates])
 
 
 
@@ -844,7 +930,7 @@ function ChallengeStartActionsTeam(props) {
     hideConfirmStartTeam()
 
     userAPI.startTeamChallenge({ challenge_accepted_id: currentChallenge._id }).then((res) => {
-      //console.log('['+loggedUser.username+'] [startTeamChallenge] res', res)
+      console.log('[' + loggedUser.username + '] [startTeamChallenge] res', res)
 
       const msg = {
         tbl: 'actions',
@@ -873,9 +959,12 @@ function ChallengeStartActionsTeam(props) {
    *
    * ************************/
   const submitChatMessage = () => {
+    setChatMessage('')
+
     if (chatMessage && chatMessage.length > 0) {
       // setLoading(true)
-      //console.log('['+loggedUser.username+'] [submitChatMessage] CALLED', chatMessage)
+
+      console.log('[' + loggedUser.username + '] [submitChatMessage] CALLED', chatMessage)
 
       const msg = {
         // tbl: 'chat', //? by default is `chat`, no need to declare
@@ -885,8 +974,10 @@ function ChallengeStartActionsTeam(props) {
         user_id: loggedUser._id,
         data: chatMessage
       }
-      setChatMessage('')
       _handleChat(msg)
+
+      setLoading(false)
+
       sendSockMsg(msg)
 
       /* add to db */
@@ -1046,7 +1137,7 @@ function ChallengeStartActionsTeam(props) {
         setPauseInterval(true)
       }
     }
-  }, [membersJoinStatus, completedMembers])
+  }, [completedMembers])
 
 
 
@@ -1072,7 +1163,7 @@ function ChallengeStartActionsTeam(props) {
   const onComplete = () => {
     // setLoading(true)
     // setCompleted(1)
-    onSetDispatch('setCompleted', 'completed', 1)
+    // onSetDispatch('setCompleted', 'completed', 1)
     setShowConfirmComplete(true)
     setPauseInterval(true)
 
@@ -1177,7 +1268,7 @@ function ChallengeStartActionsTeam(props) {
         challenge_reward: rewardAmount,
         participants: currentChallenge.participants,
       }).then((res) => {
-        //console.log('['+loggedUser.username+'] [confirmCompleteCallback] res', res)
+        console.log('[' + loggedUser.username + '] [confirmCompleteCallback] res', res)
 
         const msg = {
           tbl: 'actions',
@@ -1233,7 +1324,7 @@ function ChallengeStartActionsTeam(props) {
        * Simply out the challenge
        */
       userAPI.cancelInvitation({ challenge_accepted_id: currentChallenge._id }).then((res) => {
-        //console.log('['+loggedUser.username+'] >> res', res)
+        console.log('[' + loggedUser.username + '] >> res', res)
 
         /* dispatch global states */
         onSetDispatch('setCompleted', 'completed', -1)
@@ -1368,7 +1459,11 @@ function ChallengeStartActionsTeam(props) {
    *
    * **********************************************/
   const [tabIndex, setTabIndex] = useState(0)
-  const [onFocus, setOnFocus] = useState(false)
+
+  // const [onFocus, setOnFocus] = useState(false)
+  const onFocusChat = () => {
+    setPauseInterval(true)
+  }
 
 
   const dimensions = Dimensions.get('window')
@@ -1394,11 +1489,11 @@ function ChallengeStartActionsTeam(props) {
         // backgroundColor: '#00f',
         justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10, flexDirection: 'column', marginBottom: 10
       }}>
-        {/* {started && startTime != null && joined === currentChallenge._id ? (
+        {started && startTime != null && joined === currentChallenge._id ? (
           <ChallengeBarTeam />
         )
-          : (<Text style={{ textAlign: 'center', lineHeight: 23, marginVertical: 6, marginHorizontal: 20 }}>Recorder will start counting once the host starts the challenge</Text>)} */}
-        <ChallengeBarTeam />
+          : (<Text style={{ textAlign: 'center', lineHeight: 23, marginVertical: 6, marginHorizontal: 20 }}>Recorder will start counting once the host starts the challenge</Text>)}
+        {/* <ChallengeBarTeam /> */}
       </View>
 
 
@@ -1473,12 +1568,12 @@ function ChallengeStartActionsTeam(props) {
                 style={{ flex: 1 }} //, height: 30, borderWidth: 2 }}
                 autoCorrect={false}
                 value={chatMessage}
-                onSubmitEditing={() => submitChatMessage()}
+                // onSubmitEditing={() => submitChatMessage()}
                 onChangeText={res => setChatMessage(res)}
-              // onFocus={() => setOnFocus(true)}
+              // onFocus={() => onFocusChat(true)}
               />
               <View style={{ alignSelf: 'center', paddingLeft: 10 }}>
-                <Button mode="contained" onPress={submitChatMessage}>
+                <Button mode="contained" onPress={submitChatMessage} disabled={chatMessage == null || chatMessage.length === 0}>
                   Send
                 </Button>
               </View>
@@ -1512,15 +1607,23 @@ function ChallengeStartActionsTeam(props) {
 
 
         {tabIndex === 2 ? (<View style={{ paddingHorizontal: 30, paddingTop: 10 }}>
+          <Text style={{ color: '#999', fontSize: 13, marginTop: 3 }}>
+            Total distance team travelled: {Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0)} km / {(currentChallenge.challenge_detail.distance - 0.01)} = {100 * Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0) / (currentChallenge.challenge_detail.distance - 0.01)}
+          </Text>
+          <Text style={{ color: '#999', fontSize: 13, marginTop: 3 }}>
+            Total steps: {Object.values(trackMemberStepStates).reduce((a, b) => a + b, 0)}
+          </Text>
 
-          <View style={{ flexDirection: 'row' }}>
+          
+
+          {/* <View style={{ flexDirection: 'row' }}>
             <Text style={{ color: members_colors[currentChallenge.participants.indexOf(loggedUser._id)] }}>
               I ({loggedUser.username})
             </Text>
             <Text style={{ marginLeft: 10, color: '#999', fontSize: 13, marginTop: 3 }}>
-              travelled {Math.round(trackLoc.distanceTravelled * 10) / 10} km
+              travelled {trackLoc.distanceTravelled} km
             </Text>
-          </View>
+          </View> */}
 
           {joined === currentChallenge._id && trackMemberLocationStates != null && Object.keys(trackMemberLocationStates).length > 0 && Object.keys(trackMemberLocationStates).map((user_id, i) => (<View key={`us-` + i} style={{ flexDirection: 'row' }}>
             <Text style={{ color: members_colors[currentChallenge.participants.indexOf(user_id)] }}>
@@ -1528,9 +1631,32 @@ function ChallengeStartActionsTeam(props) {
             </Text>
 
             <Text style={{ marginLeft: 10, color: '#999', fontSize: 13, marginTop: 3 }}>
-              travelled {Math.round(trackMemberLocationStates[user_id].distanceTravelled * 10) / 10} km
+              travelled {trackMemberDistStates[trackMemberLocationStates[user_id].username]} km
             </Text>
           </View>))}
+
+
+          {joined === currentChallenge._id && trackMemberStepStates != null && Object.keys(trackMemberStepStates).length > 0 && Object.keys(trackMemberStepStates).map((username, i) => (<View key={`us-` + i} style={{ flexDirection: 'row' }}>
+            <Text style={{ color: members_colors[currentChallenge.participants.indexOf(username)] }}>
+              {username}
+            </Text>
+
+            <Text style={{ marginLeft: 10, color: '#999', fontSize: 13, marginTop: 3 }}>
+              walked {trackMemberStepStates[username]} steps
+            </Text>
+          </View>))}
+
+
+          {/* {joined === currentChallenge._id && trackMemberDistStates != null && Object.keys(trackMemberDistStates).length > 0 && Object.keys(trackMemberDistStates).map((username, i) => (<View key={`us-` + i} style={{ flexDirection: 'row' }}>
+            <Text style={{ color: members_colors[currentChallenge.participants.indexOf(username)] }}>
+              {username}
+            </Text>
+
+            <Text style={{ marginLeft: 10, color: '#999', fontSize: 13, marginTop: 3 }}>
+              walked {trackMemberDistStates[username]} km
+            </Text>
+          </View>))} */}
+
 
         </View>)
           : (<></>)}
@@ -1541,9 +1667,7 @@ function ChallengeStartActionsTeam(props) {
 
 
 
-    {joined === currentChallenge._id && showShareStoryModal && (<View style={{ zIndex: 12, position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}>
-      <TakePicture showShareStoryModal={showShareStoryModal} showAskImgSource={showAskImgSource} hideAskImgSource={hideAskImgSource} onCloseShareStory={onCloseShareStory} callbackSubmitShareStory={callbackSubmitShareStory} />
-    </View>)}
+    <TakePicture showShareStoryModal={showShareStoryModal} showAskImgSource={showAskImgSource} hideAskImgSource={hideAskImgSource} onCloseShareStory={onCloseShareStory} callbackSubmitShareStory={callbackSubmitShareStory} />
 
 
 

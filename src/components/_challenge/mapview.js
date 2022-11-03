@@ -21,6 +21,10 @@ import * as userAPI from '../../services/userAPI'
 import { useNavigation } from '@react-navigation/core'
 import Storer from '../../utils/storer'
 import { members_colors } from '../../utils/vars'
+import { Pedometer } from 'expo-sensors'
+import { useInterval } from '../../hooks/use-interval'
+
+// import { ImageManipulator } from 'expo'
 
 
 function ChallengeStartMap(props) {
@@ -44,50 +48,34 @@ function ChallengeStartMap(props) {
      * canceled
      */
     if (completed === -1) {
-      // console.log('['('[' + loggedUser.username + '] [mapview] completed = -1 !!!! Canceled !!!!')
+      console.log('[' + loggedUser.username + '] [mapview] completed = -1 !!!! Canceled !!!!')
 
-      cleanUp()
       // props.onCanceled(challengeDetail)
       navigation.navigate('DashboardStack')
+
+      cleanUp()
     }
 
     /*
      * individual confirmed completed if in individual mode
      * host confirmed ended if in team mode 
      */
-    if (completed === 3 && captured === false) {
+    else if (completed === 3 && captured === false) {
       setCaptured(true)
       takeScreenshot()
+      // onSetDispatch('setCompleted', 'completed', 3.5)
     }
   }, [started, captured, completed])
 
 
   const [startCoord, setStartCoord] = useState()
-  // useEffect(() => {
-  //   update()
-  // }, [])
-
   useEffect(() => {
     // console.log('[' + loggedUser.username + '] [mapview] (start or update) started =', started, ' | startTime =', startTime)
-
-    /*
-     * For individual challenge, start now
-     */
-    if (currentChallenge != null && currentChallenge.mode === 'individual' && (!started || startTime == null)) {
-      startNow()
-    }
-
     /*
      * only when not detected completed should the tracking be enabled
      */
-    update()
-  }, [started, startTime, completed, currentLocation])
-
-  const update = () => {
-    // console.log('[' + loggedUser.username + '] [mapview][update] CALLED')
-
     if (currentLocation != null) {
-      if (started && completed === 0) {
+      if (started && startTime != null && completed === 0) {
         processPosition(currentLocation)
       }
 
@@ -98,41 +86,7 @@ function ChallengeStartMap(props) {
         })
       }
     }
-  }
-
-
-  /* **********************************************
-   * 
-   * Check to start the challenge
-   * 
-   * ----
-   * 
-   * If is `individual` mode, start now.
-   * If is `team` mode, needs the host to click Start => is handled in `actions.team`
-   *
-   * **********************************************/
-  const startNow = async () => {
-    // console.log('['('[' + loggedUser.username + '] [mapview] startNow CALLED | currentChallenge.time_started =', currentChallenge.time_started)
-
-    Storer.set('started', true)
-    onSetDispatch('setStarted', 'started', true)
-
-    Storer.set('completed', 0)
-    onSetDispatch('setCompleted', 'completed', 0)
-
-    const dt = (currentChallenge.time_started != null) ? new Date(currentChallenge.time_started) : new Date()
-    // console.log('['+loggedUser.username+'] [mapview] startTime == ', dt)
-    Storer.set('startTime', dt)
-    onSetDispatch('setStartTime', 'startTime', dt)
-
-    if (currentChallenge.time_started == null) {
-      onSetDispatch('setCurrentChallenge', 'currentChallenge', {
-        ...currentChallenge,
-        time_started: JSON.stringify(new Date())
-      })
-    }
-  }
-
+  }, [started, startTime, completed, currentLocation])
 
 
   /* **********************************************
@@ -142,7 +96,7 @@ function ChallengeStartMap(props) {
    *
    * **********************************************/
   useEffect(() => {
-    if (currentChallenge.mode === 'team') {
+    if (currentChallenge.mode === 'team' && completed < 3) {
       const interval = setInterval(() => {
         doReload()
       }, 120000) //? reload every 120 seconds
@@ -153,11 +107,11 @@ function ChallengeStartMap(props) {
   }, [])
 
   const doReload = () => {
-    // console.log('['+loggedUser.username+'] [challenge.start][doReload] CALLED ~~')
+    console.log('['+loggedUser.username+'] [challenge.start][doReload] CALLED ~~')
 
     if (currentChallenge != null) {
       userAPI.getChallengeAcceptedStatus({ challenge_accepted_id: currentChallenge._id }).then((res) => {
-        // console.log('['('[' + loggedUser.username + '] [mapview][doReload] res =', res)
+        console.log('[' + loggedUser.username + '] [mapview][doReload] res =', res)
 
         if (res.data != null && res.data.active !== currentChallenge.active && currentChallenge._id === currentChallenge._id) {
           const currentChallenge_updated = {
@@ -166,7 +120,11 @@ function ChallengeStartMap(props) {
           }
           // Storer.set('currentChallenge', currentChallenge_updated)
           // onSetDispatch('setCurrentChallenge', 'currentChallenge', currentChallenge_updated)
-          onSetDispatch('setCompleted', 'completed', res.data.active)
+          if (res.data.active === 2) {
+            onSetDispatch('setCompleted', 'completed', 3)
+          } else {
+            onSetDispatch('setCompleted', 'completed', res.data.active)
+          }
         }
       }).catch(error => {
         console.error(error)
@@ -179,12 +137,70 @@ function ChallengeStartMap(props) {
 
   /* **********************************************
    *
+   * Step counter
+   * 
+   * -------------------
+   * Retrieve data, dispatch to all screens
+   *
+   * **********************************************/
+  /*
+   * Subscribe so that the app will track the user's step without asking for permission again
+   */
+  // let _subscriptionPedometer = null
+  // const subscribePedometer = () => {
+  //   //console.log('['+loggedUser.username+'] [sensors][subscribePedometer] >>> CALLED')
+
+  //   _subscriptionPedometer = Pedometer.watchStepCount(result => {
+  //     setStepCounterStatus(1)
+
+  //     //console.log('['+loggedUser.username+'] [sensors] dispatch setTrackStep ', result)
+
+  //     // if (result.steps - trackStep.currentStepCount > 3) {
+  //     onSetDispatch('setTrackStep', 'trackStep', {
+  //       ...trackStep,
+  //       currentStepCount: result.steps
+  //     })
+  //     // }
+  //   })
+  // }
+  // const unsubscribePedometer = () => {
+  //   _subscriptionPedometer = null
+  // }
+  // useEffect(() => {
+  //   if (started && startTime != null)
+  //   subscribePedometer()
+  //   return unsubscribePedometer()
+  // }, [started, startTime, joined, currentChallenge])
+  // useInterval(() => {
+  //   if (currentChallenge.challenge_detail.type === 'walk' && started && startTime != null &&
+  //     (currentChallenge.mode === 'individual' ||
+  //       (currentChallenge.mode === 'team' && joined === currentChallenge._id)
+  //     )
+  //     && completed === 0
+  //   ) {
+  //     console.log('[' + loggedUser.username + '] [mapview] getting step from startTime till now')
+  //     const end = new Date(Date.now()) //? now
+  //     Pedometer.getStepCountAsync(startTime, end).then(result => {
+  //       // this.setState({ pastStepCount: result.steps })
+  //       onSetDispatch('setTrackStep', 'trackStep', {
+  //         ...trackStep,
+  //         currentStepCount: result.steps
+  //       })
+  //     })
+  //   }
+  // }, 2000)
+
+
+
+
+  /* **********************************************
+   *
    * Take screenshot when finished
    *
    * **********************************************/
   const ref_mapview = useRef()
   const takeScreenshot = () => {
-    // console.log('['('[' + loggedUser.username + '] [mapview] takeScreenshot CALLED | donation =', donation)
+    console.log('[' + loggedUser.username + '] [mapview] takeScreenshot CALLED | donation =', donation)
 
     /* so that won't capture again */
     setCaptured(true)
@@ -212,12 +228,17 @@ function ChallengeStartMap(props) {
       participants_names: participants_names,
     }
 
-    ref_mapview.current.capture().then((uri) => {
+    // const { width, height } = Dimensions.get('window')
+    ref_mapview.current.capture().then(async (uri) => {
       //console.log('['+loggedUser.username+'] >>>> captured uri', uri)
-      setLoading(false)
+      setLoading(true)
 
-      /* clean up and call callback */
-      cleanUp()
+      // const newImage = await ImageManipulator.manipulate(
+      //   uri,
+      //   [{ resize: { width: width/2, height: height/2 } }],
+      //   { format: 'jpg' }
+      // )
+      
 
       navigation.navigate('_ChallengeDetailCompleted', {
         key: '_ChallengeDetailCompleted',
@@ -237,11 +258,13 @@ function ChallengeStartMap(props) {
 
         participants_names: obj.participants_names
       })
-    }).catch((error) => {
-      setLoading(false)
 
       /* clean up and call callback */
-      cleanUp()
+      await cleanUp()
+
+      setLoading(false)
+    }).catch(async (error) => {
+      setLoading(true)
 
       navigation.navigate('_ChallengeDetailCompleted', {
         key: '_ChallengeDetailCompleted',
@@ -261,6 +284,11 @@ function ChallengeStartMap(props) {
 
         participants_names: obj.participants_names
       })
+
+      /* clean up and call callback */
+      await cleanUp()
+
+      setLoading(false)
     })
 
   }
@@ -273,7 +301,7 @@ function ChallengeStartMap(props) {
    *
    * **********************************************/
   const cleanUp = async () => {
-    // console.log('['('[' + loggedUser.username + '] [mapview] cleanUp CALLED')
+    console.log('[' + loggedUser.username + '] [mapview] cleanUp CALLED')
 
     await Storer.delete('currentChallenge')
     onSetDispatch('setCurrentChallenge', 'currentChallenge', null)
@@ -284,21 +312,21 @@ function ChallengeStartMap(props) {
     await Storer.delete('startTime')
     onSetDispatch('setStartTime', 'startTime', null)
 
-    // await Storer.delete('donation')
-    // onSetDispatch('setDonation', 'donation', [0, 0])
+    // // await Storer.delete('donation')
+    // // onSetDispatch('setDonation', 'donation', [0, 0])
 
-    // onSetDispatch('setFinished', 'finished', false)
-    onSetDispatch('setTrackMemberStartStates', 'trackMemberStartStates', {})
-    onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', {})
-    onSetDispatch('setTrackMemberDistStates', 'trackMemberDistStates', {})
-    onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {})
-    onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', {})
-    onSetDispatch('setCompletedMembers', 'completedMembers', [])
-    onSetDispatch('setChatMessages', 'chatMessages', [])
-    onSetDispatch('setPrivateSockMsgs', 'privateSockMsgs', [])
-    onSetDispatch('setPrivateSockMsg', 'privateSockMsg', null)
-    onSetDispatch('setProcessedPrivateSockMsgs', 'processedPrivateSockMsgs', 0)
-    onSetDispatch('setTeamCompleted', 'teamCompleted', 0)
+    // // onSetDispatch('setFinished', 'finished', false)
+    // onSetDispatch('setTrackMemberStartStates', 'trackMemberStartStates', {})
+    // onSetDispatch('setTrackMemberLocationStates', 'trackMemberLocationStates', {})
+    // onSetDispatch('setTrackMemberDistStates', 'trackMemberDistStates', {})
+    // onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {})
+    // onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', {})
+    // onSetDispatch('setCompletedMembers', 'completedMembers', [])
+    // onSetDispatch('setChatMessages', 'chatMessages', [])
+    // onSetDispatch('setPrivateSockMsgs', 'privateSockMsgs', [])
+    // onSetDispatch('setPrivateSockMsg', 'privateSockMsg', null)
+    // onSetDispatch('setProcessedPrivateSockMsgs', 'processedPrivateSockMsgs', 0)
+    // onSetDispatch('setTeamCompleted', 'teamCompleted', 0)
     onSetDispatch('setTrackLoc', 'trackLoc', {
       ...trackLoc,
       routeCoordinates: [],
@@ -310,9 +338,9 @@ function ChallengeStartMap(props) {
       currentStepCount: 0
     })
 
-    onSetDispatch('setShowBottomBar', 'showBottomBar', false)
+    // onSetDispatch('setShowBottomBar', 'showBottomBar', false)
 
-    onSetDispatch('setCompleted', 'completed', 4)
+    // onSetDispatch('setCompleted', 'completed', 4)
 
     await Storer.set('started', false)
     //! don't do this. reset completed when start a challenge
@@ -342,7 +370,7 @@ function ChallengeStartMap(props) {
   const processPosition = async (position) => {
     setLoading(false)
 
-    // console.log('[' + loggedUser.username + '] [mapview] processPosition CALLED ', position)
+    console.log('[' + loggedUser.username + '] [mapview] processPosition CALLED ', position)
 
     onSetDispatch('setCurrentRegion', 'currentRegion', {
       ...currentRegion,
@@ -380,14 +408,14 @@ function ChallengeStartMap(props) {
     const { coordinate, routeCoordinates, distanceTravelled } = trackLoc
 
     const track_loc_state = {
-      latitude: newCoordinate.latitude,
-      longitude: newCoordinate.longitude,
+      // latitude: newCoordinate.latitude,
+      // longitude: newCoordinate.longitude,
       routeCoordinates: routeCoordinates.concat([newCoordinate]),
       distanceTravelled: distanceTravelled + calcDistance(newCoordinate),
       prevLatLng: newCoordinate,
     }
 
-    // console.log('['+loggedUser.username+'] [mapview][updateTrackState] dispatch setTrackLoc ', JSON.stringify(track_loc_state))
+    console.log('['+loggedUser.username+'] [mapview][updateTrackState] dispatch setTrackLoc ', JSON.stringify(track_loc_state))
     //console.log('['+loggedUser.username+'] [mapview][updateTrackState] dispatch setTrackLoc ')
     onSetDispatch('setTrackLoc', 'trackLoc', track_loc_state)
   }
@@ -400,9 +428,6 @@ function ChallengeStartMap(props) {
   const refMap = useRef()
   // const markerRef = React.useRef()
 
-  // useEffect(() => {
-  //   // console.log('['('[' + loggedUser.username + '] [mapview] trackMemberLocationStates', JSON.stringify(trackMemberLocationStates))
-  // }, [trackMemberLocationStates])
 
 
   return (<>

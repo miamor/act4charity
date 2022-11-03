@@ -12,7 +12,7 @@ import haversine from 'haversine'
 
 
 function Sensors() {
-  const [{ loggedUser, currentChallenge, currentLocation, trackStep, trackLoc, privateSockMsg, privateSockMsgs, socket, init, started }, dispatch] = useGlobals()
+  const [{ loggedUser, currentChallenge, currentLocation, trackStep, trackLoc, privateSockMsg, privateSockMsgs, socket, init, started, startTime, joined, completed }, dispatch] = useGlobals()
 
   const onSetDispatch = (type, key, value) => dispatch({ type: type, [key]: value })
 
@@ -25,53 +25,30 @@ function Sensors() {
   // }, [])
 
 
-  // const [initLoc, setInitLoc] = useState(false)
-  // const [initStep, setInitStep] = useState(false)
-  useEffect(() => {
-    if (init === false) {
-      // const socket_ = io.connect(SOCKET_URL, {
-      //   transports: ['websocket'],
-      //   autoConnect: true,
-      //   withCredentials: false,
-      // })
-      // onSetDispatch('setSocket', 'socket', socket_)
-      onSetDispatch('setInit', 'init', true)
 
-      requestPermissions()
-      // requestPedometerPermission()
-      // requestLocationPermission()
-      return () => {
-        unsubscribeLocation()
-        unsubscribePedometer()
-      }
-    }
-  }, [init])
+  // /* **********************************************
+  //  *
+  //  * If there is a team challenge running (currentChallenge != null && currentChallenge.mode === 'team'),
+  //  * listen for socket updates 
+  //  *
+  //  * **********************************************/
+  // const [listened, setListened] = useState(false)
+  // useEffect(() => {
+  //   if (socket != null && currentChallenge != null && currentChallenge.mode === 'team') {
+  //     // setListened(true)
 
+  //     socket.on('cast_private_' + currentChallenge._id, obj => {
+  //       rcvSocket(obj)
+  //     })
 
+  //   }
+  // }, [socket, currentChallenge, listened])
 
-  /* **********************************************
-   *
-   * If there is a team challenge running (currentChallenge != null && currentChallenge.mode === 'team'),
-   * listen for socket updates 
-   *
-   * **********************************************/
-  const [listened, setListened] = useState(false)
-  useEffect(() => {
-    if (socket != null && currentChallenge != null && currentChallenge.mode === 'team') {
-      // setListened(true)
-
-      socket.on('cast_private_' + currentChallenge._id, obj => {
-        rcvSocket(obj)
-      })
-
-    }
-  }, [socket, currentChallenge, listened])
-
-  const rcvSocket = useCallback((obj) => {
-    if (socket != null) {
-      onSetDispatch('setPrivateSockMsg', 'privateSockMsg', obj)
-    }
-  }, [privateSockMsg, socket, currentChallenge])
+  // const rcvSocket = useCallback((obj) => {
+  //   if (socket != null) {
+  //     onSetDispatch('setPrivateSockMsg', 'privateSockMsg', obj)
+  //   }
+  // }, [privateSockMsg, socket, currentChallenge])
 
 
   // useEffect(() => {
@@ -95,7 +72,7 @@ function Sensors() {
    * Request location, 
    *
    * **********************************************/
-  const [locationStatus, setLocationStatus] = useState(0)
+  // const [locationStatus, setLocationStatus] = useState(0)
   const [stepCounterStatus, setStepCounterStatus] = useState(0)
   /*
    * Request user's permission to retrieve location
@@ -118,11 +95,11 @@ function Sensors() {
         if (result['android.permission.ACCESS_FINE_LOCATION']
           && result['android.permission.ACTIVITY_RECOGNITION'] === 'granted') {
           subscribeLocation()
-          subscribePedometer()
+          // subscribePedometer() //! call this in mapview only
         }
         else if (result['android.permission.ACCESS_FINE_LOCATION']
           || result['android.permission.ACTIVITY_RECOGNITION'] === 'never_ask_again') {
-          setLocationStatus(-2)
+          // setLocationStatus(-2)
           setStepCounterStatus(-2)
 
           ToastAndroid.show('Please Go into Settings -> Applications -> APP_NAME -> Permissions and Allow permissions to continue', ToastAndroid.SHORT)
@@ -144,13 +121,21 @@ function Sensors() {
    * Subscribe so that the app will track the user's location without asking for permission again
    */
   let _subscriptionLocation = null
+  let _timeLoc = new Date(Date.now())
   const subscribeLocation = () => {
     _subscriptionLocation = Location.watchPositionAsync({
-      // accuracy: Location.Accuracy.High,
-      distanceInterval: 30, //? update only when distance changes 30m
-      timeInterval: 10000, //? update every 10 seconds
+      accuracy: Location.Accuracy.High,
+      distanceInterval: 100, //? update only when distance changes 30m
+      timeInterval: 20000, //? update every 20 seconds
     }, (position) => {
-      processPosition(position)
+      if (completed !== 3) {
+        let _newTime = new Date(Date.now())
+        console.log('_newTime', _newTime, ' | _timeLoc', _timeLoc)
+        if (currentLocation == null || _newTime.getTime() - _timeLoc.getTime() > 60000) { //! update every X sec only
+          _timeLoc = _newTime
+          processPosition(position)
+        }
+      }
     })
   }
   const unsubscribeLocation = () => {
@@ -161,9 +146,9 @@ function Sensors() {
    * Process retrieved lng lat 
    */
   const processPosition = (position) => {
-    console.log('['+loggedUser.username+'] [sensors][detail processPosition] position', position)
+    console.log('[' + loggedUser.username + '] [sensors][detail processPosition] position =', position, ' | completed =', completed)
 
-    setLocationStatus(1)
+    // setLocationStatus(1)
     // setLoading(false)
 
     //? getting the Longitude from the location json
@@ -192,25 +177,79 @@ function Sensors() {
    * Subscribe so that the app will track the user's step without asking for permission again
    */
   let _subscriptionPedometer = null
+  let _timeStep = new Date(Date.now())
   const subscribePedometer = () => {
     //console.log('['+loggedUser.username+'] [sensors][subscribePedometer] >>> CALLED')
-
+    // let time = new Date(Date.now())
     _subscriptionPedometer = Pedometer.watchStepCount(result => {
-      setStepCounterStatus(1)
+      // setStepCounterStatus(1)
 
-      //console.log('['+loggedUser.username+'] [sensors] dispatch setTrackStep ', result)
+      let _newTime = new Date(Date.now())
+      console.log('_newTime', _newTime, ' | _timeStep', _timeStep)
 
-      // if (result.steps - trackStep.currentStepCount > 3) {
-      onSetDispatch('setTrackStep', 'trackStep', {
-        ...trackStep,
-        currentStepCount: result.steps
-      })
-      // }
+      if ((trackStep.currentStepCount === 0 && result.steps > 0) || _newTime.getTime() - _timeStep.getTime() > 40000) { //! update every Xsec only
+        //console.log('['+loggedUser.username+'] [sensors] dispatch setTrackStep ', result)
+        _timeStep = _newTime
+
+        // if (result.steps - trackStep.currentStepCount > 3) {
+        onSetDispatch('setTrackStep', 'trackStep', {
+          ...trackStep,
+          currentStepCount: result.steps
+        })
+        // }
+      }
+
     })
   }
   const unsubscribePedometer = () => {
     _subscriptionPedometer = null
   }
+
+
+
+
+
+  // const [initLoc, setInitLoc] = useState(false)
+  // const [initStep, setInitStep] = useState(false)
+  useEffect(() => {
+    if (init === false) {
+      // const socket_ = io.connect(SOCKET_URL, {
+      //   transports: ['websocket'],
+      //   autoConnect: true,
+      //   withCredentials: false,
+      // })
+      // onSetDispatch('setSocket', 'socket', socket_)
+      onSetDispatch('setInit', 'init', true)
+
+      requestPermissions()
+      // requestPedometerPermission()
+      // requestLocationPermission()
+      return () => {
+        unsubscribeLocation()
+        // unsubscribePedometer() //! call this in mapview only
+      }
+    }
+  }, [init])
+
+  useEffect(() => {
+    unsubscribePedometer()
+    onSetDispatch('setTrackStep', 'trackStep', {
+      ...trackStep,
+      currentStepCount: 0
+    })
+
+    if (started && startTime != null && currentChallenge != null && (
+      currentChallenge.mode === 'individual' ||
+      (currentChallenge.mode === 'team' && joined === currentChallenge._id) &&
+      completed === 0
+    )) {
+      subscribePedometer()
+      return unsubscribePedometer()
+    }
+  }, [started, startTime, joined, currentChallenge, completed])
+
+
+
 
 
   return null

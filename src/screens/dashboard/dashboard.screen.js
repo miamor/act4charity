@@ -1,6 +1,6 @@
 import React, { PropTypes, Component, useEffect, useState, useCallback } from 'react'
 import { StyleSheet, View, Image, ScrollView, ToastAndroid, PermissionsAndroid, Dimensions, TouchableOpacity } from 'react-native'
-import { ProgressBar, Button, Appbar, useTheme, Badge, Portal, Modal, Paragraph, MD2Colors, MD3Colors } from 'react-native-paper'
+import { ProgressBar, Button, Appbar, useTheme, Badge, Portal, Modal, Paragraph, MD2Colors, MD3Colors, Avatar } from 'react-native-paper'
 import { H2, H3, Text, TextBold } from '../../components/paper/typos'
 import { DefaultView } from '../../components/containers'
 import { useGlobals } from '../../contexts/global'
@@ -10,6 +10,8 @@ import * as userAPI from '../../services/userAPI'
 import haversine from 'haversine'
 import Storer from '../../utils/storer'
 import { levels_ranges } from '../../utils/vars'
+import UserInfo from '../../components/user-info'
+import DateUtils from '../../utils/date'
 
 
 /**
@@ -35,6 +37,7 @@ function DashboardHomeScreen({ navigation }) {
 
   const [currentChallenges, setCurrentChallenges] = useState()
   const [pendingInvitations, setPendingInvitations] = useState()
+  const [topMembers, setTopMembers] = useState()
 
 
   /*
@@ -53,24 +56,34 @@ function DashboardHomeScreen({ navigation }) {
    * Compute current level, next level and level progress
    */
   useEffect(() => {
-    let i = -1
-    const reachMaxLevel = levels_ranges.every(level => {
-      i += 1
-      if (loggedUser.current_reward < level.start) {
-        setNextLevel(i)
-        setCurrentLevel(i - 1)
+    // let i = -1
+    // const reachMaxLevel = levels_ranges.every(level => {
+    //   i += 1
+    //   if (loggedUser.current_reward < level.start) {
+    //     setNextLevel(i)
+    //     setCurrentLevel(i - 1)
 
-        setLevelProgress((loggedUser.current_reward - levels_ranges[i - 1].start) / (levels_ranges[i].start - levels_ranges[i - 1].start))
+    //     setLevelProgress((loggedUser.current_reward - levels_ranges[i - 1].start) / (levels_ranges[i].start - levels_ranges[i - 1].start))
 
-        return false
-      }
-      return true
-    })
+    //     return false
+    //   }
+    //   return true
+    // })
 
-    if (reachMaxLevel) {
-      setNextLevel(i)
-      setCurrentLevel(i)
-    }
+    // if (reachMaxLevel) {
+    //   setNextLevel(i)
+    //   setCurrentLevel(i)
+    // }
+    const _currentLevel = Math.floor(loggedUser.current_reward / 100)
+    // const lvlInfo = level < levels_ranges.length ? levels_ranges[level] : levels_ranges[levels_ranges.length - 1]
+    // setCurrentLevel(lvlInfo)
+    // setNextLevel(level+1 < levels_ranges.length ? levels_ranges[level+1] : levels_ranges[levels_ranges.length - 1])
+    setCurrentLevel(_currentLevel)
+    setNextLevel(_currentLevel + 1)
+
+    const currentLevelStart = _currentLevel * 100
+    const nextLevelStart = (_currentLevel + 1) * 100
+    setLevelProgress((loggedUser.current_reward - nextLevelStart) / (currentLevelStart - nextLevelStart))
   }, [loggedUser])
 
 
@@ -81,14 +94,15 @@ function DashboardHomeScreen({ navigation }) {
     setLoading(true)
     loadCurrentChallenges()
     loadPendingInvitations()
+    loadTopMembers()
   }, [currentChallenge])
 
   useEffect(() => {
-    if (currentChallenges != null && pendingInvitations != null) {
+    if (currentChallenges != null && pendingInvitations != null && topMembers != null) {
       // //console.log('Loaded')
       setLoading(false)
     }
-  }, [currentChallenges, pendingInvitations])
+  }, [currentChallenges, pendingInvitations, topMembers])
 
 
   useEffect(() => {
@@ -140,6 +154,23 @@ function DashboardHomeScreen({ navigation }) {
       setPendingInvitations(res.data)
     }).catch(error => {
       setPendingInvitations([]) //! should be something to print the error on the UI
+      console.error(error)
+      ToastAndroid.show('Oops', ToastAndroid.SHORT)
+    })
+  }
+
+
+  /* **********************************************
+   *
+   * Load top members
+   *
+   * **********************************************/
+  const loadTopMembers = () => {
+    userAPI.getTopMembers().then((res) => {
+      // console.log('[loadTopMembers] res', res)
+      setTopMembers(res.data)
+    }).catch(error => {
+      setTopMembers([]) //! should be something to print the error on the UI
       console.error(error)
       ToastAndroid.show('Oops', ToastAndroid.SHORT)
     })
@@ -230,11 +261,11 @@ function DashboardHomeScreen({ navigation }) {
       onSetDispatch('setTrackMemberStepStates', 'trackMemberStepStates', {})
       onSetDispatch('setMembersJoinStatus', 'membersJoinStatus', {})
       onSetDispatch('setCompletedMembers', 'completedMembers', [])
-      onSetDispatch('setChatMessages', 'chatMessages', [])
-      onSetDispatch('setPrivateSockMsgs', 'privateSockMsgs', [])
-      onSetDispatch('setPrivateSockMsg', 'privateSockMsg', null)
-      onSetDispatch('setProcessedPrivateSockMsgs', 'processedPrivateSockMsgs', 0)
-      onSetDispatch('setTeamCompleted', 'teamCompleted', 0)
+      // onSetDispatch('setChatMessages', 'chatMessages', [])
+      // onSetDispatch('setPrivateSockMsgs', 'privateSockMsgs', [])
+      // onSetDispatch('setPrivateSockMsg', 'privateSockMsg', null)
+      // onSetDispatch('setProcessedPrivateSockMsgs', 'processedPrivateSockMsgs', 0)
+      // onSetDispatch('setTeamCompleted', 'teamCompleted', 0)
       onSetDispatch('setTrackLoc', 'trackLoc', {
         ...trackLoc,
         routeCoordinates: [],
@@ -286,8 +317,11 @@ function DashboardHomeScreen({ navigation }) {
           <Paragraph>
             You are in another challenge: <TextBold>{currentChallenge.challenge_detail.name}</TextBold>
           </Paragraph>
-          <Paragraph>
+          {/* <Paragraph>
             Starting this challenge will kill the other challenge you are doing. Are you sure ?
+          </Paragraph> */}
+          <Paragraph>
+            Are you sure want to switch challenge ?
           </Paragraph>
 
           <View style={{ marginTop: 30, marginHorizontal: 20 }}>
@@ -308,9 +342,14 @@ function DashboardHomeScreen({ navigation }) {
           <View style={styles.profileDetailsTextContainer}>
             <H3>{loggedUser.firstname}</H3>
             <View style={{ flexDirection: 'row', marginTop: 4 }}>
-              <Image source={levels_ranges[currentLevel].image} style={{ height: 20, width: 20, marginLeft: -5 }} />
+              <Image source={levels_ranges[currentLevel < levels_ranges.length ? currentLevel : levels_ranges.length - 1].image} style={{ height: 20, width: 20, marginLeft: -5 }} />
               <Text style={{ alignSelf: 'flex-start', marginBottom: 5, color: '#777', fontSize: 14, lineHeight: 18 }}>
-                {levels_ranges[currentLevel].title}
+                {/* {levels_ranges[currentLevel < levels_ranges.length ? currentLevel : levels_ranges.length - 1].title} */}
+                Level {currentLevel}
+              </Text>
+
+              <Text style={{ alignSelf: 'flex-start', marginBottom: 5, color: '#777', fontSize: 14, lineHeight: 18, marginLeft: 10 }}>
+                |   ${loggedUser.current_donation}
               </Text>
             </View>
           </View>
@@ -318,7 +357,7 @@ function DashboardHomeScreen({ navigation }) {
 
         <View style={{ width: width - 40, flexDirection: 'row' }}>
           <Image
-            source={levels_ranges[currentLevel].image}
+            source={levels_ranges[currentLevel < levels_ranges.length ? currentLevel : levels_ranges.length - 1].image}
             style={{
               height: 48,
               width: 48,
@@ -334,7 +373,7 @@ function DashboardHomeScreen({ navigation }) {
             />
           </View>
           <Image
-            source={levels_ranges[nextLevel].image}
+            source={levels_ranges[nextLevel < levels_ranges.length ? nextLevel : levels_ranges.length - 1].image}
             style={{
               height: 48,
               width: 48,
@@ -394,19 +433,17 @@ function DashboardHomeScreen({ navigation }) {
 
         <View style={{ marginTop: 30 }}>
           <H3>Unfinished challenge</H3>
-          <View style={[{
+          <View style={{
             flexDirection: 'column',
             justifyContent: 'center',
             // marginTop: 10,
-          },
-          (currentChallenges == null || currentChallenges.length === 0) && {
-            alignItems: 'center'
-          }
-          ]}>
-            {currentChallenges == null || currentChallenges.length === 0 ? <Image
-              source={require('../../../assets/images/nochallenge.png')}
-              style={{ height: 175, width: 175 }}
-            /> : (<View style={{}}>
+          }}>
+            {currentChallenges == null || currentChallenges.length === 0 ? (<View style={{ alignItems: 'center' }}>
+              <Image
+                source={require('../../../assets/images/nochallenge.png')}
+                style={{ height: 175, width: 175 }}
+              />
+            </View>) : (<View style={{}}>
 
               {currentChallenges.map((item, i) => {
                 if (
@@ -437,8 +474,16 @@ function DashboardHomeScreen({ navigation }) {
                       {/* <Text>{item.challenge_detail.type}</Text> */}
 
                       <View style={{ marginTop: 5 }}>
-                        {currentLocation != null && item.challenge_detail.type === 'discover' && <Text style={styles.subtitle}>{calcDistance(item.challenge_detail.place_detail.coordinates, currentLocation)}</Text>}
-                        {item.challenge_detail.type === 'walk' && <Text style={styles.subtitle}>{item.challenge_detail.distance}km</Text>}
+                        {currentLocation != null && item.challenge_detail.type === 'discover' && (<Text style={styles.subtitle}>
+                          Destination <Text style={styles.subtitlebold}>{calcDistance(item.challenge_detail.place_detail.coordinates, currentLocation)}</Text> from me
+                        </Text>)}
+                        {item.challenge_detail.type === 'walk' && (<Text style={styles.subtitle}>
+                          Walk <Text style={styles.subtitlebold}>{item.challenge_detail.distance}km</Text>
+                        </Text>)}
+
+                        {item.time_started != null && (<Text style={styles.subtitle}>
+                          Started at <Text style={styles.subtitlebold}>{DateUtils.toTimeDayShortMonth(new Date(item.time_started))}</Text>
+                        </Text>)}
 
                         <Badge style={{
                           paddingHorizontal: 10, position: 'absolute', right: 0, marginTop: 6, lineHeight: 12,
@@ -458,19 +503,17 @@ function DashboardHomeScreen({ navigation }) {
 
         <View style={{ marginTop: 35 }}>
           <H3>Pending invitations</H3>
-          <View style={[{
+          <View style={{
             flexDirection: 'column',
             justifyContent: 'center',
             // marginTop: 10,
-          },
-          (pendingInvitations == null || pendingInvitations.length === 0) && {
-            alignItems: 'center'
-          }
-          ]}>
-            {pendingInvitations == null || pendingInvitations.length === 0 ? <Image
-              source={require('../../../assets/images/nochallenge.png')}
-              style={{ height: 175, width: 175 }}
-            /> : (<View style={{}}>
+          }}>
+            {pendingInvitations == null || pendingInvitations.length === 0 ? (<View style={{ alignItems: 'center' }}>
+              <Image
+                source={require('../../../assets/images/nochallenge.png')}
+                style={{ height: 175, width: 175 }}
+              />
+            </View>) : (<View style={{}}>
 
               {pendingInvitations.map((item, i) => (<TouchableOpacity key={`my-challenge-` + i}
                 onPress={() => onPressInvitation(item)}
@@ -495,20 +538,59 @@ function DashboardHomeScreen({ navigation }) {
                   <TextBold style={{ color: colors.primary, fontSize: 15.5, lineHeight: 22 }}>{item.challenge_detail.name}</TextBold>
 
                   <View style={{ marginTop: 5 }}>
-                    <Text style={styles.subtitle}>From <TextBold style={styles.subtitle}>{item.from_user.username}</TextBold></Text>
+                    <Text style={styles.subtitle}>From <Text style={styles.subtitlebold}>{item.from_user.username}</Text></Text>
 
-                    {currentLocation != null && item.challenge_detail.type === 'discover' && <Text style={styles.subtitle}>{calcDistance(item.challenge_detail.place_detail.coordinates, currentLocation)}</Text>}
-                    {item.challenge_detail.type === 'walk' && <Text style={styles.subtitle}>{item.challenge_detail.distance}km</Text>}
-
+                    {currentLocation != null && item.challenge_detail.type === 'discover' && (<Text style={styles.subtitle}>
+                      Destination <Text style={styles.subtitlebold}>{calcDistance(item.challenge_detail.place_detail.coordinates, currentLocation)}</Text> from me
+                    </Text>)}
+                    {item.challenge_detail.type === 'walk' && (<Text style={styles.subtitle}>
+                      Walk <TextBold style={styles.subtitle}>{item.challenge_detail.distance}km</TextBold>
+                    </Text>)}
                   </View>
                 </View>
 
               </TouchableOpacity>))}
 
             </View>)}
-
           </View>
         </View>
+
+
+
+
+        <View style={{ marginTop: 35 }}>
+          <H3>Top active members</H3>
+          <View style={[{
+            flexDirection: 'column',
+            justifyContent: 'center',
+            // marginTop: 10,
+          }]}>
+            {topMembers == null || topMembers.length === 0 ? (<View>
+            </View>) : (<View style={{}}>
+
+              {topMembers.map((item, i) => (<View key={`my-challenge-` + i}
+                // onPress={() => console.log(item)}
+                style={{
+                  flexDirection: 'row',
+                  paddingVertical: 5,
+                  // backgroundColor: '#0f0',
+                  borderBottomColor: '#ddd',
+                  borderBottomWidth: 1,
+                  borderStyle: 'dashed'
+                }}>
+
+                <Avatar.Image size={30} style={{ marginLeft: 0, marginRight: 5, zIndex: 3, }} source={{ uri: item.avatar }} />
+
+                <View style={{ marginTop: 0 }}>
+                  <UserInfo user_detail={item} color={colors.primary} />
+                </View>
+
+              </View>))}
+
+            </View>)}
+          </View>
+        </View>
+
 
 
         <View style={styles.challengeButtonContainer}>
@@ -520,6 +602,7 @@ function DashboardHomeScreen({ navigation }) {
             Discover more
           </Button>
         </View>
+
 
 
       </ScrollView>
@@ -557,8 +640,13 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#888',
+    color: '#999',
     lineHeight: 18,
-  }
+  },
+  subtitlebold: {
+    fontSize: 14.2,
+    color: '#555',
+    lineHeight: 18,
+  },
 })
 export default DashboardHomeScreen

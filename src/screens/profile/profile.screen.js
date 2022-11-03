@@ -101,24 +101,31 @@ function ProfileScreen({ navigation }) {
    * Compute current level, next level and level progress
    */
   useEffect(() => {
-    let i = -1
-    const reachMaxLevel = levels_ranges.every(level => {
-      i += 1
-      if (loggedUser.current_reward < level.start) {
-        setNextLevel(i)
-        setCurrentLevel(i - 1)
+    // let i = -1
+    // const reachMaxLevel = levels_ranges.every(level => {
+    //   i += 1
+    //   if (loggedUser.current_reward < level.start) {
+    //     setNextLevel(i)
+    //     setCurrentLevel(i - 1)
 
-        setLevelProgress((loggedUser.current_reward - levels_ranges[i - 1].start) / (levels_ranges[i].start - levels_ranges[i - 1].start))
+    //     setLevelProgress((loggedUser.current_reward - levels_ranges[i - 1].start) / (levels_ranges[i].start - levels_ranges[i - 1].start))
 
-        return false
-      }
-      return true
-    })
+    //     return false
+    //   }
+    //   return true
+    // })
 
-    if (reachMaxLevel) {
-      setNextLevel(i)
-      setCurrentLevel(i)
-    }
+    // if (reachMaxLevel) {
+    //   setNextLevel(i)
+    //   setCurrentLevel(i)
+    // }
+    const _currentLevel = Math.floor(loggedUser.current_reward / 100)
+    setCurrentLevel(_currentLevel)
+    setNextLevel(_currentLevel+1)
+
+    const currentLevelStart = _currentLevel * 100
+    const nextLevelStart = (_currentLevel + 1) * 100
+    // setLevelProgress((loggedUser.current_reward - nextLevelStart) / (currentLevelStart - nextLevelStart))
   }, [loggedUser, token])
 
 
@@ -277,9 +284,14 @@ function ProfileScreen({ navigation }) {
           <View style={styles.profileDetailsTextContainer}>
             <H3>{loggedUser.firstname}</H3>
             <View style={{ flexDirection: 'row', marginTop: 4 }}>
-              <Image source={levels_ranges[currentLevel].image} style={{ height: 20, width: 20, marginLeft: -5 }} />
+              <Image source={levels_ranges[currentLevel < levels_ranges.length ? currentLevel : levels_ranges.length - 1].image} style={{ height: 20, width: 20, marginLeft: -5 }} />
               <Text style={{ alignSelf: 'flex-start', marginBottom: 5, color: '#777', fontSize: 14, lineHeight: 18 }}>
-                {levels_ranges[currentLevel].title}
+                {/* {levels_ranges[currentLevel < levels_ranges.length ? currentLevel : levels_ranges.length - 1].title} */}
+                Level {currentLevel}
+              </Text>
+
+              <Text style={{ alignSelf: 'flex-start', marginBottom: 5, color: '#777', fontSize: 14, lineHeight: 18, marginLeft: 10 }}>
+                |   ${loggedUser.current_donation}
               </Text>
             </View>
           </View>

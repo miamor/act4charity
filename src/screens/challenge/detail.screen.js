@@ -184,10 +184,19 @@ function ChallengeDetailInfoScreen({ route, navigation }) {
           <H3 style={{ marginBottom: 18, paddingBottom: 12, borderBottomColor: '#f0f0f0', borderBottomWidth: 1 }}>Another challenge running</H3>
 
           <Paragraph>
-            You are in another challenge: <TextBold>{currentChallenge.challenge_detail.name}</TextBold>
+            You are in another challenge: <TextBold style={{ fontSize: 16 }}>{currentChallenge.challenge_detail.name}</TextBold>
           </Paragraph>
           <Paragraph>
+            Starting this challenge will not kill the other challenge you are doing, but the timer for the old challenge will keep running.
+          </Paragraph>
+          <Paragraph>
+            You can revisit the old challenge under Unfinished challenge
+          </Paragraph>
+          {/* <Paragraph>
             Starting this challenge will kill the other challenge you are doing. Are you sure ?
+          </Paragraph> */}
+          <Paragraph>
+            Are you sure want to start new challenge ?
           </Paragraph>
 
           <View style={{ marginTop: 30, marginHorizontal: 20 }}>

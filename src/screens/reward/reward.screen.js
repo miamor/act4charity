@@ -83,12 +83,12 @@ function RewardScreen() {
             Donated so far
           </Text>
 
-          <H3 style={{ marginTop: 10, marginBottom: 10 }}>
+          <H3 style={{ marginTop: 15, marginBottom: 0 }}>
             Donation Details
           </H3>
         </View>
 
-        <ScrollView style={{ marginBottom: 229, marginTop: 5, paddingHorizontal: 20 }}>
+        <ScrollView style={{ marginBottom: 229, marginTop: 0, paddingHorizontal: 20 }}>
           {completedChallenges != null && completedChallenges.map((item, i) => (<View key={`comp-` + i}
             style={{
               // marginHorizontal: 20,

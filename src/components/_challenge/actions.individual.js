@@ -24,6 +24,7 @@ import Storer from '../../utils/storer'
 import TakePicture from './take-picture'
 import axios from 'axios'
 import ChallengeBarIndividual from './bar.individual'
+import UserInfo from '../user-info'
 
 
 function ChallengeStartActionsIndividual(props) {
@@ -68,6 +69,44 @@ function ChallengeStartActionsIndividual(props) {
       onComplete()
     }
   }, [completed])
+
+
+
+  /* **********************************************
+   * 
+   * For `individual` mode, start now
+   *
+   * **********************************************/
+  useEffect(() => {
+    //? start by the `time_started` field
+    // console.log('[' + loggedUser.username + '] [actions.team] ************************* currentChallenge.time_started', currentChallenge.time_started)
+    if (currentChallenge.time_started != null && currentChallenge.time_started.length > 0 && (!started || startTime == null)) {
+      startNow()
+    }
+    //? else, wait for the host to start
+  }, [])
+
+  const startNow = async () => {
+    // console.log('['('[' + loggedUser.username + '] [mapview] startNow CALLED | currentChallenge.time_started =', currentChallenge.time_started)
+
+    Storer.set('started', true)
+    onSetDispatch('setStarted', 'started', true)
+
+    Storer.set('completed', 0)
+    onSetDispatch('setCompleted', 'completed', 0)
+
+    const dt = (currentChallenge.time_started != null) ? new Date(currentChallenge.time_started) : new Date()
+    // console.log('['+loggedUser.username+'] [mapview] startTime == ', dt)
+    Storer.set('startTime', dt)
+    onSetDispatch('setStartTime', 'startTime', dt)
+
+    if (currentChallenge.time_started == null) {
+      onSetDispatch('setCurrentChallenge', 'currentChallenge', {
+        ...currentChallenge,
+        time_started: JSON.stringify(new Date())
+      })
+    }
+  }
 
 
 
@@ -242,7 +281,7 @@ function ChallengeStartActionsIndividual(props) {
       }).catch(error => {
         setLoading(false)
         console.error(error)
-        // ToastAndroid.show(error, ToastAndroid.short)
+        // ToastAndroid.show('Oops', ToastAndroid.short)
       })
     }
   }
@@ -377,7 +416,7 @@ function ChallengeStartActionsIndividual(props) {
         // backgroundColor: '#00f',
         justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10, flexDirection: 'column', marginBottom: 10
       }}>
-        <ChallengeBarIndividual />
+        {started && startTime != null && <ChallengeBarIndividual />}
       </View>
 
 
@@ -411,10 +450,11 @@ function ChallengeStartActionsIndividual(props) {
             <Avatar.Image size={60} source={{ uri: story.user_detail.avatar }} style={{ marginRight: 10, width: 60 }} />
 
             <View>
-              <View>
-                <Text style={{ color: colors.primary }}>{story.user_detail.username}</Text>
+              <View style={{marginTop: -5}}>
+                {/* <Text style={{ color: colors.primary }}>{story.user_detail.username}</Text> */}
+                <UserInfo user_detail={story.user_detail} color={colors.primary} />
               </View>
-              <View style={{ marginLeft: 5 }}>
+              <View style={{  }}>
                 <Text>{story.content}</Text>
               </View>
               {story.picture != null && <Image source={{ uri: story.picture }} style={{ marginTop: 10, height: imageHeight, width: imageWidth }} />}

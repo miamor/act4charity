@@ -7,6 +7,7 @@ import { useGlobals } from '../../contexts/global'
 import PercentageCircle from 'react-native-percentage-circle'
 import { msToTime, secToTime } from '../../utils/timer'
 import haversine from 'haversine'
+import { useInterval } from '../../hooks/use-interval'
 
 
 function ChallengeBarIndividual(props) {
@@ -21,10 +22,15 @@ function ChallengeBarIndividual(props) {
    * Only when the challenge is started and not completed.
    */
   const [distFromStartToTarget, setDistFromStartToTarget] = useState(null)
+  // const [timeLastCheck, setTimeLastCheck] = useState(new Date(Date.now()))
+  // const [checked, setChecked] = useState(false)
   useEffect(() => {
     // console.log('[bar.individual] got hereeee', ' | started =', started, ' | startTime =', startTime, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation), ' | trackLoc', trackLoc)
 
-    if (started && startTime != null && completed === 0 && currentLocation != null) {
+    // let _newTime = new Date(Date.now())
+
+    if (started && startTime != null && currentChallenge != null && joined === currentChallenge._id && currentLocation != null) {
+
       if (distFromStartToTarget == null) {
         if (currentChallenge.challenge_detail.type === 'discover') {
           const dist_from_start_to_target = haversine(currentLocation, currentChallenge.challenge_detail.place_detail.coordinates) || 0
@@ -33,12 +39,34 @@ function ChallengeBarIndividual(props) {
           setDistFromStartToTarget(-1)
         }
       }
-      checkComplete()
+
+      // if (checked === false || _newTime.getTime() - timeLastCheck.getTime() > 10000) { //! only recheck every X seconds
+      // _timeLastCheck = _newTime
+      console.log('[' + loggedUser.username + '] [bar.individual] got hereeee', ' | started =', started, ' | completed =', completed, ' currentLocation =', JSON.stringify(currentLocation))
+
+      if (completed === 0) {
+        // setTimeLastCheck(_newTime)
+        // if (checked === false) setChecked(true)
+        checkComplete()
+      } else if (completed > 0) {
+        setDistToTarget(0)
+      }
+      // }
     }
     // else if (completed === 5) {
     //   navigation.navigate('ChallengeStack', { screen: 'ChallengeListMap' })
     // }
   }, [trackLoc, started, startTime, completed])
+
+  // useInterval(() => {
+  //   if (started && startTime != null && completed === 0 && currentLocation != null) {
+  //     if (completed === 0) {
+  //       checkComplete()
+  //     } else if (completed > 0) {
+  //       setDistToTarget(0)
+  //     }
+  //   }
+  // }, 40000)
 
 
 
@@ -57,13 +85,13 @@ function ChallengeBarIndividual(props) {
        * Walk challenge
        */
 
-      if (trackLoc.distanceTravelled >= currentChallenge.challenge_detail.distance - 0.02) { //? identify as completed
+      if (trackLoc.distanceTravelled >= currentChallenge.challenge_detail.distance - 0.01) { //? identify as completed
         // if (trackLoc.distanceTravelled > 0.01) { //? identify as completed
         //console.log('[checkComplete] completed !')
         // setCompleted(1)
         onSetDispatch('setCompleted', 'completed', 1)
       }
-
+      // onSetDispatch('setCompleted', 'completed', 1) //! delete this
     }
 
     else {
@@ -98,44 +126,60 @@ function ChallengeBarIndividual(props) {
    *
    * **********************************************/
   const [time, setTime] = useState()
-  useEffect(() => {
-    //~console.log('[bar.individual] startTime', startTime)
-    const interval = setInterval(() => {
-      setTime(lastTimerCount => {
-        if (lastTimerCount == null) {
-          if (startTime != null) {
-            const now = new Date()
-            const seconds = (now.getTime() - startTime.getTime()) / 1000
+  // useEffect(() => {
+  //   //~console.log('[bar.individual] startTime', startTime)
+  //   const interval = setInterval(() => {
+  //     setTime(lastTimerCount => {
+  //       if (lastTimerCount == null) {
+  //         if (startTime != null) {
+  //           const now = new Date()
+  //           const seconds = (now.getTime() - startTime.getTime()) / 1000
 
-            // console.log('[bar.individual.discover] seconds', seconds)
-            return seconds
-          }
+  //           // console.log('[bar.individual.discover] seconds', seconds)
+  //           return seconds
+  //         }
+  //       }
+  //       else {
+  //         if (currentChallenge != null) {
+  //           // console.log('[bar.individual] startTime', startTime)
+
+  //           // lastTimerCount <= 1 && clearInterval(interval)
+  //           // if (!started || startTime == null) {
+  //           //   clearInterval(interval)
+  //           // }
+  //           if (started && completed !== 0) {
+  //             clearInterval(interval)
+  //           }
+  //           else if (started && completed === 0 && startTime != null) {
+  //             // console.log('[bar.individual.discover] lastTimerCount + 1', lastTimerCount + 1)
+  //             return lastTimerCount + 1
+  //           }
+  //         }
+  //       }
+
+  //       return null
+  //     })
+  //   }, 1000) //? each count lasts for a second
+
+  //   /* cleanup the interval on complete */
+  //   return () => clearInterval(interval)
+  // }, [started, startTime])
+  useInterval(() => {
+    setTime(lastTimerCount => {
+      if (lastTimerCount == null) {
+        if (startTime != null) {
+          const now = new Date()
+          const seconds = (now.getTime() - startTime.getTime()) / 1000
+
+          // console.log('['+loggedUser.username+'] [bar.individual.discover] seconds', seconds)
+          return seconds
         }
-        else {
-          if (currentChallenge != null) {
-            // console.log('[bar.individual] startTime', startTime)
-
-            // lastTimerCount <= 1 && clearInterval(interval)
-            // if (!started || startTime == null) {
-            //   clearInterval(interval)
-            // }
-            if (started && completed !== 0) {
-              clearInterval(interval)
-            }
-            else if (started && completed === 0 && startTime != null) {
-              // console.log('[bar.individual.discover] lastTimerCount + 1', lastTimerCount + 1)
-              return lastTimerCount + 1
-            }
-          }
-        }
-
-        return null
-      })
-    }, 1000) //? each count lasts for a second
-
-    /* cleanup the interval on complete */
-    return () => clearInterval(interval)
-  }, [started, startTime])
+      }
+      else {
+        return lastTimerCount + 1
+      }
+    })
+  }, 1000)
 
 
   return (<>
@@ -156,7 +200,7 @@ function ChallengeBarIndividual(props) {
 
       {currentChallenge.challenge_detail.type === 'walk' && (<View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
         <View style={{ backgroundColor: 'transparent', alignItems: 'center' }}>
-          <PercentageCircle radius={30} percent={100 * Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0) / currentChallenge.challenge_detail.distance} color={MD3Colors.primary10}>
+          <PercentageCircle radius={30} percent={100 * Object.values(trackMemberDistStates).reduce((a, b) => a + b, 0) / (currentChallenge.challenge_detail.distance - 0.01)} color={MD3Colors.primary10}>
             <TextBold style={{ fontSize: 24, lineHeight: 50 }}>
               {Math.round(trackLoc.distanceTravelled * 10) / 10}
             </TextBold>
@@ -167,7 +211,7 @@ function ChallengeBarIndividual(props) {
 
       {currentChallenge.challenge_detail.type === 'discover' && (<View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
         <View style={{ backgroundColor: 'transparent', alignItems: 'center' }}>
-          <PercentageCircle radius={30} percent={distToTarget > -1 && distFromStartToTarget != null ? 100 * distToTarget / distFromStartToTarget : 0} color={MD3Colors.primary10}>
+          <PercentageCircle radius={30} percent={(distToTarget > -1 && distFromStartToTarget != null) ? 100 * distToTarget / distFromStartToTarget : 0} color={MD3Colors.primary10}>
             <TextBold style={{ fontSize: 24, lineHeight: 50 }}>
               {distToTarget > -1 ? Math.round((distToTarget) * 10) / 10 : '--'}
             </TextBold>

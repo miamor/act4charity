@@ -1,3 +1,4 @@
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import React, { useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Button, Headline, TouchableRipple, useTheme } from 'react-native-paper'
@@ -5,8 +6,6 @@ import { H3, Text } from '../../components/paper/typos'
 
 import { DefaultView } from '../../components/containers'
 import { useGlobals } from '../../contexts/global'
-import Female from '../../svgs/Female'
-import Male from '../../svgs/Male'
 
 /**
  * @param navigation
@@ -41,24 +40,27 @@ function SexScreen({ navigation }) {
       </View>
 
       <View style={[styles.inputContainer, styles.sexContainer]}>
+
         <TouchableRipple
           onPress={() => setSex('Male')}
           rippleColor="rgba(0,0,0,0)"
         >
           <View>
-            <Male style={{ opacity: sex === 'Male' ? 1 : 0.5 }} />
-            <Text style={styles.sexText}>Male</Text>
+            <MaterialCommunityIcons name="gender-male" size={130} style={{ color: colors.primary, opacity: sex === 'Male' ? 1 : 0.4 }} />
+            <Text style={[styles.sexText, { opacity: sex === 'Male' ? 1 : 0.4 }]}>Male</Text>
           </View>
         </TouchableRipple>
+
         <TouchableRipple
           onPress={() => setSex('Female')}
           rippleColor="rgba(0,0,0,0)"
         >
           <View>
-            <Female style={{ opacity: sex === 'Female' ? 1 : 0.5 }} />
-            <Text style={styles.sexText}>Female</Text>
+            <MaterialCommunityIcons name="gender-female" size={130} style={{ color: colors.primary, opacity: sex === 'Female' ? 1 : 0.4 }} />
+            <Text style={[styles.sexText, { opacity: sex === 'Female' ? 1 : 0.4 }]}>Female</Text>
           </View>
         </TouchableRipple>
+
       </View>
 
       <View style={styles.buttonContainer}>
